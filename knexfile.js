@@ -1,32 +1,39 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export default {
     development: {
         client: 'pg',
-        connection: 'postgres://localhost/db_name',
-        migrations: {
-            tableName: 'dev_knex_migrations',
-        },
-    },
-    staging: {
-        client: 'pg',
-        connection: 'postgres://localhost/db_name',
-        pool: {
-            min: 2,
-            max: 10,
+        connection: {
+            connectionString: process.env.DB_CONNECTION,
+            ssl: {
+                rejectUnauthorized: false,
+            },
         },
         migrations: {
-            tableName: 'staging_knex_migrations',
+            directory: './db/migrations',
         },
     },
-
-    production: {
-        client: 'pg',
-        connection: 'postgres://localhost/db_name',
-        pool: {
-            min: 2,
-            max: 10,
-        },
-        migrations: {
-            tableName: 'prod_knex_migrations',
-        },
-    },
+    // staging: {
+    //     client: 'pg',
+    //     connection: 'postgres://localhost/db_name',
+    //     pool: {
+    //         min: 2,
+    //         max: 10,
+    //     },
+    //     migrations: {
+    //         directory: './db/migrations',
+    //     },
+    // },
+    // production: {
+    //     client: 'pg',
+    //     connection: 'postgres://localhost/db_name',
+    //     pool: {
+    //         min: 2,
+    //         max: 10,
+    //     },
+    //     migrations: {
+    //         directory: './db/migrations',
+    //     },
+    // },
 };

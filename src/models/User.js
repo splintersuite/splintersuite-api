@@ -1,5 +1,5 @@
 import { Model } from 'objection';
-import knex from '../db';
+import knex from '../../db/index.js';
 
 Model.knex(knex);
 
@@ -22,4 +22,4 @@ class User extends Model {
     }
 }
 
-module.exports = User;
+export default User;
