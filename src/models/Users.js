@@ -1,4 +1,4 @@
-import Model from '../model';
+import Model from '../../db/Model';
 import UserRentalListings from './UserRentalListings';
 import DailyEarnings from './DailyEarnings';
 import UserRentals from './UserRentals';
@@ -14,7 +14,7 @@ class Users extends Model {
             required: ['created_at', 'username'],
             properties: {
                 id: { type: 'string' },
-                created_at: { type: 'dateTime' },
+                // created_at: { type: 'date' },
                 username: { type: 'string' },
             },
         };

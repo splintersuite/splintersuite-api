@@ -13,6 +13,9 @@ npm start
 # setup db on local
 
 $ psql
-$ \i /Users/jackdealtrey/Documents/code/spl/splintersuite-api/init.sql
+$ \i /Users/jackdealtrey/Documents/code/spl/splintersuite-api/init.sql (your path obv)
+$ \q
 
--   your path obv
+$ node_modules/.bin/knex migrate:latest --esm
+or if you have knex installed
+$ knex migrate:latest

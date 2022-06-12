@@ -1,21 +1,19 @@
-import Model from '../model';
+import Model from '../../db/Model';
 import Users from './Users';
 
-class UserRentals extends Model {
+class UserRentalListings extends Model {
     static get tableName() {
-        return 'user_rentals';
+        return 'user_rental_listings';
     }
 
     static get jsonSchema() {
         return {
             type: 'object',
             required: [
+                'users_id',
                 'created_at',
-                'rented_at',
-                'player_rented_to',
-                'card_detail_id',
-                'level',
                 'card_uid',
+                'level',
                 'rental_id',
                 'price',
             ],
@@ -23,14 +21,10 @@ class UserRentals extends Model {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
                 created_at: { type: 'dateTime' },
-                rented_at: { type: 'dateTime' },
                 cancelled_at: { type: 'dateTime' },
-                player_rented_to: { type: 'string' },
-                card_detail_id: { type: 'string' },
-                level: { type: 'string' },
                 card_uid: { type: 'string' },
+                level: { type: 'integer' },
                 rental_id: { type: 'string' },
-                is_active_yn: { type: 'string' },
                 price: { type: 'number' },
             },
         };
@@ -42,7 +36,7 @@ class UserRentals extends Model {
                 relation: Model.BelongsToOneRelation,
                 modelClass: Users,
                 join: {
-                    from: 'user_rentals.users_id',
+                    from: 'user_rental_listings.users_id',
                     to: 'users.id',
                 },
             },
@@ -50,4 +44,4 @@ class UserRentals extends Model {
     }
 }
 
-export default UserRentals;
+export default UserRentalListings;

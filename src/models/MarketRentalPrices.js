@@ -1,4 +1,4 @@
-import Model from '../model';
+import Model from '../../db/Model';
 
 class MarketRentalPrices extends Model {
     static get tableName() {
