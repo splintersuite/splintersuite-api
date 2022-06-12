@@ -1,0 +1,40 @@
+const Model = require('../schema');
+
+class MarketRentalPrices extends Model {
+    static get tableName() {
+        return 'market_rental_prices';
+    }
+
+    static get jsonSchema() {
+        return {
+            type: 'object',
+            required: [
+                'created_at',
+                'period_start_time',
+                'period_end_time',
+                'card_detail_id',
+                'level',
+                'price_currency',
+                'is_gold_yn',
+            ],
+            properties: {
+                id: { type: 'string' },
+                created_at: { type: 'dateTime' },
+                period_start_time: { type: 'dateTime' },
+                period_end_time: { type: 'dateTime' },
+                card_detail_id: { type: 'string' },
+                level: { type: 'integer' },
+                color: { type: 'string' }, // more like an enumeration
+                price_currency: { type: 'string' },
+                is_gold_yn: { type: 'string' },
+                avg: { type: 'number' },
+                low: { type: 'number' },
+                high: { type: 'number' },
+                median: { type: 'number' },
+                std_dev: { type: 'number' },
+            },
+        };
+    }
+}
+
+export default MarketRentalPrices;
