@@ -11,8 +11,8 @@ class Brawls extends Model {
             required: ['start_date', 'end_date'],
             properties: {
                 id: { type: 'string' },
-                start_date: { type: 'dateTime' },
-                end_date: { type: 'dateTime' },
+                start_date: { type: 'object', format: 'date-time' },
+                end_date: { type: 'object', format: 'date-time' },
             },
         };
     }
