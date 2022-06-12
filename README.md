@@ -19,3 +19,8 @@ $ \q
 $ node_modules/.bin/knex migrate:latest --esm
 or if you have knex installed
 $ knex migrate:latest
+
+# running node index.js
+
+node --experimental-specifier-resolution=node index.js
+to handle for "type": "module", in package.json
