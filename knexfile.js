@@ -10,8 +10,30 @@ export default {
                 rejectUnauthorized: false,
             },
         },
+        pool: {
+            min: 5,
+            max: 30,
+            afterCreate(conn, done) {
+                conn.query('SET timezone="UTC";', (err) => {
+                    if (err) {
+                        // first query failed, return error and don't try to make next query
+                        done(err, conn);
+                    } else {
+                        // do the second query...
+                        conn.query('SELECT 1;', (err) => {
+                            // if err is not falsy, connection is discarded from pool
+                            // if connection acquire was triggered by a query the error is passed to query promise
+                            done(err, conn);
+                        });
+                    }
+                });
+            },
+        },
         migrations: {
             directory: './db/migrations',
+        },
+        seeds: {
+            directory: './db/seeds',
         },
     },
     // staging: {
