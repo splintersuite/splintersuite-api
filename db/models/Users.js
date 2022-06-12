@@ -1,7 +1,7 @@
-const Model = require('../schema');
-const UserRentalListings = require('./UserRentalListings');
-const DailyEarnings = require('./DailyEarnings');
-const UserRentals = require('./UserRentals');
+import Model from '../model';
+import UserRentalListings from './UserRentalListings';
+import DailyEarnings from './DailyEarnings';
+import UserRentals from './UserRentals';
 
 class Users extends Model {
     static get tableName() {

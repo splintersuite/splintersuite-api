@@ -6,9 +6,9 @@ export default {
         client: 'pg',
         connection: {
             connectionString: process.env.DB_CONNECTION,
-            ssl: {
-                rejectUnauthorized: false,
-            },
+            // ssl: {
+            //     rejectUnauthorized: false,
+            // },
         },
         pool: {
             min: 5,

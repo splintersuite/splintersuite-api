@@ -1,4 +1,4 @@
-const Model = require('../schema');
+import Model from '../model';
 
 class MarketRentalListings extends Model {
     static get tableName() {
