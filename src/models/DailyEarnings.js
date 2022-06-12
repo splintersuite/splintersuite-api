@@ -19,7 +19,7 @@ class DailyEarnings extends Model {
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
-                timestamp: { type: 'dateTime' },
+                timestamp: { type: 'object', format: 'date-time' },
                 dec_start: { type: 'number' },
                 dec_end: { type: 'number' },
                 num_rentals: { type: 'number' },

@@ -12,7 +12,7 @@ class Installs extends Model {
             properties: {
                 id: { type: 'string' },
                 app_version: { type: 'number' },
-                install_date: { type: 'dateTime' },
+                install_date: { type: 'object', format: 'date-time' },
             },
         };
     }

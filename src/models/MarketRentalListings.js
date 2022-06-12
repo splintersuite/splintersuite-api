@@ -11,8 +11,8 @@ class MarketRentalListings extends Model {
             required: ['created_at', 'card_detail_id', 'level', 'num_listings'],
             properties: {
                 id: { type: 'string' },
-                created_at: { type: 'dateTime' },
-                timestamp: { type: 'dateTime' },
+                created_at: { type: 'object', format: 'date-time' },
+                timestamp: { type: 'object', format: 'date-time' },
                 card_detail_id: { type: 'integer' },
                 level: { type: 'integer' },
                 num_listings: { type: 'integer' },
