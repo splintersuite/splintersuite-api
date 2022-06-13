@@ -1,7 +1,8 @@
-import { decrypt } from '../util/crypto.js';
+import decrypt from '../util/crypto';
 
 const checkSignature = (req, res, next) => {
     try {
+        console.log('req.headers', req.headers);
         if (
             req.headers?.ss_access_token_iv &&
             req.headers?.ss_access_token_content
@@ -12,11 +13,12 @@ const checkSignature = (req, res, next) => {
                     content: req.headers.ss_access_token_content,
                 }) === process.env.SECRET_MESSAGE
             ) {
+                // authenticated
                 next();
             }
         }
         // unauthenticated
-        res.send(403);
+        res.sendStatus(403);
     } catch (err) {
         next(err);
     }
