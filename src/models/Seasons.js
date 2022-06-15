@@ -13,6 +13,7 @@ class Seasons extends Model {
                 id: { type: 'string' },
                 start_date: { type: 'object', format: 'date-time' },
                 end_date: { type: 'object', format: 'date-time' },
+                name: { type: 'string' },
             },
         };
     }

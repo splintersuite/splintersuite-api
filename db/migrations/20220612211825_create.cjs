@@ -23,6 +23,7 @@ exports.up = function (knex) {
                 // lower xp cards in the same level because the chance of level up
                 t.string('price_currency').notNullable();
                 t.string('is_gold_yn').notNullable(); // will be either Y or N rather than bool
+                t.string('aggregaton_type').notNullable(); // 'ALL_OPEN_TRADES', 'TRADES_DURING_PERIOD'
                 t.decimal('avg').nullable();
                 t.decimal('low').nullable();
                 t.decimal('high').nullable();
@@ -70,7 +71,7 @@ exports.up = function (knex) {
                 t.dateTime('rented_at').nullable();
                 t.dateTime('cancelled_at').nullable();
                 t.string('player_rented_to').nullable(); // good to have to identify noobs
-                t.string('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
+                t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
                 t.string('level').notNullable();
                 t.string('card_uid').notNullable();
                 t.string('rental_id').notNullable(); // assigned by splinterlands
@@ -100,11 +101,13 @@ exports.up = function (knex) {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
+                t.string('name').nullable();
             })
             .createTable('seasons', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
+                t.string('name').nullable();
             })
             .createTable('installs', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -123,10 +126,10 @@ exports.down = function (knex) {
     return knex.schema
         .dropTableIfExists('market_rental_prices')
         .dropTableIfExists('rental_listings')
-        .dropTableIfExists('users')
         .dropTableIfExists('daily_earnings')
         .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('user_rentals')
+        .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')
         .dropTableIfExists('installs');
