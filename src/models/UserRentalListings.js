@@ -1,5 +1,5 @@
-import Model from '../../db/Model';
-import Users from './Users';
+import Model from '../../db/model.js';
+import Users from './Users.js';
 
 class UserRentalListings extends Model {
     static get tableName() {

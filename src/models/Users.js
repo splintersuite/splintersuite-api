@@ -1,7 +1,7 @@
-import Model from '../../db/Model';
-import UserRentalListings from './UserRentalListings';
-import DailyEarnings from './DailyEarnings';
-import Invoices from './Invoices';
+import Model from '../../db/model.js';
+import UserRentalListings from './UserRentalListings.js';
+import DailyEarnings from './DailyEarnings.js';
+import Invoices from './Invoices.js';
 
 class Users extends Model {
     static get tableName() {

@@ -1,4 +1,4 @@
-import decrypt from '../util/crypto';
+import decrypt from '../util/crypto.js';
 
 const checkSignature = (req, res, next) => {
     if (
@@ -12,7 +12,7 @@ const checkSignature = (req, res, next) => {
             }) === process.env.SECRET_MESSAGE
         ) {
             // authenticated
-            next();
+            return next();
         }
     }
     // unauthenticated

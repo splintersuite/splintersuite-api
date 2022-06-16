@@ -9,11 +9,12 @@ router.get('/', async (req, res) => {
     res.send(users);
 });
 
-router.get('/getUserData', async (req, res) => {
-    const { username } = req.query;
-    const user = await Users.query().where({ username });
-    console.log('user', user);
-    res.send(user);
+router.get('/:username', async (req, res) => {
+    const { username } = req.params;
+    // const user = await Users.query().where({ username });
+    // console.log('user', user);
+    // res.send(user);
+    res.send({ message: 'test' });
 });
 
 router.get('/:id', async (req, res) => {
