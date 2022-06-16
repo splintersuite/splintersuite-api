@@ -119,12 +119,24 @@ exports.up = function (knex) {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
-                t.string('name').nullable();
+                t.string('season_name').nullable();
             })
             .createTable('installs', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('app_version').notNullable();
                 t.dateTime('install_date').notNullable();
+            })
+            .createTable('invoices', (t) => {
+                t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+                t.uuid('user_id').references('users.id').notNullable();
+                t.uuid('season_id').references('seasons.id').notNullable();
+                t.dateTime('discounted_due_at').notNullable();
+                t.dateTime('created_at').notNullable();
+                t.dateTime('due_at').notNullable();
+                t.dateTime('paid_at').nullable();
+                t.decimal('amount_due').notNullable();
+                t.string('tx_id').nullable();
+                t.string('season_name').nullable();
             })
     );
 };
@@ -145,5 +157,6 @@ exports.down = function (knex) {
         .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')
-        .dropTableIfExists('installs');
+        .dropTableIfExists('installs')
+        .dropTableIfExists('invoices');
 };
