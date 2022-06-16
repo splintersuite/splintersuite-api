@@ -6,10 +6,10 @@ import MarketRentalPrices from '../models/MarketRentalPrices.js';
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
 const collectData = async () => {
-    const cards = await getCardDetail();
-
+    const cardsDetails = await getCardDetail();
     const now = new Date();
-    for (const card of cards) {
+
+    for (const card of cardsDetails) {
         const activeTrades = await axios.get(
             `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}`
         );
@@ -57,31 +57,45 @@ const collectData = async () => {
                 });
             }
         });
-
+        await MarketRentalPrices.query().del();
         // do math
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
         const twelveHoursAgoTime = twelveHoursAgo.getTime();
         const uploadArr = [];
         for (const level of Object.keys(trades)) {
-            for (const type of Object.keys(trades[level])) {
+            for (const cardType of Object.keys(trades[level])) {
                 // average of everything on loan...
-                const twelveHoursArr = trades[level][type]
+                const twelveHoursArr = trades[level][cardType]
                     .filter((trade) => {
                         new Date(trade.rental_date).getTime() >
                             twelveHoursAgoTime;
                     })
                     .map(({ price }) => price);
-                const allArr = trades[level][type].map(({ price }) => price);
+                const allArr = trades[level][cardType].map(
+                    ({ price }) => price
+                );
+                const stdDevAll = mathFncs.standardDeviation(allArr);
+                const medianAll = mathFncs.median(allArr);
+                const meanAll = mathFncs.mean(allArr);
+                const lowAll = mathFncs.min(allArr);
+                const highAll = mathFncs.max(allArr);
+
+                const stdDevTwelve = mathFncs.standardDeviation(twelveHoursArr);
+                const medianTwelve = mathFncs.median(twelveHoursArr);
+                const meanTwelve = mathFncs.mean(twelveHoursArr);
+                const lowTwelve = mathFncs.min(twelveHoursArr);
+                const highTwelve = mathFncs.max(twelveHoursArr);
+
                 uploadArr.push({
                     created_at: now,
                     card_detail_id: card.id,
                     level: Number(level.split('-')[1]),
-                    avg: mathFncs.mean(allArr),
-                    min: mathFncs.min(allArr),
-                    max: mathFncs.max(allArr),
-                    stdDev: mathFncs.standardDeviation(allArr),
-                    median: mathFncs.median(allArr),
-                    is_gold_yn: type === 'gold' ? 'Y' : 'N',
+                    avg: Number.isFinite(meanAll) ? meanAll : NaN,
+                    low: Number.isFinite(lowAll) ? lowAll : NaN,
+                    high: Number.isFinite(highAll) ? highAll : NaN,
+                    std_dev: Number.isFinite(stdDevAll) ? stdDevAll : NaN,
+                    median: Number.isFinite(medianAll) ? medianAll : NaN,
+                    is_gold_yn: cardType === 'gold' ? 'Y' : 'N',
                     price_currency: 'DEC',
                     period_start_time: twelveHoursAgo,
                     period_end_time: now,
@@ -91,42 +105,12 @@ const collectData = async () => {
                     created_at: now,
                     card_detail_id: card.id,
                     level: Number(level.split('-')[1]),
-                    avg: mathFncs.mean(twelveHoursArr),
-                    min: mathFncs.min(twelveHoursArr),
-                    max: mathFncs.max(twelveHoursArr),
-                    stdDev: mathFncs.standardDeviation(twelveHoursArr),
-                    median: mathFncs.median(twelveHoursArr),
-                    is_gold_yn: type === 'gold' ? 'Y' : 'N',
-                    price_currency: 'DEC',
-                    period_start_time: twelveHoursAgo,
-                    period_end_time: now,
-                    aggregaton_type: TRADES_DURING_PERIOD,
-                });
-                console.log({
-                    created_at: now,
-                    card_detail_id: card.card_detail_id,
-                    level: Number(level.split('-')[1]),
-                    avg: mathFncs.mean(allArr),
-                    min: mathFncs.min(allArr),
-                    max: mathFncs.max(allArr),
-                    stdDev: mathFncs.standardDeviation(allArr),
-                    median: mathFncs.median(allArr),
-                    is_gold_yn: type === 'gold' ? 'Y' : 'N',
-                    price_currency: 'DEC',
-                    period_start_time: twelveHoursAgo,
-                    period_end_time: now,
-                    aggregaton_type: ALL_OPEN_TRADES,
-                });
-                console.log({
-                    created_at: now,
-                    card_detail_id: card.card_detail_id,
-                    level,
-                    avg: mathFncs.mean(twelveHoursArr),
-                    min: mathFncs.min(twelveHoursArr),
-                    max: mathFncs.max(twelveHoursArr),
-                    stdDev: mathFncs.standardDeviation(twelveHoursArr),
-                    median: mathFncs.median(twelveHoursArr),
-                    is_gold_yn: type === 'gold' ? 'Y' : 'N',
+                    avg: Number.isFinite(meanTwelve) ? meanTwelve : NaN,
+                    low: Number.isFinite(lowTwelve) ? lowTwelve : NaN,
+                    high: Number.isFinite(highTwelve) ? highTwelve : NaN,
+                    std_dev: Number.isFinite(stdDevTwelve) ? stdDevTwelve : NaN,
+                    median: Number.isFinite(medianTwelve) ? medianTwelve : NaN,
+                    is_gold_yn: cardType === 'gold' ? 'Y' : 'N',
                     price_currency: 'DEC',
                     period_start_time: twelveHoursAgo,
                     period_end_time: now,
@@ -135,7 +119,6 @@ const collectData = async () => {
             }
         }
         await MarketRentalPrices.query().insert(uploadArr);
-        process.exit();
         // upload to DB
     }
 };

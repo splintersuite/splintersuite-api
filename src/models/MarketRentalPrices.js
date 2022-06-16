@@ -29,11 +29,11 @@ class MarketRentalPrices extends Model {
                 price_currency: { type: 'string' },
                 is_gold_yn: { type: 'string' },
                 aggregaton_type: { type: 'string' },
-                // avg: { type: 'number' },
-                // low: { type: 'number' },
-                // high: { type: 'number' },
-                // median: { type: 'number' },
-                // std_dev: { type: 'number' },
+                avg: { type: 'number' },
+                low: { type: 'number' },
+                high: { type: 'number' },
+                median: { type: 'number' },
+                std_dev: { type: 'number' },
             },
         };
     }

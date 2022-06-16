@@ -29,7 +29,13 @@ exports.up = function (knex) {
                 t.decimal('high').nullable();
                 t.decimal('median').nullable();
                 t.decimal('std_dev').nullable();
-                t.unique(['created_at', 'card_detail_id', 'level']);
+                t.unique([
+                    'created_at',
+                    'aggregaton_type',
+                    'card_detail_id',
+                    'level',
+                    'is_gold_yn',
+                ]);
             })
             .createTable('market_rental_listings', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -40,12 +46,18 @@ exports.up = function (knex) {
                 t.integer('card_detail_id').notNullable();
                 t.integer('level').notNullable();
                 t.integer('num_listings').notNullable();
+                t.string('is_gold_yn').notNullable();
                 t.decimal('avg').nullable();
                 t.decimal('low').nullable();
                 t.decimal('high').nullable();
                 t.decimal('median').nullable();
                 t.decimal('std_dev').nullable();
-                t.unique(['created_at', 'card_detail_id', 'level']);
+                t.unique([
+                    'created_at',
+                    'card_detail_id',
+                    'level',
+                    'is_gold_yn',
+                ]);
             })
             .createTable('users', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -125,6 +137,7 @@ exports.down = function (knex) {
     console.log('rolling back _create migration');
     return knex.schema
         .dropTableIfExists('market_rental_prices')
+        .dropTableIfExists('market_rental_listings')
         .dropTableIfExists('rental_listings')
         .dropTableIfExists('daily_earnings')
         .dropTableIfExists('user_rental_listings')
