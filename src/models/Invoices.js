@@ -1,6 +1,6 @@
-import Model from '../../db/Model';
-import Users from './Users';
-import Seasons from './Seasons';
+import Model from '../../db/model.js';
+import Users from './Users.js';
+import Seasons from './Seasons.js';
 
 class Invoices extends Model {
     static get tableName() {

@@ -1,4 +1,4 @@
-import knexInstance from './index';
+import knexInstance from './index.js';
 import addFormats from 'ajv-formats';
 
 import { Model, AjvValidator } from 'objection';

@@ -1,5 +1,5 @@
-import Model from '../../db/Model';
-import Invoices from './Invoices';
+import Model from '../../db/model.js';
+import Invoices from './Invoices.js';
 
 class Seasons extends Model {
     static get tableName() {
