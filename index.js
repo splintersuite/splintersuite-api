@@ -7,6 +7,7 @@ import morgan from 'morgan';
 
 import users from './src/routes/users.js';
 import rentals from './src/routes/rentals.js';
+import invoices from './src/routes/invoices.js';
 import util from './src/util/index.js';
 import checkSignature from './src/middlewares/checkSignature.js';
 
@@ -21,6 +22,8 @@ app.use(morgan('combined'));
 
 app.use('/api/users', users);
 app.use('/api/rentals', rentals);
+app.use('/api/invoices', invoices);
+
 app.use(util.logErrors);
 
 app.listen(PORT, () => {

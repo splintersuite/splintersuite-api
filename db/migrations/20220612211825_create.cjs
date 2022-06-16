@@ -60,10 +60,13 @@ exports.up = function (knex) {
                 ]);
             })
             .createTable('users', (t) => {
+                // t.dateTime('created_at').notNullable();
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-                t.dateTime('created_at').notNullable();
                 t.string('username').notNullable();
                 t.unique(['username']);
+                t.timestamp('created_at')
+                    .notNullable()
+                    .defaultTo(knex.fn.now());
                 // maybe add email to this??
                 // or the user just logs in their with hive keychain.
             })
@@ -113,29 +116,40 @@ exports.up = function (knex) {
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
                 t.string('name').nullable();
+                t.timestamp('created_at')
+                    .notNullable()
+                    .defaultTo(knex.fn.now());
             })
             .createTable('seasons', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
-                t.string('season_name').nullable();
+                t.string('name').nullable();
+                t.timestamp('created_at')
+                    .notNullable()
+                    .defaultTo(knex.fn.now());
             })
             .createTable('installs', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('app_version').notNullable();
                 t.dateTime('install_date').notNullable();
+                t.timestamp('created_at')
+                    .notNullable()
+                    .defaultTo(knex.fn.now());
             })
             .createTable('invoices', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.uuid('user_id').references('users.id').notNullable();
                 t.uuid('season_id').references('seasons.id').notNullable();
                 t.dateTime('discounted_due_at').notNullable();
-                t.dateTime('created_at').notNullable();
                 t.dateTime('due_at').notNullable();
                 t.dateTime('paid_at').nullable();
                 t.decimal('amount_due').notNullable();
                 t.string('tx_id').nullable();
                 t.string('season_name').nullable();
+                t.timestamp('created_at')
+                    .notNullable()
+                    .defaultTo(knex.fn.now());
             })
     );
 };
