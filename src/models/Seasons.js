@@ -1,4 +1,5 @@
 import Model from '../../db/Model';
+import Invoices from './Invoices';
 
 class Seasons extends Model {
     static get tableName() {
@@ -13,6 +14,20 @@ class Seasons extends Model {
                 id: { type: 'string' },
                 start_date: { type: 'object', format: 'date-time' },
                 end_date: { type: 'object', format: 'date-time' },
+                name: { type: 'string' },
+            },
+        };
+    }
+
+    static get relationMappings() {
+        return {
+            seasons_invoices: {
+                relation: Model.HasManyRelation,
+                modelClass: Invoices,
+                join: {
+                    from: 'seasons.id',
+                    to: 'invoices.seasons_id',
+                },
             },
         };
     }

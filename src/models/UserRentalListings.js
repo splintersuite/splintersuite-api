@@ -26,7 +26,7 @@ class UserRentalListings extends Model {
                 cancelled_at: { type: 'object', format: 'date-time' },
                 card_uid: { type: 'string' },
                 player_rented_to: { type: 'string' },
-                card_detail_id: { type: 'string' },
+                card_detail_id: { type: 'integer' },
                 rental_is_active_yn: { type: 'string' },
                 level: { type: 'integer' },
                 rental_id: { type: 'string' },

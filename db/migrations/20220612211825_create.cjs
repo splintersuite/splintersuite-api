@@ -23,12 +23,19 @@ exports.up = function (knex) {
                 // lower xp cards in the same level because the chance of level up
                 t.string('price_currency').notNullable();
                 t.string('is_gold_yn').notNullable(); // will be either Y or N rather than bool
+                t.string('aggregaton_type').notNullable(); // 'ALL_OPEN_TRADES', 'TRADES_DURING_PERIOD'
                 t.decimal('avg').nullable();
                 t.decimal('low').nullable();
                 t.decimal('high').nullable();
                 t.decimal('median').nullable();
                 t.decimal('std_dev').nullable();
-                t.unique(['created_at', 'card_detail_id', 'level']);
+                t.unique([
+                    'created_at',
+                    'aggregaton_type',
+                    'card_detail_id',
+                    'level',
+                    'is_gold_yn',
+                ]);
             })
             .createTable('market_rental_listings', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -39,12 +46,18 @@ exports.up = function (knex) {
                 t.integer('card_detail_id').notNullable();
                 t.integer('level').notNullable();
                 t.integer('num_listings').notNullable();
+                t.string('is_gold_yn').notNullable();
                 t.decimal('avg').nullable();
                 t.decimal('low').nullable();
                 t.decimal('high').nullable();
                 t.decimal('median').nullable();
                 t.decimal('std_dev').nullable();
-                t.unique(['created_at', 'card_detail_id', 'level']);
+                t.unique([
+                    'created_at',
+                    'card_detail_id',
+                    'level',
+                    'is_gold_yn',
+                ]);
             })
             .createTable('users', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -70,7 +83,7 @@ exports.up = function (knex) {
                 t.dateTime('rented_at').nullable();
                 t.dateTime('cancelled_at').nullable();
                 t.string('player_rented_to').nullable(); // good to have to identify noobs
-                t.string('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
+                t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
                 t.string('level').notNullable();
                 t.string('card_uid').notNullable();
                 t.string('rental_id').notNullable(); // assigned by splinterlands
@@ -100,16 +113,30 @@ exports.up = function (knex) {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
+                t.string('name').nullable();
             })
             .createTable('seasons', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('start_date').notNullable();
                 t.dateTime('end_date').notNullable();
+                t.string('season_name').nullable();
             })
             .createTable('installs', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.dateTime('app_version').notNullable();
                 t.dateTime('install_date').notNullable();
+            })
+            .createTable('invoices', (t) => {
+                t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+                t.uuid('user_id').references('users.id').notNullable();
+                t.uuid('season_id').references('seasons.id').notNullable();
+                t.dateTime('discounted_due_at').notNullable();
+                t.dateTime('created_at').notNullable();
+                t.dateTime('due_at').notNullable();
+                t.dateTime('paid_at').nullable();
+                t.decimal('amount_due').notNullable();
+                t.string('tx_id').nullable();
+                t.string('season_name').nullable();
             })
     );
 };
@@ -122,12 +149,14 @@ exports.down = function (knex) {
     console.log('rolling back _create migration');
     return knex.schema
         .dropTableIfExists('market_rental_prices')
+        .dropTableIfExists('market_rental_listings')
         .dropTableIfExists('rental_listings')
-        .dropTableIfExists('users')
         .dropTableIfExists('daily_earnings')
         .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('user_rentals')
+        .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')
-        .dropTableIfExists('installs');
+        .dropTableIfExists('installs')
+        .dropTableIfExists('invoices');
 };
