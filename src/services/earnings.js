@@ -23,7 +23,7 @@ const calcAggregatedEarnings = async ({ users_id }) => {
 const calcDailyEarnings = async ({ users_id }) => {
     const rentals = await UserRentalListings.query().where({
         users_id,
-        rental_active_yn: 'Y',
+        is_rental_active: true,
     });
 
     return {

@@ -27,7 +27,7 @@ class UserRentalListings extends Model {
                 card_uid: { type: 'string' },
                 player_rented_to: { type: 'string' },
                 card_detail_id: { type: 'integer' },
-                rental_is_active_yn: { type: 'string' },
+                is_rental_active: { type: 'boolean' },
                 level: { type: 'integer' },
                 rental_id: { type: 'string' },
                 price: { type: 'number' },
