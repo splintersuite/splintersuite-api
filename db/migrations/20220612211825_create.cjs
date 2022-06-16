@@ -71,10 +71,9 @@ exports.up = function (knex) {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
                 t.uuid('users_id').references('users.id').notNullable();
                 t.dateTime('timestamp').notNullable();
-                t.decimal('dec_start').notNullable();
-                t.decimal('dec_end').notNullable();
+                t.decimal('earnings').notNullable();
                 t.integer('num_rentals').notNullable();
-                t.decimal('return').notNullable(); // expressed as a decimal dec_end/dec_start - 1
+                // should add market rate for that card in the future...
             })
             .createTable('user_rental_listings', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -154,9 +153,9 @@ exports.down = function (knex) {
         .dropTableIfExists('daily_earnings')
         .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('user_rentals')
+        .dropTableIfExists('invoices')
         .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')
-        .dropTableIfExists('installs')
-        .dropTableIfExists('invoices');
+        .dropTableIfExists('installs');
 };
