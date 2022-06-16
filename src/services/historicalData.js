@@ -44,20 +44,18 @@ const collectData = async () => {
             }
 
             const goldKey = trade.gold ? 'gold' : 'regular';
-            if (trade.payment_currency === 'DEC') {
-                trades[levelString][goldKey].push({
-                    rentalId: trade.rental_tx,
-                    price: Number(trade.buy_price),
-                    feePct: Number(trade.fee_percent),
-                    paymentCurrency: trade.payment_currency,
-                    rentalDate: trade.rental_date,
-                    rentalDays: trade.rental_days,
-                    isInLastTwelveHours:
-                        Math.abs(now - trade.rental_date) / 360000 < 12,
-                });
-            }
+            trades[levelString][goldKey].push({
+                rentalId: trade.rental_tx,
+                price: Number(trade.buy_price),
+                feePct: Number(trade.fee_percent),
+                paymentCurrency: trade.payment_currency,
+                rentalDate: trade.rental_date,
+                rentalDays: trade.rental_days,
+                isInLastTwelveHours:
+                    Math.abs(now - trade.rental_date) / 360000 < 12,
+            });
         });
-        await MarketRentalPrices.query().del();
+
         // do math
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
         const twelveHoursAgoTime = twelveHoursAgo.getTime();
