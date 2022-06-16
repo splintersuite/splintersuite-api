@@ -15,7 +15,7 @@ class MarketRentalPrices extends Model {
                 'card_detail_id',
                 'level',
                 'price_currency',
-                'is_gold_yn',
+                'is_gold',
                 'aggregaton_type',
             ],
             properties: {
@@ -27,7 +27,7 @@ class MarketRentalPrices extends Model {
                 level: { type: 'integer' },
                 color: { type: 'string' }, // more like an enumeration
                 price_currency: { type: 'string' },
-                is_gold_yn: { type: 'string' },
+                is_gold: { type: 'boolean' },
                 aggregaton_type: { type: 'string' },
                 avg: { type: 'number' },
                 low: { type: 'number' },

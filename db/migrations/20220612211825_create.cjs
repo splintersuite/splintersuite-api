@@ -22,7 +22,7 @@ exports.up = function (knex) {
                 // it would be interesting to see if high xp cards fetch higher rates than
                 // lower xp cards in the same level because the chance of level up
                 t.string('price_currency').notNullable();
-                t.string('is_gold_yn').notNullable(); // will be either Y or N rather than bool
+                t.boolean('is_gold').notNullable(); // will be either Y or N rather than bool
                 t.string('aggregaton_type').notNullable(); // 'ALL_OPEN_TRADES', 'TRADES_DURING_PERIOD'
                 t.decimal('avg').nullable();
                 t.decimal('low').nullable();
@@ -34,7 +34,7 @@ exports.up = function (knex) {
                     'aggregaton_type',
                     'card_detail_id',
                     'level',
-                    'is_gold_yn',
+                    'is_gold',
                 ]);
             })
             .createTable('market_rental_listings', (t) => {
@@ -46,18 +46,13 @@ exports.up = function (knex) {
                 t.integer('card_detail_id').notNullable();
                 t.integer('level').notNullable();
                 t.integer('num_listings').notNullable();
-                t.string('is_gold_yn').notNullable();
+                t.boolean('is_gold').notNullable();
                 t.decimal('avg').nullable();
                 t.decimal('low').nullable();
                 t.decimal('high').nullable();
                 t.decimal('median').nullable();
                 t.decimal('std_dev').nullable();
-                t.unique([
-                    'created_at',
-                    'card_detail_id',
-                    'level',
-                    'is_gold_yn',
-                ]);
+                t.unique(['created_at', 'card_detail_id', 'level', 'is_gold']);
             })
             .createTable('users', (t) => {
                 t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -87,7 +82,7 @@ exports.up = function (knex) {
                 t.string('card_uid').notNullable();
                 t.string('rental_id').notNullable(); // assigned by splinterlands
                 t.decimal('price').notNullable();
-                t.string('rental_is_active_yn').notNullable().defaultTo('N');
+                t.boolean('is_rental_active').notNullable().defaultTo(false);
                 t.unique(['created_at', 'card_uid']);
             })
             // .createTable('user_rentals', (t) => {
@@ -103,7 +98,7 @@ exports.up = function (knex) {
             //     t.string('rental_id').notNullable();
             //     // shouldn't always reference user_rental_listings
             //     // in the case that we are hitting bids instead of offering
-            //     t.string('is_active_yn').notNullable().defaultTo('Y');
+            //     t.string('is_active').notNullable().defaultTo('Y');
             //     t.decimal('price').notNullable();
             //     // handle for updated prices mid rental?  is that a new rental?
             //     t.unique(['users_id', 'created_at', 'card_uid']);
