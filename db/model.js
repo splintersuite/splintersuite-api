@@ -11,6 +11,7 @@ class BaseModel extends Model {
             },
             options: {
                 allErrors: true,
+                strictNumbers: false,
                 validateSchema: false,
                 ownProperties: true,
                 v5: true,

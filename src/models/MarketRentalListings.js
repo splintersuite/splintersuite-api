@@ -8,7 +8,12 @@ class MarketRentalListings extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['created_at', 'card_detail_id', 'level', 'num_listings'],
+            required: [
+                'created_at',
+                'card_detail_id',
+                'level',
+                'num_listings, is_gold_yn',
+            ],
             properties: {
                 id: { type: 'string' },
                 created_at: { type: 'object', format: 'date-time' },
@@ -16,6 +21,7 @@ class MarketRentalListings extends Model {
                 card_detail_id: { type: 'integer' },
                 level: { type: 'integer' },
                 num_listings: { type: 'integer' },
+                is_gold_yn: { type: 'string' },
                 avg: { type: 'number' },
                 low: { type: 'number' },
                 high: { type: 'number' },
