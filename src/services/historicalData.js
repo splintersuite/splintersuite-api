@@ -118,8 +118,9 @@ const collectData = async () => {
                 });
             }
         }
-        await MarketRentalPrices.query().insert(uploadArr);
         // upload to DB
+        // rate limit this somehow
+        await MarketRentalPrices.query().insert(uploadArr);
     }
 };
 
@@ -129,7 +130,5 @@ const getCardDetail = async () => {
     );
     return cards.data;
 };
-
-collectData();
 
 export default { collectData, getCardDetail };
