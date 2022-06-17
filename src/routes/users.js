@@ -1,12 +1,17 @@
 import express from 'express';
 
 import Users from '../models/Users.js';
-import Invoices from '../models/Invoices.js';
+import { getUserInfo } from '../controllers/User.js';
 
 const router = express.Router();
 
-router.get('/:username', async (req, res) => {
-    const { username } = req.params;
+router.get('/', async (req, res) => {
+    const users = await Users.query();
+    console.log(users);
+    res.send(users);
+});
+
+router.get('/:username', getUserInfo);
 
     let [user] = await Users.query().where({ username });
 

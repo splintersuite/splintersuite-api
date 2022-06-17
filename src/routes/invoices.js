@@ -1,16 +1,10 @@
 import express from 'express';
-
-import Invoices from '../models/Invoices.js';
+import { payInvoice, createInvoice } from '../controllers/Invoices';
 
 const router = express.Router();
 
-router.post('/:id', async (req, res, next) => {
-    const { id } = req.params;
-    const { paid_at } = req.body;
+router.post('/:id', payInvoice);
 
-    await Invoices.query().where({ id }).update({ paid_at });
-
-    res.sendStatus(200);
-});
+router.get('/:username', createInvoice);
 
 export default router;
