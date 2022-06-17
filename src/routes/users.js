@@ -30,7 +30,7 @@ router.get('/:username', async (req, res) => {
 
     const invoices = await Invoices.query()
         .join('seasons', { 'invoices.season_id': 'seasons.id' })
-        .select('invoices.*', 'seasons.name')
+        .select('invoices.*', 'seasons.season_name')
         .where({ user_id: user.id });
     user.invoices = invoices || [];
 

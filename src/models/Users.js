@@ -2,6 +2,7 @@ import Model from '../../db/model.js';
 import UserRentalListings from './UserRentalListings.js';
 import DailyEarnings from './DailyEarnings.js';
 import Invoices from './Invoices.js';
+import UserRentals from './UserRentals.js';
 
 class Users extends Model {
     static get tableName() {
@@ -44,6 +45,14 @@ class Users extends Model {
                 join: {
                     from: 'users.id',
                     to: 'invoices.users_id',
+                },
+            },
+            users_users_rentals: {
+                relation: Model.HasManyRelation,
+                modelClass: UserRentals,
+                join: {
+                    from: 'users.id',
+                    to: 'user_rentals.users_id',
                 },
             },
         };

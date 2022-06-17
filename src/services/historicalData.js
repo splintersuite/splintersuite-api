@@ -44,20 +44,18 @@ const collectData = async () => {
             }
 
             const goldKey = trade.gold ? 'gold' : 'regular';
-            if (trade.payment_currency === 'DEC') {
-                trades[levelString][goldKey].push({
-                    rentalId: trade.rental_tx,
-                    price: Number(trade.buy_price),
-                    feePct: Number(trade.fee_percent),
-                    paymentCurrency: trade.payment_currency,
-                    rentalDate: trade.rental_date,
-                    rentalDays: trade.rental_days,
-                    isInLastTwelveHours:
-                        Math.abs(now - trade.rental_date) / 360000 < 12,
-                });
-            }
+            trades[levelString][goldKey].push({
+                rentalId: trade.rental_tx,
+                price: Number(trade.buy_price),
+                feePct: Number(trade.fee_percent),
+                paymentCurrency: trade.payment_currency,
+                rentalDate: trade.rental_date,
+                rentalDays: trade.rental_days,
+                isInLastTwelveHours:
+                    Math.abs(now - trade.rental_date) / 360000 < 12,
+            });
         });
-        await MarketRentalPrices.query().del();
+
         // do math
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
         const twelveHoursAgoTime = twelveHoursAgo.getTime();
@@ -95,7 +93,7 @@ const collectData = async () => {
                     high: Number.isFinite(highAll) ? highAll : NaN,
                     std_dev: Number.isFinite(stdDevAll) ? stdDevAll : NaN,
                     median: Number.isFinite(medianAll) ? medianAll : NaN,
-                    is_gold_yn: cardType === 'gold' ? 'Y' : 'N',
+                    is_gold: cardType === 'gold',
                     price_currency: 'DEC',
                     period_start_time: twelveHoursAgo,
                     period_end_time: now,
@@ -110,7 +108,7 @@ const collectData = async () => {
                     high: Number.isFinite(highTwelve) ? highTwelve : NaN,
                     std_dev: Number.isFinite(stdDevTwelve) ? stdDevTwelve : NaN,
                     median: Number.isFinite(medianTwelve) ? medianTwelve : NaN,
-                    is_gold_yn: cardType === 'gold' ? 'Y' : 'N',
+                    is_gold: cardType === 'gold',
                     price_currency: 'DEC',
                     period_start_time: twelveHoursAgo,
                     period_end_time: now,

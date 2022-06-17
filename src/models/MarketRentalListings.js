@@ -12,7 +12,7 @@ class MarketRentalListings extends Model {
                 'created_at',
                 'card_detail_id',
                 'level',
-                'num_listings, is_gold_yn',
+                'num_listings, is_gold',
             ],
             properties: {
                 id: { type: 'string' },
@@ -21,7 +21,7 @@ class MarketRentalListings extends Model {
                 card_detail_id: { type: 'integer' },
                 level: { type: 'integer' },
                 num_listings: { type: 'integer' },
-                is_gold_yn: { type: 'string' },
+                is_gold: { type: 'boolean' },
                 avg: { type: 'number' },
                 low: { type: 'number' },
                 high: { type: 'number' },

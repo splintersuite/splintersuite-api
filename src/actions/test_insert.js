@@ -10,6 +10,7 @@ const insertUser = async ({ username }) => {
     const res = await Users.query()
         .insert({
             username,
+            created_at: now,
         })
         .catch((err) => {
             console.log(err);
