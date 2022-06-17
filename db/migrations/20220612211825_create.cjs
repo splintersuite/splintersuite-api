@@ -72,7 +72,8 @@ exports.up = function (knex) {
         .createTable('user_rental_listings', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            t.dateTime('created_at').notNullable();
+            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
+            t.dateTime('sl_created_at').notNullable();
             t.dateTime('cancelled_at').nullable();
             t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
             t.string('level').notNullable();
@@ -81,7 +82,7 @@ exports.up = function (knex) {
             t.decimal('price').notNullable();
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.boolean('is_gold').notNullable();
-            t.unique(['created_at', 'card_uid']);
+            t.unique(['created_at', 'card_uid']); // TNT NOTE: I think we need to make this a larger composite key imo
         })
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));

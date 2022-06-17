@@ -9,14 +9,14 @@ class MarketRentalListings extends Model {
         return {
             type: 'object',
             required: [
-                'created_at',
+                'sl_created_at',
                 'card_detail_id',
                 'level',
                 'num_listings, is_gold',
             ],
             properties: {
                 id: { type: 'string' },
-                created_at: { type: 'object', format: 'date-time' },
+                sl_created_at: { type: 'object', format: 'date-time' },
                 timestamp: { type: 'object', format: 'date-time' },
                 card_detail_id: { type: 'integer' },
                 level: { type: 'integer' },
