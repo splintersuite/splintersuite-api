@@ -1,5 +1,5 @@
-import { createAndReturnUser, getUser } from '../actions/createAndGetUser';
-import { getRecentSeasonInvoicesForUsersId } from '../actions/getAndCreateInvoices';
+import { createAndReturnUser, getUser } from '../actions/createAndGetUser.js';
+import { getRecentSeasonInvoicesForUsersId } from '../actions/getAndCreateInvoices.js';
 
 export const getUserInfo = async (req, res, next) => {
     const { username } = req.params;

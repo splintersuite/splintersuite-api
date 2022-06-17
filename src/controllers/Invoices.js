@@ -5,10 +5,13 @@ import { createInvoiceForUsersId } from '../actions/getAndCreateInvoices.js';
 export const payInvoice = async (req, res, next) => {
     const { id } = req.params;
     const { paid_at } = req.body;
+    const now = new Date();
 
-    await Invoices.query().where({ id }).update({ paid_at });
+    await Invoices.query().where({ id }).patch({
+        paid_at: now,
+    });
 
-    res.send('Your invoice is confirmed as paid off');
+    res.send({ success: true });
 };
 
 export const createInvoice = async (req, res, next) => {

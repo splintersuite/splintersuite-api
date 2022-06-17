@@ -24,9 +24,10 @@ const insertSeason = async () => {
     const now = new Date();
     const res = await Seasons.query()
         .insert({
-            name: 'My Test Season',
+            season_name: 'My Test Season',
             start_date: now,
             end_date: now,
+            season_id: 1,
         })
         .catch((err) => {
             console.log(err);
