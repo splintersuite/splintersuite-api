@@ -1,10 +1,10 @@
 import Model from '../../db/model.js';
-import UserRentals from './UserRentals.js';
 import Users from './Users.js';
+import UserRentalListings from './UserRentalListings.js';
 
-class UserRentalListings extends Model {
+class UserRentals extends Model {
     static get tableName() {
-        return 'user_rental_listings';
+        return 'user_rentals';
     }
 
     static get jsonSchema() {
@@ -12,25 +12,25 @@ class UserRentalListings extends Model {
             type: 'object',
             required: [
                 'users_id',
+                'user_rental_listing_id',
                 'created_at',
-                'card_uid',
-                'level',
+                'rented_at',
+                'played_rented_to',
+                'rental_tx',
                 'sell_trx_id',
                 'price',
-                'card_detail_id',
-                'is_gold',
             ],
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
+                user_rental_listing_id: { type: 'string' },
                 created_at: { type: 'object', format: 'date-time' },
+                rented_at: { type: 'object', format: 'date-time' },
                 cancelled_at: { type: 'object', format: 'date-time' },
-                card_uid: { type: 'string' },
-                card_detail_id: { type: 'integer' },
+                player_rented_to: { type: 'string' },
                 is_rental_active: { type: 'boolean' },
-                level: { type: 'integer' },
+                rental_tx: { type: 'string' },
                 sell_trx_id: { type: 'string' },
-                is_gold: { type: 'boolean' },
                 price: { type: 'number' },
             },
         };
@@ -38,24 +38,24 @@ class UserRentalListings extends Model {
 
     static get relationMappings() {
         return {
-            user_user_rental_listings: {
+            user_user_rentals: {
                 relation: Model.BelongsToOneRelation,
                 modelClass: Users,
                 join: {
-                    from: 'user_rental_listings.users_id',
+                    from: 'user_rentals.users_id',
                     to: 'users.id',
                 },
             },
-            user_daily_earnings: {
-                relation: Model.HasManyRelation,
-                modelClass: UserRentals,
+            user_user_rental_listings: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: UserRentalListings,
                 join: {
-                    from: 'user_rental_listings.id',
-                    to: 'user_rentals.user_rental_listing_id',
+                    from: 'user_rentals.user_rental_listing_id',
+                    to: 'user_rental_listings.id',
                 },
             },
         };
     }
 }
 
-export default UserRentalListings;
+export default UserRentals;
