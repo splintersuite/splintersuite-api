@@ -107,12 +107,14 @@ exports.up = function (knex) {
             t.dateTime('start_date').notNullable();
             t.dateTime('end_date').notNullable();
             t.string('name').nullable();
+            t.integer('brawl_id').notNullable();
         })
         .createTable('seasons', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.dateTime('start_date').notNullable();
+            t.dateTime('start_date').nullable();
             t.dateTime('end_date').notNullable();
             t.string('season_name').nullable();
+            t.integer('season_id').notNullable();
         })
         .createTable('installs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -144,9 +146,9 @@ exports.down = function (knex) {
         .dropTableIfExists('market_rental_listings')
         .dropTableIfExists('rental_listings')
         .dropTableIfExists('daily_earnings')
-        .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('user_rentals')
         .dropTableIfExists('invoices')
+        .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')
