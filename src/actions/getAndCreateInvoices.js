@@ -21,7 +21,7 @@ export const createInvoiceForUsersId = async ({ users_id }) => {
 
     const now = new Date();
     const invoice = await Invoices.query().insert({
-        season_id: recentSeason.season_id,
+        season_id: recentSeason.id,
         users_id,
         discounted_due_at: now,
         due_at: now,

@@ -11,11 +11,10 @@ class Invoices extends Model {
         return {
             type: 'object',
             required: [
-                'created_at',
                 'discounted_due_at',
                 'due_at',
                 'amount_due',
-                'user_id',
+                'users_id',
                 'season_id',
             ],
             properties: {

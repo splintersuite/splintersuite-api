@@ -22,7 +22,7 @@ app.use(morgan('combined'));
 
 app.use('/api/users', users);
 app.use('/api/rentals', rentals);
-app.use('./api/invoices', invoices);
+app.use('/api/invoices', invoices);
 app.use(util.logErrors);
 
 app.listen(PORT, () => {
