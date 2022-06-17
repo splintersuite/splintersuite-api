@@ -9,12 +9,13 @@ class Seasons extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['start_date', 'end_date'],
+            required: ['end_date'],
             properties: {
                 id: { type: 'string' },
                 start_date: { type: 'object', format: 'date-time' },
                 end_date: { type: 'object', format: 'date-time' },
-                name: { type: 'string' },
+                season_name: { type: 'string' },
+                season_id: { type: 'integer' },
             },
         };
     }

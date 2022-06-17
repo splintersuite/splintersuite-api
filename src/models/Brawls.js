@@ -14,6 +14,7 @@ class Brawls extends Model {
                 start_date: { type: 'object', format: 'date-time' },
                 end_date: { type: 'object', format: 'date-time' },
                 name: { type: 'string' },
+                season_id: { type: 'string' },
             },
         };
     }
