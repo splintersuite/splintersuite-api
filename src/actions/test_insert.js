@@ -26,3 +26,12 @@ const queryJboxx = async () => {
 };
 
 queryJboxx();
+
+import UserRentalListings from '../models/UserRentalListings';
+
+const activeRentals = await UserRentalListings.query().where({
+    users_id,
+    is_rental_active: true,
+});
+
+rentalIncomeHistory.forEach();
