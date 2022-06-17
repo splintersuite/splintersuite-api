@@ -14,7 +14,7 @@ const app = express();
 const PORT = 6900;
 
 app.use(helmet());
-app.use(checkSignature);
+//app.use(checkSignature);
 app.use(bodyParser.json());
 app.use('*', cors());
 app.use(morgan('combined'));
