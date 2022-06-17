@@ -20,10 +20,9 @@ class Invoices extends Model {
             ],
             properties: {
                 id: { type: 'string' },
-                user_id: { type: 'string' },
+                users_id: { type: 'string' },
                 season_id: { type: 'string' },
                 discounted_due_at: { type: 'object', format: 'date-time' },
-                created_at: { type: 'object', format: 'date-time' },
                 due_at: { type: 'object', format: 'date-time' },
                 paid_at: { type: 'object', format: 'date-time' },
                 season_name: { type: 'string' },

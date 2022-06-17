@@ -2,10 +2,9 @@ import Users from '../models/Users.js';
 
 export const createAndReturnUser = async ({ username }) => {
     console.log('createUser start');
-    const now = new Date();
+    //const now = new Date();
     const user = await Users.query().insert({
         username,
-        created_at: now,
     });
     console.log('user is: ');
     console.log(user);

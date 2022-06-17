@@ -1,4 +1,5 @@
 import { createAndReturnUser, getUser } from '../actions/createAndGetUser';
+import { getRecentSeasonInvoicesForUsersId } from '../actions/getAndCreateInvoices';
 
 export const getUserInfo = async (req, res, next) => {
     const { username } = req.params;
@@ -14,5 +15,9 @@ export const getUserInfo = async (req, res, next) => {
     console.log('USER 2', user);
     console.log('-------------------------------------------');
 
-    res.send('success');
+    // const invoices = await getRecentSeasonInvoicesForUsersId({
+    //     users_id: user.id,
+    // });
+    // user.invoices = invoices || [];
+    res.send(user);
 };
