@@ -55,7 +55,7 @@ exports.up = function (knex) {
         })
         .createTable('users', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.dateTime('created_at').notNullable();
+            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.string('username').notNullable();
             t.unique(['username']);
             // maybe add email to this??
@@ -104,6 +104,7 @@ exports.up = function (knex) {
         })
         .createTable('brawls', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.dateTime('start_date').notNullable();
             t.dateTime('end_date').notNullable();
             t.string('name').nullable();
@@ -111,6 +112,7 @@ exports.up = function (knex) {
         })
         .createTable('seasons', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.dateTime('start_date').nullable();
             t.dateTime('end_date').notNullable();
             t.string('season_name').nullable();
@@ -118,17 +120,18 @@ exports.up = function (knex) {
         })
         .createTable('installs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
+            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.dateTime('app_version').notNullable();
             t.dateTime('install_date').notNullable();
         })
         .createTable('invoices', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.uuid('user_id').references('users.id').notNullable();
+            t.uuid('users_id').references('users.id').notNullable();
             t.uuid('season_id').references('seasons.id').notNullable();
             t.dateTime('discounted_due_at').notNullable();
-            t.dateTime('created_at').notNullable();
             t.dateTime('due_at').notNullable();
             t.dateTime('paid_at').nullable();
+            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.decimal('amount_due').notNullable();
             t.string('tx_id').nullable();
             t.string('season_name').nullable();
