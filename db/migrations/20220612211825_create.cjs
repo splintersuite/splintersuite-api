@@ -23,15 +23,15 @@ exports.up = function (knex) {
             t.integer('level').notNullable(); // calculated by tnt's function
             // t.integer('xp').notNullable(); not sure if i want to save this
             // it would be interesting to see if high xp cards fetch higher rates than
+            t.float('avg').nullable();
+            t.float('low').nullable();
+            t.float('high').nullable();
+            t.float('median').nullable();
+            t.float('std_dev').nullable();
             // lower xp cards in the same level because the chance of level up
-            t.string('price_currency').notNullable();
             t.boolean('is_gold').notNullable(); // will be either Y or N rather than bool
+            t.string('price_currency').notNullable();
             t.string('aggregaton_type').notNullable(); // 'ALL_OPEN_TRADES', 'TRADES_DURING_PERIOD'
-            t.decimal('avg').nullable();
-            t.decimal('low').nullable();
-            t.decimal('high').nullable();
-            t.decimal('median').nullable();
-            t.decimal('std_dev').nullable();
             t.unique([
                 'created_at',
                 'aggregaton_type',
@@ -44,22 +44,22 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.dateTime('created_at').defaultTo(knex.fn.now());
             // listings AT a point in time
-            // it can almost certainly be assumed that the low is the newest listing
+            // it can probably be assumed that the low is close to the newest listing
             t.dateTime('timestamp').nullable();
             t.integer('card_detail_id').notNullable();
             t.integer('level').notNullable();
             t.integer('num_listings').notNullable();
+            t.float('avg').nullable();
+            t.float('low').nullable();
+            t.float('high').nullable();
+            t.float('median').nullable();
+            t.float('std_dev').nullable();
             t.boolean('is_gold').notNullable();
-            t.decimal('avg').nullable();
-            t.decimal('low').nullable();
-            t.decimal('high').nullable();
-            t.decimal('median').nullable();
-            t.decimal('std_dev').nullable();
             t.unique(['created_at', 'card_detail_id', 'level', 'is_gold']);
         })
         .createTable('users', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.timestamps(true, true); // the same as the below
+            t.timestamps(true, true);
             t.string('username').notNullable();
             t.unique(['username']);
             // maybe add email to this??
@@ -69,7 +69,7 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
             t.dateTime('timestamp').notNullable();
-            t.decimal('earnings').notNullable();
+            t.float('earnings').notNullable();
             t.integer('num_rentals').notNullable();
             // should add market rate for that card in the future...
         })
@@ -77,15 +77,15 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
             t.dateTime('sl_created_at').notNullable();
-            t.timestamps(true, true); // the same as the below
+            t.timestamps(true, true);
             t.dateTime('cancelled_at').nullable();
             t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
-            t.string('level').notNullable();
-            t.string('card_uid').notNullable();
-            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
-            t.decimal('price').notNullable();
+            t.integer('level').notNullable();
+            t.float('price').notNullable();
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.boolean('is_gold').notNullable();
+            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
+            t.string('card_uid').notNullable();
             t.unique(['created_at', 'card_uid']); // TNT NOTE: I think we need to make this a larger composite key imo
         })
         .createTable('user_rentals', (t) => {
@@ -97,13 +97,13 @@ exports.up = function (knex) {
             t.timestamps(true, true); // the same as the below
             t.dateTime('rented_at').notNullable();
             t.dateTime('cancelled_at').nullable();
+            t.float('price').notNullable();
+            t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.string('player_rented_to').notNullable(); // good to have to identify noobs
             t.string('rental_tx').notNullable();
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
             // shouldn't always reference user_rental_listings
             // in the case that we are hitting bids instead of offering
-            t.boolean('is_rental_active').notNullable().defaultTo(false);
-            t.decimal('price').notNullable();
             // handle for updated prices mid rental?  is that a new rental?
             t.unique(['users_id', 'created_at', 'rental_tx']);
         })
@@ -112,16 +112,16 @@ exports.up = function (knex) {
             t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.dateTime('start_date').notNullable();
             t.dateTime('end_date').notNullable();
-            t.string('name').nullable();
             t.integer('brawl_id').notNullable();
+            t.string('name').nullable();
         })
         .createTable('seasons', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.dateTime('start_date').nullable();
             t.dateTime('end_date').notNullable();
-            t.string('season_name').nullable();
             t.integer('season_id').notNullable();
+            t.string('season_name').nullable();
         })
         .createTable('installs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -134,10 +134,10 @@ exports.up = function (knex) {
             t.uuid('users_id').references('users.id').notNullable();
             t.uuid('season_id').references('seasons.id').notNullable();
             t.dateTime('discounted_due_at').notNullable();
-            t.timestamps(true, true); // the same as the below
+            t.timestamps(true, true);
             t.dateTime('due_at').notNullable();
             t.dateTime('paid_at').nullable();
-            t.decimal('amount_due').notNullable();
+            t.float('amount_due').notNullable();
             t.string('tx_id').nullable();
             t.string('season_name').nullable();
         })
