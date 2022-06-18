@@ -76,7 +76,7 @@ const calcAggregatedEarnings = async ({ users_id }) => {
     const totalEarned = await DailyEarnings.query().where({ users_id });
 
     return {
-        stats: {
+        earnings: {
             daily: {
                 amount: _.sum(
                     todaysEarnings.map(({ earnings_dec }) => earnings_dec)
