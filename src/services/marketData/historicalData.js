@@ -2,11 +2,15 @@ import axios from 'axios';
 import findCardLevel from '../calculateCardLevel.js';
 import mathFncs from '../../util/math.js';
 import MarketRentalPrices from '../../models/MarketRentalPrices.js';
-import cardFncs from '../../actions/getCardDetails';
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
-const collectData = async (card, now) => {
+const collectData = async ({
+    card,
+    now,
+    twelveHoursAgo,
+    twelveHoursAgoTime,
+}) => {
     const activeTrades = await axios.get(
         `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}`
     );
@@ -19,7 +23,7 @@ const collectData = async (card, now) => {
     }
     const trades = {};
     activeTrades.data.forEach((trade) => {
-        findCardLevel({
+        const level = findCardLevel({
             id: card.card_detail_id,
             rarity: card.rarity,
             _xp: trade.xp,
@@ -52,8 +56,6 @@ const collectData = async (card, now) => {
     });
 
     // do math
-    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
-    const twelveHoursAgoTime = twelveHoursAgo.getTime();
     const uploadArr = [];
     for (const level of Object.keys(trades)) {
         for (const cardType of Object.keys(trades[level])) {

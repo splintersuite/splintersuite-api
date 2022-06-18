@@ -15,12 +15,13 @@ const calcDailyEarnings = async ({ users_id }) => {
 };
 
 // NEEDS TO BE RUN ON A DAILY BASIS
-const insertDailyEarnings = async ({ users_id }) => {
+const insertDailyEarnings = async ({ users_id, earnings_date }) => {
     const earningsData = await calcDailyEarnings({ users_id });
 
     await DailyEarnings.query().insert({
         users_id,
-        earnings: earningsData.earnings,
+        earnings_date,
+        earnings_dec: earningsData.earnings,
         num_rentals: earningsData.numRentals,
     });
 };

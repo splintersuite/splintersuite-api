@@ -51,9 +51,9 @@ const CombineRatesGold = [
 
 const findCardLevel = ({ id, rarity, _xp, gold, edition, tier, alpha_xp }) => {
     try {
-        console.log(
-            `findCardLevel start with id: ${id}, rarity: ${rarity}, _xp: ${_xp}, gold: ${gold}, edition: ${edition}, tier: ${tier}, alpha_xp: ${alpha_xp}`
-        );
+        // console.log(
+        //     `findCardLevel start with id: ${id}, rarity: ${rarity}, _xp: ${_xp}, gold: ${gold}, edition: ${edition}, tier: ${tier}, alpha_xp: ${alpha_xp}`
+        // );
         let _alpha_xp = 0;
         if (alpha_xp != null) {
             _alpha_xp = alpha_xp;
@@ -91,14 +91,14 @@ const findCardLevel = ({ id, rarity, _xp, gold, edition, tier, alpha_xp }) => {
 
         return level;
     } catch (err) {
-        console.error(`findCardLevel error: ${err.message}`);
+        // console.error(`findCardLevel error: ${err.message}`);
         throw err;
     }
 };
 
 const bcxToLevel = ({ bcx, rarity, gold, edition, id, tier }) => {
     try {
-        console.log(`bcxToLevel start`);
+        // console.log(`bcxToLevel start`);
 
         const combinationRates = getBcxLevelComboForEdition({
             rarity,
@@ -115,24 +115,24 @@ const bcxToLevel = ({ bcx, rarity, gold, edition, id, tier }) => {
             if (bcx >= bcxForNextHighestLevel) {
                 // this means that we have enough bcx to be at this level or higher
                 // since we are going from the highest first, this should automatically give us our answer and we are good
-                console.log(
-                    `we found a match for the level of the card! i is: ${i} and combinationRates length is ${combinationRates}`
-                );
+                // console.log(
+                //     `we found a match for the level of the card! i is: ${i} and combinationRates length is ${combinationRates}`
+                // );
                 level = combinationRates.length - i;
                 break;
             }
         }
-        console.log(`bcxToLevel returning level: ${level}`);
+        // console.log(`bcxToLevel returning level: ${level}`);
         return level;
     } catch (err) {
-        console.error(`bcxToLevel error: ${err.message}`);
+        // console.error(`bcxToLevel error: ${err.message}`);
         throw err;
     }
 };
 
 const getBcxLevelComboForEdition = ({ rarity, gold, edition, id, tier }) => {
     try {
-        console.log(`getBcxLevelComboForEdition start`);
+        // console.log(`getBcxLevelComboForEdition start`);
         let combinationRates;
         if (edition === 4 || tier >= 4) {
             // if untamed or chaos legion, use the regular bcx caps for levels, also includes reward cards untamed and up

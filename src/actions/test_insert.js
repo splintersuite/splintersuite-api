@@ -27,7 +27,7 @@ const patcbUser = async ({ username }) => {
         });
 };
 
-insertUser({ username: 'xdww' });
+// insertUser({ username: 'genepoolcardlord' });
 
 const queryJboxx = async () => {
     const users = await Users.query().catch((err) => {

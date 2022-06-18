@@ -7,17 +7,26 @@ const getHistoricalData = async () => {
     // runs at 17:00 EST
     const cardsDetails = await cardFncs.getCardDetail();
     const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
+    const twelveHoursAgoTime = twelveHoursAgo.getTime();
 
     const fiveMinutesInMS = 1000 * 60 * 5;
-    const count = 0;
+    let count = 0;
     for (const card of cardsDetails) {
-        await histFncs.collectData(card, now);
-        if (count % 100 === 0) {
+        await histFncs.collectData({
+            card,
+            now,
+            twelveHoursAgo,
+            twelveHoursAgoTime,
+        });
+        if (count !== 0 && count % 100 === 0) {
             await retryFncs.sleep(fiveMinutesInMS);
         }
         count++;
     }
 };
+
+getHistoricalData();
 
 const historicalFetchMorning = '* 5 * * *';
 const historicalFetchEvening = '* 17 * * *';

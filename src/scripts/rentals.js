@@ -22,7 +22,7 @@ const updateRentalsForUsersMorning = async () => {
             users_id: user.id,
             cardDetailsObj,
         });
-        if (count % 100 === 0) {
+        if (count !== 0 && count % 100 === 0) {
             await retryFncs.sleep(fiveMinutesInMS);
         }
         await retryFncs.sleep(1000);
@@ -49,13 +49,15 @@ const updateRentalsForUsersEvening = async () => {
             users_id: user.id,
             cardDetailsObj,
         });
-        if (count % 100 === 0) {
+        if (count !== 0 && count % 100 === 0) {
+            console.log('sleeping');
             await retryFncs.sleep(fiveMinutesInMS);
         }
         await retryFncs.sleep(1000);
         count++;
     }
 
+    console.log('made here');
     // could split this in functions, w/e
     // calculate and insert earnings
     for (const user of users) {
