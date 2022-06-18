@@ -115,7 +115,9 @@ const collectData = async ({
     }
     // upload to DB
     // rate limit this somehow
-    await MarketRentalPrices.query().insert(uploadArr);
+    if (uploadArr.length > 0) {
+        await MarketRentalPrices.query().insert(uploadArr);
+    }
 };
 
 export default { collectData };
