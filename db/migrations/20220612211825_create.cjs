@@ -68,7 +68,8 @@ exports.up = function (knex) {
         .createTable('daily_earnings', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            t.dateTime('timestamp').notNullable();
+            t.timestamps(true, true);
+            t.dateTime('earnings_date').notNullable();
             t.float('earnings').notNullable();
             t.integer('num_rentals').notNullable();
             // should add market rate for that card in the future...
@@ -146,6 +147,9 @@ exports.up = function (knex) {
         .then(() => knex.raw(knexfile.default.onUpdateTrigger('user_rentals')))
         .then(() =>
             knex.raw(knexfile.default.onUpdateTrigger('user_rental_listings'))
+        )
+        .then(() =>
+            knex.raw(knexfile.default.onUpdateTrigger('daily_earnings'))
         );
 };
 

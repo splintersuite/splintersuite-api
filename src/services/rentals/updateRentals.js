@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import Users from '../../models/Users.js';
 import UserRentals from '../../models/UserRentals.js';
 import findCardLevel from '../calculateCardLevel.js';
 import cardFncs from '../../actions/getCardDetails';
@@ -8,18 +7,7 @@ import updateListings from './updateListings.js';
 import rentalHelpers from './rentalHelpers.js';
 
 // to be run EVERY 12 HOURS for EVERY USER
-const updateRentalsInDb = async ({ username }) => {
-    let user = await Users.query().where({ username });
-    if (Array.isArray(user) && user.length === 1) {
-        user = user[0];
-    }
-
-    const cardDetails = await cardFncs.getCardDetail();
-    const cardDetailsObj = {};
-    cardDetails.forEach((card) => {
-        cardDetailsObj[card.id] = card;
-    });
-
+const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     // hits the /collections endpoint and collects all of the listings we dont have in the db
     // inserts them and returns everything
     // we could have used the /collections endpoint for everything, ho hum...
@@ -29,7 +17,7 @@ const updateRentalsInDb = async ({ username }) => {
         apiListings,
         insertedListings,
     } = await updateListings.updateListingsInDb({
-        users_id: user.id,
+        users_id,
         username,
         cardDetailsObj,
     });
@@ -59,7 +47,7 @@ const updateRentalsInDb = async ({ username }) => {
 
     // getting call active rentals... creating object for faster lookup
     const dbRentals = await UserRentals.query().where({
-        users_id: user.id,
+        users_id,
         is_rental_active: true,
     });
     const dbRentalsObj = {};
@@ -110,7 +98,7 @@ const updateRentalsInDb = async ({ username }) => {
                     dbListingsObj[activeRental.sell_trx_id].id
                 );
                 rentalsToInsert.push({
-                    users_id: user.id,
+                    users_id,
                     user_rental_listing_id:
                         dbListingsObj[activeRental.sell_trx_id].id,
                     rental_tx: activeRental.rental_tx,
@@ -127,7 +115,7 @@ const updateRentalsInDb = async ({ username }) => {
             } else {
                 // it's active now, but the price in the DB is different, we must have relisted since then...
                 relistingToInsert.push({
-                    users_id: user.id,
+                    users_id,
                     sl_created_at: new Date(
                         slCreatedAtObj[activeRental.sell_trx_id]
                     ),
@@ -147,7 +135,7 @@ const updateRentalsInDb = async ({ username }) => {
                     is_gold: activeRental.gold,
                 });
                 rentalsToInsert.push({
-                    users_id: user.id,
+                    users_id,
                     user_rental_listing_id:
                         dbListingsObj[activeRental.sell_trx_id].id,
                     rented_at: new Date(activeRental.rental_date),
@@ -196,7 +184,7 @@ const updateRentalsInDb = async ({ username }) => {
                 _.round(Number(dbRentalsObj[activeRental.sell_trx_id].price), 3)
             ) {
                 relistingToInsert.push({
-                    users_id: user.id,
+                    users_id,
                     sl_created_at: new Date(
                         slCreatedAtObj[activeRental.sell_trx_id]
                     ),
@@ -215,7 +203,7 @@ const updateRentalsInDb = async ({ username }) => {
                 });
                 // need to CREATE a new Rental associated with this listing!
                 rentalsWithoutListingsToInsert.push({
-                    users_id: user.id,
+                    users_id,
                     // NEED THE user_rental_listing_id once the listing is inserted
                     rented_at: new Date(activeRental.rental_date),
                     cancelled_at:
@@ -248,7 +236,7 @@ const updateRentalsInDb = async ({ username }) => {
             // setting created_at to rental_date
             // hopefully this does not happen too often... it shouldn't if we are running this every 12 hours
             unknownListingToInsert.push({
-                users_id: user.id,
+                users_id,
                 sl_created_at: new Date(
                     slCreatedAtObj[activeRental.sell_trx_id]
                 ),
@@ -276,7 +264,7 @@ const updateRentalsInDb = async ({ username }) => {
 
             // create a UserRental
             rentalsWithoutListingsToInsert.push({
-                users_id: user.id,
+                users_id,
                 // need user_rental_listing_id.  will pluck it once we insert the UserRentalListing
                 rented_at: new Date(activeRental.rental_date),
                 cancelled_at:
@@ -339,6 +327,6 @@ const updateRentalsInDb = async ({ username }) => {
     await rentalHelpers.patchRentalsToCancel({ rentalsToCancel });
 };
 
-updateRentalsInDb({ username: 'xdww' });
+// updateRentalsInDb({ username: 'xdww' });
 
-export default updateRentalsInDb;
+export default { updateRentalsInDb };

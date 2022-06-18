@@ -20,7 +20,6 @@ const insertDailyEarnings = async ({ users_id }) => {
 
     await DailyEarnings.query().insert({
         users_id,
-        timestamp: new Date(),
         earnings: earningsData.earnings,
         num_rentals: earningsData.numRentals,
     });

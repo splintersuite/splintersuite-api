@@ -1,4 +1,5 @@
 import Model from '../../db/model.js';
+import Users from './Users.js';
 
 class DailyEarnings extends Model {
     static get tableName() {
@@ -8,11 +9,13 @@ class DailyEarnings extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['timestamp', 'users_id', 'earnings', 'num_rentals'],
+            required: ['earnings_date', 'users_id', 'earnings', 'num_rentals'],
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
-                timestamp: { type: 'object', format: 'date-time' },
+                earnings_date: { type: 'object', format: 'date-time' },
+                created_at: { type: 'object', format: 'date-time' },
+                updated_at: { type: 'object', format: 'date-time' },
                 num_rentals: { type: 'number' },
                 earnings: { type: 'number' },
             },
