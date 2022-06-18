@@ -12,7 +12,7 @@ class UserRentalListings extends Model {
             type: 'object',
             required: [
                 'users_id',
-                'created_at',
+                'sl_created_at',
                 'card_uid',
                 'level',
                 'sell_trx_id',
@@ -23,7 +23,7 @@ class UserRentalListings extends Model {
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
-                created_at: { type: 'object', format: 'date-time' },
+                sl_created_at: { type: 'object', format: 'date-time' },
                 cancelled_at: { type: 'object', format: 'date-time' },
                 card_uid: { type: 'string' },
                 card_detail_id: { type: 'integer' },

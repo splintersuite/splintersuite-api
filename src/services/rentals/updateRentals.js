@@ -1,24 +1,31 @@
+import _ from 'lodash';
+import axiosInstance from '../../util/axiosInstance.js';
 import Users from '../../models/Users.js';
 import UserRentalListings from '../../models/UserRentalListings.js';
-import axiosInstance from '../../util/axiosInstance.js';
+import UserRentals from '../../models/UserRentals.js';
 import findCardLevel from '../calculateCardLevel.js';
-import _ from 'lodash';
+import histFncs from '../historicalData';
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username }) => {
-    console.log('username', username);
     let user = await Users.query().where({ username });
     if (Array.isArray(user) && user.length === 1) {
         user = user[0];
     }
+
+    const cardDetails = await histFncs.getCardDetail();
+    const cardDetailObj = {};
+    cardDetails.forEach((card) => {
+        cardDetailObj[card.id] = card;
+    });
+
     const dbListings = await UserRentalListings.query().where({
         users_id: user.id,
         is_rental_active: false,
         cancelled_at: null,
-        rented_at: null,
     });
 
-    const dbRentals = await UserRentalListings.query().where({
+    const dbRentals = await UserRentals.query().where({
         users_id: user.id,
         is_rental_active: true,
         cancelled_at: null,
@@ -48,10 +55,12 @@ const updateRentalsInDb = async ({ username }) => {
     }
 
     const rentalsToCancel = [];
-    const rentalsToUpdateAsActive = [];
+    const listingIdsToUpdateAsActiveRental = [];
+    const rentalsToInsert = [];
+    const rentalsWithoutListingsToInsert = [];
     const relistingToInsert = [];
-    const listingToInsert = [];
-    activeRentals.forEach((activeRental) => {
+    const unknownListingToInsert = [];
+    activeRentals.data.forEach((activeRental) => {
         if (
             dbListingsObj[activeRental.sell_trx_id] &&
             dbListingsObj[activeRental.sell_trx_id].card_uid ===
@@ -64,32 +73,52 @@ const updateRentalsInDb = async ({ username }) => {
             ) {
                 // ok it's active and the price is the same...
                 // update the listing as ACTIVE rental
-                rentalsToUpdateAsActive.push({
-                    db_rental_id: dbListingsObj[activeRental.sell_trx_id].id,
+                // create NEW UserRentals
+                listingIdsToUpdateAsActiveRental.push(
+                    dbListingsObj[activeRental.sell_trx_id].id
+                );
+                rentalsToInsert.push({
+                    user_rental_listing_id:
+                        dbListingsObj[activeRental.sell_trx_id].id,
+                    // created_at: now,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
                     price: activeRental.buy_price,
-                    rented_at: activeRental.rental_date,
+                    rented_at: new Date(activeRental.rental_date),
                     player_rented_to: activeRental.renter,
                     is_rental_active: true,
-                    cancelled_at: activeRental.cancel_date,
+                    cancelled_at: new Date(activeRental.cancel_date),
                 });
             } else {
-                // it's active now, but the price in the DB is different, we must have relisted...
+                // it's active now, but the price in the DB is different, we must have relisted since then...
                 relistingToInsert.push({
                     users_id: user.id,
-                    created_at: activeRental.rental_date,
-                    rented_at: activeRental.rental_date,
-                    cancelled_at: activeRental.cancel_date,
-                    player_rented_to: activeRental.renter,
+                    // created_at: activeRental.rental_date,
+                    cancelled_at:
+                        activeRental.cancel_date &&
+                        activeRental.cancel_player === username
+                            ? new Date(activeRental.cancel_date)
+                            : null,
                     card_detail_id: activeRental.card_detail_id,
                     level: dbListingsObj[activeRental.sell_trx_id].level,
                     card_uid: activeRental.card_id,
-                    rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
                     price: activeRental.buy_price,
                     is_rental_active: true,
                     is_gold: activeRental.gold,
+                });
+                rentalsToInsert.push({
+                    users_id: user.id,
+                    user_rental_listing_id:
+                        dbListingsObj[activeRental.sell_trx_id].id,
+                    // created_at: now,
+                    rented_at: new Date(activeRental.rental_date),
+                    cancelled_at: new Date(activeRental.cancel_date),
+                    player_rented_to: activeRental.renter,
+                    rental_tx: activeRental.rental_tx,
+                    sell_trx_id: activeRental.sell_trx_id,
+                    price: Number(activeRental.buy_price),
+                    is_rental_active: true,
                 });
             }
         } else if (
@@ -98,54 +127,91 @@ const updateRentalsInDb = async ({ username }) => {
                 activeRental.card_id
         ) {
             // we already know about this rental...
+            // but we're only looking at rentals without a cancellation date
             if (activeRental.cancel_date) {
-                // does it have a cancel date?
+                // so lets update this rental to be cancelled
+                // keep in mind the Listing re-lists at the SAME price when the rentals ends
                 rentalsToCancel.push({
                     db_rental_id: dbRentalObj[activeRental.sell_trx_id].id,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
-                    cancel_date: activeRental.cancel_date,
+                    cancel_date: new Date(activeRental.cancel_date),
                 });
             }
 
             // did the pricing change?  Not sure if this is possible
+            // we must have relisted AND we don't know about listing at the moment
             if (
-                activeRental.buy_price ===
+                activeRental.buy_price !==
                 dbRentalsObj[activeRental.sell_trx_id].price
             ) {
                 relistingToInsert.push({
                     users_id: user.id,
-                    created_at: activeRental.rental_date,
-                    rented_at: activeRental.rental_date,
-                    cancelled_at: activeRental.cancel_date,
-                    player_rented_to: activeRental.renter,
+                    // created_at: activeRental.rental_date,
+                    cancelled_at:
+                        activeRental.cancel_date &&
+                        activeRental.cancel_player === username
+                            ? new Date(activeRental.cancel_date)
+                            : null,
                     card_detail_id: activeRental.card_detail_id,
                     level: dbListingsObj[activeRental.sell_trx_id].level,
                     card_uid: activeRental.card_id,
-                    rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
-                    price: activeRental.buy_price,
+                    price: Number(activeRental.buy_price),
                     is_rental_active: true,
                     is_gold: activeRental.gold,
+                });
+                // need to CREATE a new Rental associated with this listing!
+                rentalsWithoutListingsToInsert.push({
+                    users_id: user.id,
+                    // NEED THE user_rental_listing_id once the listing is inserted
+                    rented_at: new Date(activeRental.rental_date),
+                    cancelled_at: new Date(activeRental.cancel_date),
+                    player_rented_to: activeRental.renter,
+                    rental_tx: activeRental.rental_tx,
+                    sell_trx_id: activeRental.sell_trx_id,
+                    is_rental_active: true,
+                    price: Number(activeRental.buy_price),
                 });
             }
         } else {
             // we don't know about the listing OR transaction
             // setting created_at to rental_date
-            listingToInsert.push({
+            unknownListingToInsert.push({
                 users_id: user.id,
-                created_at: activeRental.rental_date,
-                rented_at: activeRental.rental_date,
-                cancelled_at: activeRental.cancel_date,
-                player_rented_to: activeRental.renter,
+                cancelled_at:
+                    activeRental.cancel_date &&
+                    activeRental.cancel_player === username
+                        ? new Date(activeRental.cancel_date)
+                        : null,
                 card_detail_id: activeRental.card_detail_id,
-                level: findCardLevel(activeRental.xp),
+                level: findCardLevel({
+                    id: activeRental.card_detail_id,
+                    rarity: cardDetailObj[activeRental.card_detail_id].rarity,
+                    _xp: activeRental.xp,
+                    gold: activeRental.gold,
+                    edition: activeRental.edition,
+                    tier: cardDetailObj[activeRental.card_detail_id].tier,
+                    alpha_xp: 0,
+                }),
                 card_uid: activeRental.card_id,
-                rental_tx: activeRental.rental_tx,
                 sell_trx_id: activeRental.sell_trx_id,
-                price: activeRental.buy_price,
+                price: Number(activeRental.buy_price),
                 is_rental_active: true,
                 is_gold: activeRental.gold,
+            });
+
+            // create a Rental
+            rentalsWithoutListingsToInsert.push({
+                users_id: user.id,
+                // need user_rental_listing_id
+                rented_at: new Date(activeRental.rental_date),
+                cancelled_at: new Date(activeRental.cancel_date),
+                player_rented_to: activeRental.renter,
+                rental_tx: activeRental.rental_tx,
+                sell_trx_id: activeRental.sell_trx_id,
+                is_rental_active: true,
+                price: Number(activeRental.buy_price),
             });
         }
     });
@@ -167,23 +233,50 @@ const updateRentalsInDb = async ({ username }) => {
         }
     });
 
-    // transactions we don't know about
-    const listingsToInsert = _.concat(listingToInsert, relistingToInsert);
-    await UserRentalListings.query().insert(listingsToInsert);
+    // insert listing we don't know about
+    const insertedListings = await UserRentalListings.query().insert(
+        _.concat(unknownListingToInsert, relistingToInsert)
+    );
 
-    // painful amount of database calls... but we have to update EACH record
-    for (const rentalToCancel of rentalsToCancel) {
-        await UserRentalListings.query()
-            .where({ id: rentalToCancel.db_rental_id })
-            .patch({
-                rental_tx: rentalToCancel.rental_tx,
-                sell_trx_id: rentalToCancel.sell_trx_id,
-                cancel_date: rentalToCancel.cancel_date,
-            });
+    // we need to pluck the ids from these new listings so we can create rentals
+    insertedListings.forEach((listing) => {
+        const found = rentalsWithoutListingsToInsert.some((rental) => {
+            if (rental.sell_trx_id === listing.sell_trx_id) {
+                rental.user_rental_listing_id = listing.id;
+                return true;
+            }
+        });
+        if (!found) {
+            console.log('listing missing frmo insertedListings', listing);
+            console.log('insertedListings', insertedListings);
+            process.exit();
+        }
+    });
+
+    // insert all of the new rentals
+    await UserRentals.query().insert(
+        _.concat(rentalsWithoutListingsToInsert, rentalsToInsert)
+    );
+    // update listings to active in chunks with in statement
+    let idActiveChunks = listingIdsToUpdateAsActiveRental;
+    if (listingIdsToUpdateAsActiveRental.length > 998) {
+        idActiveChunks = _.chunk(listingIdsToUpdateAsActiveRental, 998);
+    }
+    // ie it was unchanged
+    if (idActiveChunks.length === listingIdsToUpdateAsActiveRental.length) {
+        idActiveChunks = [idActiveChunks];
     }
 
-    for (const rentalToUpdate of rentalsToUpdateAsActive) {
+    for (const idChunk of idActiveChunks) {
         await UserRentalListings.query()
+            .whereIn({ id: idChunk })
+            .patch({ is_rental_active: true });
+    }
+
+    // painful amount of database calls...  but we have to update EACH record because we need to know
+    // what the cancel of each rental_tx is...  woooof
+    for (const rentalToCancel of rentalsToCancel) {
+        await UserRentals.query()
             .where({ id: rentalToCancel.db_rental_id })
             .patch({
                 rental_tx: rentalToCancel.rental_tx,
@@ -193,6 +286,6 @@ const updateRentalsInDb = async ({ username }) => {
     }
 };
 
-updateRentalsInDb({ username: 'xdww' });
+// updateRentalsInDb({ username: 'xdww' });
 
 export default updateRentalsInDb;
