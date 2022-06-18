@@ -13,7 +13,6 @@ class UserRentals extends Model {
             required: [
                 'users_id',
                 'user_rental_listing_id',
-                'created_at',
                 'rented_at',
                 'played_rented_to',
                 'rental_tx',
@@ -25,6 +24,7 @@ class UserRentals extends Model {
                 users_id: { type: 'string' },
                 user_rental_listing_id: { type: 'string' },
                 created_at: { type: 'object', format: 'date-time' },
+                updated_at: { type: 'object', format: 'date-time' },
                 rented_at: { type: 'object', format: 'date-time' },
                 cancelled_at: { type: 'object', format: 'date-time' },
                 player_rented_to: { type: 'string' },

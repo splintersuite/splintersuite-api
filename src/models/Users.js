@@ -12,7 +12,7 @@ class Users extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['created_at', 'username'],
+            required: ['username'],
             properties: {
                 id: { type: 'string' },
                 created_at: { type: 'object', format: 'date-time' },
