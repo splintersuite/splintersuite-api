@@ -272,4 +272,6 @@ const updateRentalsInDb = async ({ username }) => {
     }
 };
 
+updateRentalsInDb({ username: 'xdww' });
+
 export default updateRentalsInDb;
