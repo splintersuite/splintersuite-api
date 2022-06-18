@@ -1,10 +1,11 @@
 import _ from 'lodash';
-import axiosInstance from '../../util/axiosInstance.js';
 import Users from '../../models/Users.js';
 import UserRentalListings from '../../models/UserRentalListings.js';
 import UserRentals from '../../models/UserRentals.js';
 import findCardLevel from '../calculateCardLevel.js';
 import histFncs from '../historicalData';
+import collectionFncs from '../../actions/getCollectionFncs';
+import updateListings from './updateListings.js';
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username }) => {
@@ -14,15 +15,25 @@ const updateRentalsInDb = async ({ username }) => {
     }
 
     const cardDetails = await histFncs.getCardDetail();
-    const cardDetailObj = {};
+    const cardDetailsObj = {};
     cardDetails.forEach((card) => {
-        cardDetailObj[card.id] = card;
+        cardDetailsObj[card.id] = card;
     });
 
-    const dbListings = await UserRentalListings.query().where({
-        users_id: user.id,
-        is_rental_active: false,
-        cancelled_at: null,
+    // hits the /collections endpoint and collects all of the listings we dont have in the db
+    // inserts them and returns everything
+    // we could have used the /collections endpoint for everything, ho hum...
+    const { dbListings, apiListings } = await updateListings.updateListingsInDb(
+        { users_id: user.id, username, cardDetailsObj }
+    );
+
+    // storing object for future use since /activerentals doesnt have the endpoint
+    const slCreatedAtObj = {};
+    apiListings.rented.forEach((listing) => {
+        slCreatedAtObj[listing.sell_trx_id] = listing.market_created_date;
+    });
+    apiListings.notRented.forEach((listing) => {
+        slCreatedAtObj[listing.sell_trx_id] = listing.market_created_date;
     });
 
     const dbRentals = await UserRentals.query().where({
@@ -30,6 +41,8 @@ const updateRentalsInDb = async ({ username }) => {
         is_rental_active: true,
         cancelled_at: null,
     });
+
+    const activeRentals = collectionFncs.getActiveRentals({ username });
 
     const dbListingsObj = {};
     const dbRentalsObj = {};
@@ -43,16 +56,6 @@ const updateRentalsInDb = async ({ username }) => {
             dbRentalsObj[rental.sell_trx_id] = rental;
         }
     });
-
-    const activeRentals = await axiosInstance.get(
-        `https://api2.splinterlands.com/market/active_rentals?owner=${username}`
-    );
-
-    if (!Array.isArray(activeRentals.data)) {
-        throw new Error(
-            `https://api2.splinterlands.com/market/active_rentals?owner=${username} returning something crazy`
-        );
-    }
 
     const rentalsToCancel = [];
     const listingIdsToUpdateAsActiveRental = [];
@@ -93,7 +96,9 @@ const updateRentalsInDb = async ({ username }) => {
                 // it's active now, but the price in the DB is different, we must have relisted since then...
                 relistingToInsert.push({
                     users_id: user.id,
-                    // created_at: activeRental.rental_date,
+                    sl_created_at: new Date(
+                        slCreatedAtObj[activeRental.sell_trx_id]
+                    ),
                     cancelled_at:
                         activeRental.cancel_date &&
                         activeRental.cancel_player === username
@@ -147,7 +152,9 @@ const updateRentalsInDb = async ({ username }) => {
             ) {
                 relistingToInsert.push({
                     users_id: user.id,
-                    // created_at: activeRental.rental_date,
+                    sl_created_at: new Date(
+                        slCreatedAtObj[activeRental.sell_trx_id]
+                    ),
                     cancelled_at:
                         activeRental.cancel_date &&
                         activeRental.cancel_player === username
@@ -179,6 +186,9 @@ const updateRentalsInDb = async ({ username }) => {
             // setting created_at to rental_date
             unknownListingToInsert.push({
                 users_id: user.id,
+                sl_created_at: new Date(
+                    slCreatedAtObj[activeRental.sell_trx_id]
+                ),
                 cancelled_at:
                     activeRental.cancel_date &&
                     activeRental.cancel_player === username
@@ -187,11 +197,11 @@ const updateRentalsInDb = async ({ username }) => {
                 card_detail_id: activeRental.card_detail_id,
                 level: findCardLevel({
                     id: activeRental.card_detail_id,
-                    rarity: cardDetailObj[activeRental.card_detail_id].rarity,
+                    rarity: cardDetailsObj[activeRental.card_detail_id].rarity,
                     _xp: activeRental.xp,
                     gold: activeRental.gold,
                     edition: activeRental.edition,
-                    tier: cardDetailObj[activeRental.card_detail_id].tier,
+                    tier: cardDetailsObj[activeRental.card_detail_id].tier,
                     alpha_xp: 0,
                 }),
                 card_uid: activeRental.card_id,
@@ -286,6 +296,6 @@ const updateRentalsInDb = async ({ username }) => {
     }
 };
 
-// updateRentalsInDb({ username: 'xdww' });
+updateRentalsInDb({ username: 'xdww' });
 
 export default updateRentalsInDb;

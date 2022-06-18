@@ -44,7 +44,7 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.dateTime('created_at').defaultTo(knex.fn.now());
             // listings AT a point in time
-            // it can almost certainly be assumed that the low is the newest listing
+            // it can probably be assumed that the low is close to the newest listing
             t.dateTime('timestamp').nullable();
             t.integer('card_detail_id').notNullable();
             t.integer('level').notNullable();
