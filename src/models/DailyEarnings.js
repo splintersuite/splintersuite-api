@@ -9,7 +9,12 @@ class DailyEarnings extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['earnings_date', 'users_id', 'earnings', 'num_rentals'],
+            required: [
+                'earnings_date',
+                'users_id',
+                'earnings_dec',
+                'num_rentals',
+            ],
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
@@ -17,7 +22,7 @@ class DailyEarnings extends Model {
                 created_at: { type: 'object', format: 'date-time' },
                 updated_at: { type: 'object', format: 'date-time' },
                 num_rentals: { type: 'number' },
-                earnings: { type: 'number' },
+                earnings_dec: { type: 'number' },
             },
         };
     }

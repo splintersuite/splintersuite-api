@@ -70,7 +70,7 @@ exports.up = function (knex) {
             t.uuid('users_id').references('users.id').notNullable();
             t.timestamps(true, true);
             t.dateTime('earnings_date').notNullable();
-            t.float('earnings').notNullable();
+            t.float('earnings_dec').notNullable();
             t.integer('num_rentals').notNullable();
             // should add market rate for that card in the future...
         })
