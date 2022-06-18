@@ -137,7 +137,6 @@ exports.up = function (knex) {
             t.timestamps(true, true); // the same as the below
             t.dateTime('due_at').notNullable();
             t.dateTime('paid_at').nullable();
-            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.decimal('amount_due').notNullable();
             t.string('tx_id').nullable();
             t.string('season_name').nullable();
