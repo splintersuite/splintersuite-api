@@ -4,6 +4,7 @@ import Users from '../../models/Users.js';
 import UserRentalListings from '../../models/UserRentalListings.js';
 import UserRentals from '../../models/UserRentals.js';
 import findCardLevel from '../calculateCardLevel.js';
+import histFncs from '../historicalData';
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username }) => {
@@ -12,11 +13,16 @@ const updateRentalsInDb = async ({ username }) => {
         user = user[0];
     }
 
+    const cardDetails = await histFncs.getCardDetail();
+    const cardDetailObj = {};
+    cardDetails.forEach((card) => {
+        cardDetailObj[card.id] = card;
+    });
+
     const dbListings = await UserRentalListings.query().where({
         users_id: user.id,
         is_rental_active: false,
         cancelled_at: null,
-        rented_at: null,
     });
 
     const dbRentals = await UserRentals.query().where({
@@ -54,7 +60,7 @@ const updateRentalsInDb = async ({ username }) => {
     const rentalsWithoutListingsToInsert = [];
     const relistingToInsert = [];
     const unknownListingToInsert = [];
-    activeRentals.forEach((activeRental) => {
+    activeRentals.data.forEach((activeRental) => {
         if (
             dbListingsObj[activeRental.sell_trx_id] &&
             dbListingsObj[activeRental.sell_trx_id].card_uid ===
@@ -78,10 +84,10 @@ const updateRentalsInDb = async ({ username }) => {
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
                     price: activeRental.buy_price,
-                    rented_at: activeRental.rental_date,
+                    rented_at: new Date(activeRental.rental_date),
                     player_rented_to: activeRental.renter,
                     is_rental_active: true,
-                    cancelled_at: activeRental.cancel_date,
+                    cancelled_at: new Date(activeRental.cancel_date),
                 });
             } else {
                 // it's active now, but the price in the DB is different, we must have relisted since then...
@@ -91,7 +97,7 @@ const updateRentalsInDb = async ({ username }) => {
                     cancelled_at:
                         activeRental.cancel_date &&
                         activeRental.cancel_player === username
-                            ? activeRental.cancel_date
+                            ? new Date(activeRental.cancel_date)
                             : null,
                     card_detail_id: activeRental.card_detail_id,
                     level: dbListingsObj[activeRental.sell_trx_id].level,
@@ -106,12 +112,12 @@ const updateRentalsInDb = async ({ username }) => {
                     user_rental_listing_id:
                         dbListingsObj[activeRental.sell_trx_id].id,
                     // created_at: now,
-                    rented_at: activeRental.rental_date,
-                    cancelled_at: activeRental.cancel_date,
+                    rented_at: new Date(activeRental.rental_date),
+                    cancelled_at: new Date(activeRental.cancel_date),
                     player_rented_to: activeRental.renter,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
-                    price: activeRental.buy_price,
+                    price: Number(activeRental.buy_price),
                     is_rental_active: true,
                 });
             }
@@ -129,7 +135,7 @@ const updateRentalsInDb = async ({ username }) => {
                     db_rental_id: dbRentalObj[activeRental.sell_trx_id].id,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
-                    cancel_date: activeRental.cancel_date,
+                    cancel_date: new Date(activeRental.cancel_date),
                 });
             }
 
@@ -145,13 +151,13 @@ const updateRentalsInDb = async ({ username }) => {
                     cancelled_at:
                         activeRental.cancel_date &&
                         activeRental.cancel_player === username
-                            ? activeRental.cancel_date
+                            ? new Date(activeRental.cancel_date)
                             : null,
                     card_detail_id: activeRental.card_detail_id,
                     level: dbListingsObj[activeRental.sell_trx_id].level,
                     card_uid: activeRental.card_id,
                     sell_trx_id: activeRental.sell_trx_id,
-                    price: activeRental.buy_price,
+                    price: Number(activeRental.buy_price),
                     is_rental_active: true,
                     is_gold: activeRental.gold,
                 });
@@ -159,13 +165,13 @@ const updateRentalsInDb = async ({ username }) => {
                 rentalsWithoutListingsToInsert.push({
                     users_id: user.id,
                     // NEED THE user_rental_listing_id once the listing is inserted
-                    rented_at: activeRental.rental_date,
-                    cancelled_at: activeRental.cancel_date,
+                    rented_at: new Date(activeRental.rental_date),
+                    cancelled_at: new Date(activeRental.cancel_date),
                     player_rented_to: activeRental.renter,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
                     is_rental_active: true,
-                    price: activeRental.buy_price,
+                    price: Number(activeRental.buy_price),
                 });
             }
         } else {
@@ -176,13 +182,21 @@ const updateRentalsInDb = async ({ username }) => {
                 cancelled_at:
                     activeRental.cancel_date &&
                     activeRental.cancel_player === username
-                        ? activeRental.cancel_date
+                        ? new Date(activeRental.cancel_date)
                         : null,
                 card_detail_id: activeRental.card_detail_id,
-                level: findCardLevel(activeRental.xp),
+                level: findCardLevel({
+                    id: activeRental.card_detail_id,
+                    rarity: cardDetailObj[activeRental.card_detail_id].rarity,
+                    _xp: activeRental.xp,
+                    gold: activeRental.gold,
+                    edition: activeRental.edition,
+                    tier: cardDetailObj[activeRental.card_detail_id].tier,
+                    alpha_xp: 0,
+                }),
                 card_uid: activeRental.card_id,
                 sell_trx_id: activeRental.sell_trx_id,
-                price: activeRental.buy_price,
+                price: Number(activeRental.buy_price),
                 is_rental_active: true,
                 is_gold: activeRental.gold,
             });
@@ -191,13 +205,13 @@ const updateRentalsInDb = async ({ username }) => {
             rentalsWithoutListingsToInsert.push({
                 users_id: user.id,
                 // need user_rental_listing_id
-                rented_at: activeRental.rental_date,
-                cancelled_at: activeRental.cancel_date,
+                rented_at: new Date(activeRental.rental_date),
+                cancelled_at: new Date(activeRental.cancel_date),
                 player_rented_to: activeRental.renter,
                 rental_tx: activeRental.rental_tx,
                 sell_trx_id: activeRental.sell_trx_id,
                 is_rental_active: true,
-                price: activeRental.buy_price,
+                price: Number(activeRental.buy_price),
             });
         }
     });
@@ -229,10 +243,11 @@ const updateRentalsInDb = async ({ username }) => {
         const found = rentalsWithoutListingsToInsert.some((rental) => {
             if (rental.sell_trx_id === listing.sell_trx_id) {
                 rental.user_rental_listing_id = listing.id;
+                return true;
             }
         });
         if (!found) {
-            console.log('rental missing frmo insertedListings', rental);
+            console.log('listing missing frmo insertedListings', listing);
             console.log('insertedListings', insertedListings);
             process.exit();
         }
@@ -242,18 +257,17 @@ const updateRentalsInDb = async ({ username }) => {
     await UserRentals.query().insert(
         _.concat(rentalsWithoutListingsToInsert, rentalsToInsert)
     );
-
     // update listings to active in chunks with in statement
-    let idChunks = listingIdsToUpdateAsActiveRental;
-    if (listingIdsToUpdateAsActiveRental.length > 1000) {
-        idChunks = _.chunk(listingIdsToUpdateAsActiveRental, 1000);
+    let idActiveChunks = listingIdsToUpdateAsActiveRental;
+    if (listingIdsToUpdateAsActiveRental.length > 998) {
+        idActiveChunks = _.chunk(listingIdsToUpdateAsActiveRental, 998);
     }
     // ie it was unchanged
-    if (idChunks.length === listingIdsToUpdateAsActiveRental.length) {
-        idChunks = [idChunks];
+    if (idActiveChunks.length === listingIdsToUpdateAsActiveRental.length) {
+        idActiveChunks = [idActiveChunks];
     }
 
-    for (const idChunk of idChunks) {
+    for (const idChunk of idActiveChunks) {
         await UserRentalListings.query()
             .whereIn({ id: idChunk })
             .patch({ is_rental_active: true });
@@ -262,7 +276,7 @@ const updateRentalsInDb = async ({ username }) => {
     // painful amount of database calls...  but we have to update EACH record because we need to know
     // what the cancel of each rental_tx is...  woooof
     for (const rentalToCancel of rentalsToCancel) {
-        await UserRentalListings.query()
+        await UserRentals.query()
             .where({ id: rentalToCancel.db_rental_id })
             .patch({
                 rental_tx: rentalToCancel.rental_tx,
@@ -272,6 +286,6 @@ const updateRentalsInDb = async ({ username }) => {
     }
 };
 
-updateRentalsInDb({ username: 'xdww' });
+// updateRentalsInDb({ username: 'xdww' });
 
 export default updateRentalsInDb;

@@ -113,7 +113,7 @@ exports.up = function (knex) {
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.decimal('price').notNullable();
             // handle for updated prices mid rental?  is that a new rental?
-            t.unique(['users_id', 'created_at', 'rental_id']);
+            t.unique(['users_id', 'created_at', 'rental_tx']);
         })
         .createTable('brawls', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -176,7 +176,6 @@ exports.down = function (knex) {
         .dropTableIfExists('user_rentals')
         .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('invoices')
-        .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')
