@@ -1,16 +1,10 @@
 import express from 'express';
-import {
-    payInvoice,
-    getInvoices,
-    createInvoice,
-} from '../controllers/Invoices';
+import { payInvoice, getInvoices } from '../controllers/Invoices';
 
 const router = express.Router();
 
 router.post('/:id', payInvoice);
 
-router.get('/invoices', getInvoices);
-
-router.get('/:username', createInvoice);
+router.get('/:username', getInvoices);
 
 export default router;

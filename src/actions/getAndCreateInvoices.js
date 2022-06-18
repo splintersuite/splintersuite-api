@@ -32,7 +32,7 @@ export const createInvoiceForUsersId = async ({ users_id }) => {
     return invoice;
 };
 
-export const getInvoices = async ({ users_id }) => {
+export const getInvoicesForUser = async ({ users_id }) => {
     const invoices = await Invoices.query().where({ users_id });
 
     if (!Array.isArray(invoices)) {

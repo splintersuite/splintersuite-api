@@ -2,7 +2,7 @@ import Invoices from '../models/Invoices.js';
 import { getUser } from '../actions/createAndGetUser.js';
 import {
     createInvoiceForUsersId,
-    getInvoices,
+    getInvoicesForUser,
 } from '../actions/getAndCreateInvoices.js';
 
 export const payInvoice = async (req, res, next) => {
@@ -31,7 +31,7 @@ export const getInvoices = async (req, res, next) => {
         res.send(invoices);
     } else {
         const user = await getUser({ username });
-        const invoices = await getInvoices({ users_id: user.id });
+        const invoices = await getInvoicesForUser({ users_id: user.id });
         res.send(invoices);
     }
 };
