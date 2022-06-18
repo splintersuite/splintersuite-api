@@ -1,9 +1,13 @@
+const knexfile = require('../../knexfile');
+
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
     console.log('knex up is called on _create migration');
+    console.log('knex', knex);
+    console.log('knex.raw', knex.raw);
 
     // get "https://api2.splinterlands.com/market/for_rent_by_card
     // with params card_id: int, edition: int, gold: bool = False"
@@ -11,7 +15,7 @@ exports.up = function (knex) {
     return knex.schema
         .createTable('market_rental_prices', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.dateTime('created_at').notNullable();
+            t.dateTime('created_at').defaultTo(knex.fn.now());
             // we'll be aggregating the data over some window
             t.dateTime('period_start_time').notNullable();
             t.dateTime('period_end_time').notNullable();
@@ -38,7 +42,7 @@ exports.up = function (knex) {
         })
         .createTable('market_rental_listings', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.dateTime('created_at').notNullable();
+            t.dateTime('created_at').defaultTo(knex.fn.now());
             // listings AT a point in time
             // it can almost certainly be assumed that the low is the newest listing
             t.dateTime('timestamp').nullable();
@@ -55,7 +59,7 @@ exports.up = function (knex) {
         })
         .createTable('users', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
+            t.timestamps(true, true); // the same as the below
             t.string('username').notNullable();
             t.unique(['username']);
             // maybe add email to this??
@@ -72,8 +76,8 @@ exports.up = function (knex) {
         .createTable('user_rental_listings', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.dateTime('sl_created_at').notNullable();
+            t.timestamps(true, true); // the same as the below
             t.dateTime('cancelled_at').nullable();
             t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
             t.string('level').notNullable();
@@ -90,18 +94,18 @@ exports.up = function (knex) {
             t.uuid('user_rental_listing_id')
                 .references('user_rental_listings.id')
                 .notNullable();
-            t.dateTime('created_at').notNullable();
+            t.timestamps(true, true); // the same as the below
             t.dateTime('rented_at').notNullable();
             t.dateTime('cancelled_at').nullable();
             t.string('player_rented_to').notNullable(); // good to have to identify noobs
-            t.string('rental_id').notNullable();
+            t.string('rental_tx').notNullable();
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
             // shouldn't always reference user_rental_listings
             // in the case that we are hitting bids instead of offering
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.decimal('price').notNullable();
             // handle for updated prices mid rental?  is that a new rental?
-            t.unique(['users_id', 'created_at', 'rental_id']);
+            t.unique(['users_id', 'created_at', 'rental_tx']);
         })
         .createTable('brawls', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -130,13 +134,20 @@ exports.up = function (knex) {
             t.uuid('users_id').references('users.id').notNullable();
             t.uuid('season_id').references('seasons.id').notNullable();
             t.dateTime('discounted_due_at').notNullable();
+            t.timestamps(true, true); // the same as the below
             t.dateTime('due_at').notNullable();
             t.dateTime('paid_at').nullable();
             t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
             t.decimal('amount_due').notNullable();
             t.string('tx_id').nullable();
             t.string('season_name').nullable();
-        });
+        })
+        .then(() => knex.raw(knexfile.default.onUpdateTrigger('users')))
+        .then(() => knex.raw(knexfile.default.onUpdateTrigger('invoices')))
+        .then(() => knex.raw(knexfile.default.onUpdateTrigger('user_rentals')))
+        .then(() =>
+            knex.raw(knexfile.default.onUpdateTrigger('user_rental_listings'))
+        );
 };
 
 /**
@@ -151,8 +162,8 @@ exports.down = function (knex) {
         .dropTableIfExists('rental_listings')
         .dropTableIfExists('daily_earnings')
         .dropTableIfExists('user_rentals')
-        .dropTableIfExists('invoices')
         .dropTableIfExists('user_rental_listings')
+        .dropTableIfExists('invoices')
         .dropTableIfExists('users')
         .dropTableIfExists('brawls')
         .dropTableIfExists('seasons')

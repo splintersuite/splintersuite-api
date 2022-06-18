@@ -51,8 +51,6 @@ const collectData = async () => {
                 paymentCurrency: trade.payment_currency,
                 rentalDate: trade.rental_date,
                 rentalDays: trade.rental_days,
-                isInLastTwelveHours:
-                    Math.abs(now - trade.rental_date) / 360000 < 12,
             });
         });
 
@@ -65,8 +63,10 @@ const collectData = async () => {
                 // average of everything on loan...
                 const twelveHoursArr = trades[level][cardType]
                     .filter((trade) => {
-                        new Date(trade.rental_date).getTime() >
-                            twelveHoursAgoTime;
+                        return (
+                            new Date(trade.rentalDate).getTime() >
+                            twelveHoursAgoTime
+                        );
                     })
                     .map(({ price }) => price);
                 const allArr = trades[level][cardType].map(
@@ -128,5 +128,7 @@ const getCardDetail = async () => {
     );
     return cards.data;
 };
+
+collectData();
 
 export default { collectData, getCardDetail };

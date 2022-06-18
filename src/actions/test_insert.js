@@ -15,7 +15,19 @@ const insertUser = async ({ username }) => {
         });
 };
 
-insertUser({ username: 'hackinhukk' });
+const patcbUser = async ({ username }) => {
+    const now = new Date();
+    await Users.query()
+        .where({ username })
+        .patch({
+            username: 'wtf',
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+};
+
+insertUser({ username: 'xdww' });
 
 const queryJboxx = async () => {
     const users = await Users.query().catch((err) => {
