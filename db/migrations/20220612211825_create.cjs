@@ -80,12 +80,12 @@ exports.up = function (knex) {
             t.timestamps(true, true);
             t.dateTime('cancelled_at').nullable();
             t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
+            t.integer('level').notNullable();
             t.float('price').notNullable();
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.boolean('is_gold').notNullable();
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
             t.string('card_uid').notNullable();
-            t.string('level').notNullable();
             t.unique(['created_at', 'card_uid']); // TNT NOTE: I think we need to make this a larger composite key imo
         })
         .createTable('user_rentals', (t) => {
