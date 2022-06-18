@@ -1,8 +1,8 @@
 import axios from 'axios';
-import findCardLevel from './calculateCardLevel.js';
-import mathFncs from '../util/math.js';
-import MarketRentalPrices from '../models/MarketRentalPrices.js';
-import cardFncs from '../actions/getCardDetails';
+import findCardLevel from '../calculateCardLevel.js';
+import mathFncs from '../../util/math.js';
+import MarketRentalPrices from '../../models/MarketRentalPrices.js';
+import cardFncs from '../../actions/getCardDetails';
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
@@ -123,4 +123,4 @@ const collectData = async () => {
     }
 };
 
-export default { collectData, getCardDetail };
+export default { collectData };
