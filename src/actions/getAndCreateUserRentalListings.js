@@ -9,14 +9,9 @@ export const createNewRentalListings = async ({
     console.log(`rentalListings `);
     console.log(rentalListings);
 
-    let allNewListings = [];
-
-    // allNewListings = [...newRentalListings];
-    // console.log('allNewListings after adding newRentalListings');
-    // console.log(allNewListings);
-    // allNewListings = [...rentalRelistings];
-    // console.log('allNewListings after adding rentalRelistings: ');
-    // console.log(allNewListings);
+    rentalListings.forEach((rentalListing) => {
+        rentalListing.sl_created_at = new Date(rentalListing.sl_created_at);
+    });
 
     let chunks = rentalListings;
 
