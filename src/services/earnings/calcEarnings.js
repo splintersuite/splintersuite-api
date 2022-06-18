@@ -1,5 +1,5 @@
-import DailyEarnings from '../models/DailyEarnings';
-import UserRentals from '../models/UserRentals';
+import DailyEarnings from '../../models/DailyEarnings';
+import UserRentals from '../../models/UserRentals';
 
 const calcDailyEarnings = async ({ users_id }) => {
     const rentals = await UserRentals.query().where({
@@ -27,5 +27,4 @@ const insertDailyEarnings = async ({ users_id }) => {
 export default {
     insertDailyEarnings,
     calcDailyEarnings,
-    calcAggregatedEarnings,
 };

@@ -1,17 +1,17 @@
-user.stats = {
-    daily: {
-        amount: 324,
-        change: -0.0345,
-    },
-    weekly: {
-        amount: 3124,
-        change: 0.1045,
-    },
-    monthly: {
-        amount: 30124,
-        change: 0.1245,
-    },
-};
+// user.stats = {
+//     daily: {
+//         amount: 324,
+//         change: -0.0345,
+//     },
+//     weekly: {
+//         amount: 3124,
+//         change: 0.1045,
+//     },
+//     monthly: {
+//         amount: 30124,
+//         change: 0.1245,
+//     },
+// };
 
 // weekly: [10, 31, 22, 35, 10, 2, 45];
 
