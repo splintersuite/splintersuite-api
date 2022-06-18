@@ -50,14 +50,12 @@ const updateRentalsForUsersEvening = async () => {
             cardDetailsObj,
         });
         if (count !== 0 && count % 100 === 0) {
-            console.log('sleeping');
             await retryFncs.sleep(fiveMinutesInMS);
         }
         await retryFncs.sleep(1000);
         count++;
     }
 
-    console.log('made here');
     // could split this in functions, w/e
     // calculate and insert earnings
     for (const user of users) {
@@ -67,8 +65,6 @@ const updateRentalsForUsersEvening = async () => {
         });
     }
 };
-
-updateRentalsForUsersEvening();
 
 const rentalWhenToRunMorning = '* 11 * * *';
 const rentalWhenToRunEvening = '* 23 * * *';
