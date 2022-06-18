@@ -68,8 +68,9 @@ exports.up = function (knex) {
         .createTable('daily_earnings', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            t.dateTime('timestamp').notNullable();
-            t.float('earnings').notNullable();
+            t.timestamps(true, true);
+            t.dateTime('earnings_date').notNullable();
+            t.float('earnings_dec').notNullable();
             t.integer('num_rentals').notNullable();
             // should add market rate for that card in the future...
         })
@@ -105,7 +106,7 @@ exports.up = function (knex) {
             // shouldn't always reference user_rental_listings
             // in the case that we are hitting bids instead of offering
             // handle for updated prices mid rental?  is that a new rental?
-            t.unique(['users_id', 'created_at', 'rental_tx']);
+            t.unique(['users_id', 'created_at', 'rental_tx', 'sell_trx_id']);
         })
         .createTable('brawls', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -146,6 +147,9 @@ exports.up = function (knex) {
         .then(() => knex.raw(knexfile.default.onUpdateTrigger('user_rentals')))
         .then(() =>
             knex.raw(knexfile.default.onUpdateTrigger('user_rental_listings'))
+        )
+        .then(() =>
+            knex.raw(knexfile.default.onUpdateTrigger('daily_earnings'))
         );
 };
 
