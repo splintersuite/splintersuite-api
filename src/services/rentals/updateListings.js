@@ -4,11 +4,20 @@ import findCardLevel from '../calculateCardLevel.js';
 import _ from 'lodash';
 
 const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
-    const dbListings = await UserRentalListings.query().where({
-        users_id,
-        is_rental_active: false,
-        cancelled_at: null,
-    });
+    const today = new Date();
+    const yday = new Date(today.setDate(today.getDate() - 1));
+    const tmrw = new Date(today.setDate(today.getDate() + 1));
+    const dbListings = await UserRentalListings.query()
+        .where({
+            users_id,
+            // is_rental_active: false,
+            cancelled_at: null,
+        })
+        .orWhereBetween('cancelled_at', [yday, tmrw]);
+
+    const dbListingsNotRented = dbListings.filter(
+        ({ is_rental_active }) => !is_rental_active
+    );
 
     const apiListings = await collectionFncs.getCollectionListings({
         username,
@@ -17,18 +26,15 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
     const listingsToInsert = [];
     // iterate through api listings to check vs dbListings
     apiListings.notRented.forEach((apiListing) => {
-        const found = dbListings.some((dbListing) => {
-            if (
+        const found = dbListingsNotRented.some(
+            (dbListing) =>
                 apiListing.sell_trx_id === dbListing.sell_trx_id &&
                 apiListing.uid === dbListing.card_uid
-            ) {
-                return true;
-            }
-        });
+        );
         if (!found) {
             listingsToInsert.push({
                 users_id,
-                sl_created_at: new Date(apiListing.market_created_at),
+                sl_created_at: new Date(apiListing.market_created_date),
                 cancelled_at: null,
                 card_detail_id: apiListing.card_detail_id,
                 level: findCardLevel({
@@ -49,12 +55,17 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
         }
     });
 
-    await UserRentalListings.query().insert(listingsToInsert);
+    if (listingsToInsert.length > 0) {
+        await UserRentalListings.query().insert(listingsToInsert);
+    }
 
-    console.log('works');
     return {
-        dbListings: _.concat(listingsToInsert, dbListings),
+        dbListingsNotRented: _.concat(listingsToInsert, dbListingsNotRented),
+        dbListingsRented: dbListings.filter(
+            ({ is_rental_active }) => is_rental_active === true
+        ),
         apiListings,
+        insertedListings: listingsToInsert,
     };
 };
 

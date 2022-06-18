@@ -2,11 +2,12 @@ import axios from 'axios';
 import findCardLevel from './calculateCardLevel.js';
 import mathFncs from '../util/math.js';
 import MarketRentalPrices from '../models/MarketRentalPrices.js';
+import cardFncs from '../actions/getCardDetails';
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
 const collectData = async () => {
-    const cardsDetails = await getCardDetail();
+    const cardsDetails = await cardFncs.getCardDetail();
     const now = new Date();
 
     for (const card of cardsDetails) {
@@ -22,7 +23,7 @@ const collectData = async () => {
         }
         const trades = {};
         activeTrades.data.forEach((trade) => {
-            const level = findCardLevel({
+            findCardLevel({
                 id: card.card_detail_id,
                 rarity: card.rarity,
                 _xp: trade.xp,
@@ -121,14 +122,5 @@ const collectData = async () => {
         await MarketRentalPrices.query().insert(uploadArr);
     }
 };
-
-const getCardDetail = async () => {
-    const cards = await axios.get(
-        'https://api2.splinterlands.com/cards/get_details'
-    );
-    return cards.data;
-};
-
-collectData();
 
 export default { collectData, getCardDetail };
