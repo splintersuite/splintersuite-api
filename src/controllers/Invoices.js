@@ -1,6 +1,9 @@
 import Invoices from '../models/Invoices.js';
 import { getUser } from '../actions/createAndGetUser.js';
-import { createInvoiceForUsersId } from '../actions/getAndCreateInvoices.js';
+import {
+    createInvoiceForUsersId,
+    getInvoices,
+} from '../actions/getAndCreateInvoices.js';
 
 export const payInvoice = async (req, res, next) => {
     const { id } = req.params;
@@ -18,4 +21,17 @@ export const createInvoice = async (req, res, next) => {
     const invoice = await createInvoiceForUsersId({ users_id: user.id });
 
     res.send(invoice);
+};
+
+export const getInvoices = async (req, res, next) => {
+    const { username } = req.params;
+
+    if (!username) {
+        const invoices = await Invoices.query();
+        res.send(invoices);
+    } else {
+        const user = await getUser({ username });
+        const invoices = await getInvoices({ users_id: user.id });
+        res.send(invoices);
+    }
 };

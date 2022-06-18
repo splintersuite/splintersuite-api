@@ -31,3 +31,13 @@ export const createInvoiceForUsersId = async ({ users_id }) => {
     console.log(invoice);
     return invoice;
 };
+
+export const getInvoices = async ({ users_id }) => {
+    const invoices = await Invoices.query().where({ users_id });
+
+    if (!Array.isArray(invoices)) {
+        throw new Error('database errored on querying invoices');
+    }
+
+    return invoices;
+};
