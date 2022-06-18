@@ -1,16 +1,11 @@
 import _ from 'lodash';
 import Users from '../../models/Users.js';
-import UserRentalListings from '../../models/UserRentalListings.js';
 import UserRentals from '../../models/UserRentals.js';
 import findCardLevel from '../calculateCardLevel.js';
 import cardFncs from '../../actions/getCardDetails';
 import collectionFncs from '../../actions/getCollectionFncs';
 import updateListings from './updateListings.js';
 import rentalHelpers from './rentalHelpers.js';
-
-Number.prototype.round = function (places) {
-    return +(Math.round(this + 'e+' + places) + 'e-' + places);
-};
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username }) => {
@@ -102,8 +97,11 @@ const updateRentalsInDb = async ({ username }) => {
         ) {
             // it's currently in the database as LISTING, not a rental
             if (
-                Number(activeRental.buy_price).round(3) ===
-                Number(dbListingsObj[activeRental.sell_trx_id].price).round(3)
+                _.round(Number(activeRental.buy_price), 3) ===
+                _.round(
+                    Number(dbListingsObj[activeRental.sell_trx_id].price),
+                    3
+                )
             ) {
                 // ok it's active and the price is the same...
                 // update the listing as ACTIVE rental
@@ -194,8 +192,8 @@ const updateRentalsInDb = async ({ username }) => {
             // we must have relisted AND we don't know about listing at the moment
             // so we need to insert a new one
             if (
-                Number(activeRental.buy_price).round(3) !==
-                Number(dbRentalsObj[activeRental.sell_trx_id].price).round(3)
+                _.round(Number(activeRental.buy_price), 3) !==
+                _.round(Number(dbRentalsObj[activeRental.sell_trx_id].price), 3)
             ) {
                 relistingToInsert.push({
                     users_id: user.id,
