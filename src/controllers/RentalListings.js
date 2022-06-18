@@ -6,10 +6,15 @@ export const addRentalListings = async (req, res, next) => {
     const { rentalListings } = req.body;
     console.debug('rentalListings :');
     console.debug(rentalListings);
+
+    if (rentalListings.length === 0) {
+        res.sendStatus(400);
+    } else {
+        await createNewRentalListings({ rentalListings });
+        res.send('ok');
+    }
+
     // const user = await getUser([username]);
 
     //await createNewRentalListings({users_id, })
-
-    await createNewRentalListings({ rentalListings });
-    res.send('ok');
 };
