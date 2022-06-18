@@ -102,8 +102,8 @@ const updateRentalsInDb = async ({ username }) => {
         ) {
             // it's currently in the database as LISTING, not a rental
             if (
-                Number(activeRental.buy_price).round(2) ===
-                Number(dbListingsObj[activeRental.sell_trx_id].price).round(2)
+                Number(activeRental.buy_price).round(3) ===
+                Number(dbListingsObj[activeRental.sell_trx_id].price).round(3)
             ) {
                 // ok it's active and the price is the same...
                 // update the listing as ACTIVE rental
@@ -185,8 +185,8 @@ const updateRentalsInDb = async ({ username }) => {
             // we must have relisted AND we don't know about listing at the moment
             // so we need to insert a new one
             if (
-                Number(activeRental.buy_price).round(2) !==
-                Number(dbRentalsObj[activeRental.sell_trx_id].price).round(2)
+                Number(activeRental.buy_price).round(3) !==
+                Number(dbRentalsObj[activeRental.sell_trx_id].price).round(3)
             ) {
                 relistingToInsert.push({
                     users_id: user.id,
