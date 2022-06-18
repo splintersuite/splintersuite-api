@@ -106,7 +106,7 @@ exports.up = function (knex) {
             // shouldn't always reference user_rental_listings
             // in the case that we are hitting bids instead of offering
             // handle for updated prices mid rental?  is that a new rental?
-            t.unique(['users_id', 'created_at', 'rental_tx']);
+            t.unique(['users_id', 'created_at', 'rental_tx', 'sell_trx_id']);
         })
         .createTable('brawls', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
