@@ -1,5 +1,6 @@
 import express from 'express';
 import Users from '../models/Users.js';
+import { getUserInfo } from '../controllers/User.js';
 
 const router = express.Router();
 
@@ -9,13 +10,7 @@ router.get('/', async (req, res) => {
     res.send(users);
 });
 
-router.get('/:username', async (req, res) => {
-    const { username } = req.params;
-    // const user = await Users.query().where({ username });
-    // console.log('user', user);
-    // res.send(user);
-    res.send({ message: 'test' });
-});
+router.get('/:username', getUserInfo);
 
 router.get('/:id', async (req, res) => {
     const { id } = req.params;

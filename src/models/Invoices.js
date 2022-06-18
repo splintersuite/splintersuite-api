@@ -14,16 +14,19 @@ class Invoices extends Model {
                 'discounted_due_at',
                 'due_at',
                 'amount_due',
-                'user_id',
+                'users_id',
                 'season_id',
             ],
             properties: {
                 id: { type: 'string' },
-                user_id: { type: 'string' },
+                users_id: { type: 'string' },
                 season_id: { type: 'string' },
                 discounted_due_at: { type: 'object', format: 'date-time' },
+<<<<<<< HEAD
                 created_at: { type: 'object', format: 'date-time' },
                 updated_at: { type: 'object', format: 'date-time' },
+=======
+>>>>>>> a6427d9e34355df0560e43d1b2514573c8238254
                 due_at: { type: 'object', format: 'date-time' },
                 paid_at: { type: 'object', format: 'date-time' },
                 season_name: { type: 'string' },

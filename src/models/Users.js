@@ -15,7 +15,6 @@ class Users extends Model {
             required: ['username'],
             properties: {
                 id: { type: 'string' },
-                created_at: { type: 'object', format: 'date-time' },
                 username: { type: 'string' },
             },
         };
