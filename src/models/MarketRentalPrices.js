@@ -9,7 +9,6 @@ class MarketRentalPrices extends Model {
         return {
             type: 'object',
             required: [
-                'created_at',
                 'period_start_time',
                 'period_end_time',
                 'card_detail_id',
