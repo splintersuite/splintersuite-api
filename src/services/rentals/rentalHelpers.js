@@ -46,7 +46,7 @@ const patchRentalsToCancel = async ({ rentalsToCancel }) => {
             .patch({
                 rental_tx: rentalToCancel.rental_tx,
                 sell_trx_id: rentalToCancel.sell_trx_id,
-                cancelled_at: rentalToCancel.cancel_date,
+                cancelled_at: rentalToCancel.cancelled_at,
             });
     }
 };
@@ -64,8 +64,9 @@ const insertRentalsFromNewListings = async ({
             }
         });
         if (!found) {
-            console.log('should never happen - bug', listing);
-            throw new Error('missing id for listing', listing);
+            throw new Error(
+                `missing id for rental ${rental.sell_trx_id} ${rental.rental_tx}`
+            );
         }
     });
 

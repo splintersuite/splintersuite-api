@@ -121,7 +121,10 @@ const updateRentalsInDb = async ({ username }) => {
                     rented_at: new Date(activeRental.rental_date),
                     player_rented_to: activeRental.renter,
                     is_rental_active: true,
-                    cancelled_at: new Date(activeRental.cancel_date),
+                    cancelled_at:
+                        activeRental.cancel_date !== null
+                            ? new Date(activeRental.cancel_date)
+                            : null,
                 });
             } else {
                 // it's active now, but the price in the DB is different, we must have relisted since then...
@@ -150,7 +153,10 @@ const updateRentalsInDb = async ({ username }) => {
                     user_rental_listing_id:
                         dbListingsObj[activeRental.sell_trx_id].id,
                     rented_at: new Date(activeRental.rental_date),
-                    cancelled_at: new Date(activeRental.cancel_date),
+                    cancelled_at:
+                        activeRental.cancel_date !== null
+                            ? new Date(activeRental.cancel_date)
+                            : null,
                     player_rented_to: activeRental.renter,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
@@ -168,7 +174,7 @@ const updateRentalsInDb = async ({ username }) => {
             // but we're only looking at rentals without a cancellation date or within a day of now
             if (
                 activeRental.cancel_date &&
-                !dbRentalsObj[activeRental.sell_trx_id].cancel_date
+                !dbRentalsObj[activeRental.sell_trx_id].cancelled_at
             ) {
                 // so this rental has been cancelled... lets update this rental to be cancelled
                 // keep in mind the Listing re-lists at the SAME price when the rentals ends
@@ -177,7 +183,10 @@ const updateRentalsInDb = async ({ username }) => {
                     db_rental_id: dbRentalsObj[activeRental.sell_trx_id].id,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
-                    cancel_date: new Date(activeRental.cancel_date),
+                    cancelled_at:
+                        activeRental.cancel_date !== null
+                            ? new Date(activeRental.cancel_date)
+                            : null,
                 });
             }
 
@@ -211,7 +220,10 @@ const updateRentalsInDb = async ({ username }) => {
                     users_id: user.id,
                     // NEED THE user_rental_listing_id once the listing is inserted
                     rented_at: new Date(activeRental.rental_date),
-                    cancelled_at: new Date(activeRental.cancel_date),
+                    cancelled_at:
+                        activeRental.cancel_date !== null
+                            ? new Date(activeRental.cancel_date)
+                            : null,
                     player_rented_to: activeRental.renter,
                     rental_tx: activeRental.rental_tx,
                     sell_trx_id: activeRental.sell_trx_id,
@@ -229,11 +241,9 @@ const updateRentalsInDb = async ({ username }) => {
             if (!dbRentalsObj[activeRental.sell_trx_id]) {
                 // we need to make a rental obj
                 // this should never really happen...
-                console.log(
-                    'bug here, active listing without corresponding rental',
-                    activeRental.sell_trx_id
+                throw new Error(
+                    `bug here, active listing without corresponding rental${activeRental.sell_trx_id}`
                 );
-                process.exit();
             }
         } else {
             // we don't know about the listing OR transaction
@@ -271,7 +281,10 @@ const updateRentalsInDb = async ({ username }) => {
                 users_id: user.id,
                 // need user_rental_listing_id.  will pluck it once we insert the UserRentalListing
                 rented_at: new Date(activeRental.rental_date),
-                cancelled_at: new Date(activeRental.cancel_date),
+                cancelled_at:
+                    activeRental.cancel_date !== null
+                        ? new Date(activeRental.cancel_date)
+                        : null,
                 player_rented_to: activeRental.renter,
                 rental_tx: activeRental.rental_tx,
                 sell_trx_id: activeRental.sell_trx_id,
@@ -305,7 +318,7 @@ const updateRentalsInDb = async ({ username }) => {
     }
 
     // insert listing we don't know about
-    const newlyInsertedListings = rentalHelpers.insertNewListings({
+    const newlyInsertedListings = await rentalHelpers.insertNewListings({
         unknownListingToInsert,
         relistingToInsert,
     });
