@@ -60,7 +60,6 @@ exports.up = function (knex) {
         .createTable('users', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.timestamps(true, true); // the same as the below
-            // t.dateTime('created_at').defaultTo(knex.fn.now());
             t.string('username').notNullable();
             t.unique(['username']);
             // maybe add email to this??
@@ -77,11 +76,8 @@ exports.up = function (knex) {
         .createTable('user_rental_listings', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
+            t.dateTime('sl_created_at').notNullable();
             t.timestamps(true, true); // the same as the below
-            // t.dateTime('created_at').defaultTo(knex.fn.now());
-            // t.dateTime('updated_at').defaultTo(
-            //     knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-            // );
             t.dateTime('cancelled_at').nullable();
             t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
             t.string('level').notNullable();
@@ -90,7 +86,7 @@ exports.up = function (knex) {
             t.decimal('price').notNullable();
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.boolean('is_gold').notNullable();
-            t.unique(['created_at', 'card_uid']);
+            t.unique(['created_at', 'card_uid']); // TNT NOTE: I think we need to make this a larger composite key imo
         })
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -99,10 +95,6 @@ exports.up = function (knex) {
                 .references('user_rental_listings.id')
                 .notNullable();
             t.timestamps(true, true); // the same as the below
-            // t.dateTime('created_at').defaultTo(knex.fn.now());
-            // t.timestamp('updated_at').defaultTo(
-            //     knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-            // );
             t.dateTime('rented_at').notNullable();
             t.dateTime('cancelled_at').nullable();
             t.string('player_rented_to').notNullable(); // good to have to identify noobs
@@ -143,10 +135,6 @@ exports.up = function (knex) {
             t.uuid('season_id').references('seasons.id').notNullable();
             t.dateTime('discounted_due_at').notNullable();
             t.timestamps(true, true); // the same as the below
-            // t.dateTime('created_at').defaultTo(knex.fn.now());
-            // t.dateTime('updated_at').defaultTo(
-            //     knex.raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP')
-            // );
             t.dateTime('due_at').notNullable();
             t.dateTime('paid_at').nullable();
             t.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
