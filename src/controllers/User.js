@@ -2,7 +2,7 @@ import {
     createAndReturnUser,
     getUser,
     getUsersDataForFrontend,
-} from '../actions/createAndGetUser';
+} from '../actions/createAndGetUser.js';
 
 // import { getRecentSeasonInvoicesForUsersId } from '../actions/getAndCreateInvoices';
 

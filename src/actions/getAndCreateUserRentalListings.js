@@ -5,10 +5,6 @@ export const createNewRentalListings = async ({
     // users_id,
     rentalListings,
 }) => {
-    console.log(`createNewRentalListings start`);
-    console.log(`rentalListings `);
-    console.log(rentalListings);
-
     rentalListings.forEach((rentalListing) => {
         rentalListing.sl_created_at = new Date(rentalListing.sl_created_at);
     });
@@ -23,8 +19,6 @@ export const createNewRentalListings = async ({
         chunks = [chunks];
     }
     for (const transChunk of chunks) {
-        console.log('transChunk: ');
-        console.log(transChunk);
         await UserRentalListings.query().insert(transChunk);
     }
 

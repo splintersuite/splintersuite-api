@@ -16,6 +16,7 @@ class Users extends Model {
             properties: {
                 id: { type: 'string' },
                 username: { type: 'string' },
+                locked: { type: 'boolean' },
             },
         };
     }

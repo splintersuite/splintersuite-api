@@ -1,22 +1,16 @@
-import Invoices from '../models/Invoices';
-import { getMostRecentSeason } from './insertBrawlAndSeasonData';
+import Invoices from '../models/Invoices.js';
+import { getMostRecentSeason } from './insertBrawlAndSeasonData.js';
 
 export const getRecentSeasonInvoicesForUsersId = async ({ users_id }) => {
-    console.log(`getInvoiceForUser start`);
-
     const invoice = await Invoices.query()
         .join('season', { 'invoices.season_id': 'seasons.id' })
         .select('invoices.*', 'seasons.season_name')
         .where({ users_id });
 
-    console.log('invoice: ');
-    console.log(invoice);
-
     return invoice;
 };
 
 export const createInvoiceForUsersId = async ({ users_id }) => {
-    console.log('createInvoiceForUsersId start');
     const recentSeason = await getMostRecentSeason();
 
     const now = new Date();
@@ -27,8 +21,6 @@ export const createInvoiceForUsersId = async ({ users_id }) => {
         due_at: now,
         amount_due: 1,
     });
-    console.log('created invoice: ');
-    console.log(invoice);
     return invoice;
 };
 

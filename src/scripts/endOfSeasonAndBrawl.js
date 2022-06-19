@@ -3,7 +3,12 @@ import {
     insertBrawl,
     insertSeason,
 } from '../actions/insertBrawlAndSeasonData.js';
-//
+import {
+    createInvoicesForSeason,
+    unlockUsers,
+    lockPastDueUsers,
+} from '../actions/invoices';
+
 const getSplinterlandsSettings = async () => {
     try {
         // console.log('getSplinterlandsSettings start');
@@ -63,6 +68,8 @@ const getSLBrawlData = (settings) => {
 //   start: '2022-06-13T06:00:00.000Z',
 //   end: '2022-06-18T07:00:00.000Z'
 // }
+
+// runs every 4 days
 export const getSLSeasonAndBrawlData = async () => {
     try {
         //  console.log('getSLSeasonData start');
@@ -75,13 +82,16 @@ export const getSLSeasonAndBrawlData = async () => {
 
         await insertBrawl({ brawlData });
 
-        await insertSeason({ seasonData });
-
+        const newSeason = await insertSeason({ seasonData });
+        if (newSeason) {
+            const userIdsToLock = await lockPastDueUsers();
+            await unlockUsers({ userIdsToLock });
+            // create invoices for LAST season!
+            await createInvoicesForSeason();
+        }
         return;
     } catch (err) {
         console.error(`getSLSeasonData error: ${err.message}`);
         throw err;
     }
 };
-
-getSLSeasonAndBrawlData();

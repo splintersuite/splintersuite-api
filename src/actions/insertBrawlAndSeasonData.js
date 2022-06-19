@@ -27,12 +27,22 @@ export const insertSeason = async ({ seasonData }) => {
         // console.log(`insertSeason start`);
         const { id, ends, name } = seasonData;
 
-        const end_date = new Date(ends);
-        await Seasons.query().insert({
+        const dbSeason = await Seasons.query().findOne({
             season_id: id,
-            end_date,
             season_name: name,
         });
+
+        const now = new Date();
+        if (!dbSeason && now.getTime() > dbSeason.end_date.getTime()) {
+            const newSeason = await Seasons.query().insert({
+                season_id: id,
+                end_date: new Date(ends),
+                season_name: name,
+            });
+
+            return newSeason;
+        }
+        return null;
     } catch (err) {
         console.error(`insertSeason error: ${err.message}`);
         throw err;
@@ -40,7 +50,6 @@ export const insertSeason = async ({ seasonData }) => {
 };
 
 export const getMostRecentSeason = async () => {
-    console.log('getMostRecentSeason start');
     // TNT IDEA; should we add a boolean to season being active/ended? Therefore we could search for most recent season that ended cuz otherwise it would get season in progress
 
     const season = await Seasons.query().orderBy('end_date', 'desc');

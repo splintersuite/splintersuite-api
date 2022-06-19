@@ -1,4 +1,4 @@
-import axiosInstance from '../util/axiosInstance';
+import axiosInstance from '../util/axiosInstance.js';
 
 // could add cache functionality here to limit api calls
 const getCollection = async ({ username }) => {

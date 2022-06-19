@@ -94,7 +94,7 @@ const collectData = async ({
                 price_currency: 'DEC',
                 period_start_time: twelveHoursAgo,
                 period_end_time: now,
-                aggregaton_type: ALL_OPEN_TRADES,
+                aggregation_type: ALL_OPEN_TRADES,
             });
             uploadArr.push({
                 created_at: now,
@@ -109,7 +109,7 @@ const collectData = async ({
                 price_currency: 'DEC',
                 period_start_time: twelveHoursAgo,
                 period_end_time: now,
-                aggregaton_type: TRADES_DURING_PERIOD,
+                aggregation_type: TRADES_DURING_PERIOD,
             });
         }
     }

@@ -11,6 +11,7 @@ export const payInvoice = async (req, res, next) => {
 
     await Invoices.query().where({ id }).update({ paid_at });
 
+    // return whether or not the user is locked out
     res.send('Your invoice is confirmed as paid off');
 };
 

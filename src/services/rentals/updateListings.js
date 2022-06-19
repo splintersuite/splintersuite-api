@@ -1,5 +1,5 @@
-import UserRentalListings from '../../models/UserRentalListings';
-import collectionFncs from '../../actions/getCollectionFncs';
+import UserRentalListings from '../../models/UserRentalListings.js';
+import collectionFncs from '../../actions/getCollectionFncs.js';
 import findCardLevel from '../calculateCardLevel.js';
 import _ from 'lodash';
 

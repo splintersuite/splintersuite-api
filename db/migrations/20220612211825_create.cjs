@@ -31,10 +31,10 @@ exports.up = function (knex) {
             // lower xp cards in the same level because the chance of level up
             t.boolean('is_gold').notNullable(); // will be either Y or N rather than bool
             t.string('price_currency').notNullable();
-            t.string('aggregaton_type').notNullable(); // 'ALL_OPEN_TRADES', 'TRADES_DURING_PERIOD'
+            t.string('aggregation_type').notNullable(); // 'ALL_OPEN_TRADES', 'TRADES_DURING_PERIOD'
             t.unique([
                 'created_at',
-                'aggregaton_type',
+                'aggregation_type',
                 'card_detail_id',
                 'level',
                 'is_gold',
@@ -61,6 +61,7 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.timestamps(true, true);
             t.string('username').notNullable();
+            t.boolean('locked').notNullable().defaultTo(false);
             t.unique(['username']);
             // maybe add email to this??
             // or the user just logs in their with hive keychain.

@@ -1,4 +1,4 @@
-import axiosInstance from '../util/axiosInstance';
+import axiosInstance from '../util/axiosInstance.js';
 
 const getCardDetail = async () => {
     const cards = await axiosInstance.get(
