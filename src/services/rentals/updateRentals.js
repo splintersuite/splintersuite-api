@@ -61,14 +61,14 @@ const updateRentalsInDb = async ({ username, users_id }) => {
         dbListings.forEach((listing) => {
             if (
                 activeRental.sell_trx_id === listing.sell_trx_id &&
-                activeRental.card_uid === listing.card_uid
+                activeRental.card_id === listing.card_uid
             ) {
-                // was this one of our listings??
                 if (
                     dbRentals[activeRental.sell_trx_id] &&
                     dbRentals[activeRental.sell_trx_id].card_uid ===
                         listing.card_uid
                 ) {
+                    // was this one of our listings??
                     // we already have a rental in the database
 
                     // check to see if the rental has been cancelled by us...
@@ -92,7 +92,6 @@ const updateRentalsInDb = async ({ username, users_id }) => {
                         console.log('prices arent the same...');
                         console.log('activeRental', activeRental);
                         console.log('listing', listing);
-                        process.exit();
                     }
 
                     // check to see it's the same player.  if not we need to add a new record to rentals
@@ -185,10 +184,5 @@ const updateRentalsInDb = async ({ username, users_id }) => {
         await UserRentals.query().insert(rentalsToInsert);
     }
 };
-
-updateRentalsInDb({
-    username: 'xdww',
-    users_id: '5eadd15a-b7d1-4fe5-a636-f4fa5d42c447',
-});
 
 export default { updateRentalsInDb };
