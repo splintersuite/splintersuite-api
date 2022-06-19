@@ -3,7 +3,12 @@ import {
     insertBrawl,
     insertSeason,
 } from '../actions/insertBrawlAndSeasonData.js';
-//
+import {
+    createInvoicesForSeason,
+    unlockUsers,
+    lockPastDueUsers,
+} from '../actions/invoices';
+
 const getSplinterlandsSettings = async () => {
     try {
         // console.log('getSplinterlandsSettings start');
@@ -79,7 +84,10 @@ export const getSLSeasonAndBrawlData = async () => {
 
         const newSeason = await insertSeason({ seasonData });
         if (newSeason) {
-            // create invoices!
+            const userIdsToLock = await lockPastDueUsers();
+            await unlockUsers({ userIdsToLock });
+            // create invoices for LAST season!
+            await createInvoicesForSeason();
         }
         return;
     } catch (err) {

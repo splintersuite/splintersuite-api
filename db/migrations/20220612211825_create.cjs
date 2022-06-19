@@ -61,6 +61,7 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.timestamps(true, true);
             t.string('username').notNullable();
+            t.boolean('locked').notNullable().defaultTo(false);
             t.unique(['username']);
             // maybe add email to this??
             // or the user just logs in their with hive keychain.
