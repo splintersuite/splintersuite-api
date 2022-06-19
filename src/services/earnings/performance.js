@@ -83,7 +83,7 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
         }
         const timeKey = datetime.toISOString().split('T')[0];
         pricesObj[cardKey][levelKey][timeKey] = {};
-        pricesObj[cardKey][levelKey][timeKey][price.aggregaton_type] = {
+        pricesObj[cardKey][levelKey][timeKey][price.aggregation_type] = {
             avg: price.avg,
             low: price.low,
             high: price.high,
