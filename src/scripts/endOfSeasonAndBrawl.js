@@ -63,6 +63,8 @@ const getSLBrawlData = (settings) => {
 //   start: '2022-06-13T06:00:00.000Z',
 //   end: '2022-06-18T07:00:00.000Z'
 // }
+
+// runs every 4 days
 export const getSLSeasonAndBrawlData = async () => {
     try {
         //  console.log('getSLSeasonData start');
@@ -75,8 +77,10 @@ export const getSLSeasonAndBrawlData = async () => {
 
         await insertBrawl({ brawlData });
 
-        await insertSeason({ seasonData });
-
+        const newSeason = await insertSeason({ seasonData });
+        if (newSeason) {
+            // create invoices!
+        }
         return;
     } catch (err) {
         console.error(`getSLSeasonData error: ${err.message}`);

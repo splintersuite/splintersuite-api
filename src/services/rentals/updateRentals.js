@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import UserRentals from '../../models/UserRentals.js';
 import findCardLevel from '../calculateCardLevel.js';
-import collectionFncs from '../../actions/getCollectionFncs';
+import collectionFncs from '../../actions/getCollectionFncs.js';
 import updateListings from './updateListings.js';
 import rentalHelpers from './rentalHelpers.js';
 

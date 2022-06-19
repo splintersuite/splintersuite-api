@@ -1,5 +1,5 @@
-import Invoices from '../models/Invoices';
-import { getMostRecentSeason } from './insertBrawlAndSeasonData';
+import Invoices from '../models/Invoices.js';
+import { getMostRecentSeason } from './insertBrawlAndSeasonData.js';
 
 export const getRecentSeasonInvoicesForUsersId = async ({ users_id }) => {
     console.log(`getInvoiceForUser start`);

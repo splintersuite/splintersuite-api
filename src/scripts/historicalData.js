@@ -1,6 +1,6 @@
 import histFncs from '../services/marketData/historicalData.js';
-import cardFncs from '../actions/getCardDetails';
-import retryFncs from '../services/axios_retry/general';
+import cardFncs from '../actions/getCardDetails.js';
+import retryFncs from '../services/axios_retry/general.js';
 
 const getHistoricalData = async () => {
     // runs at 05:00 EST

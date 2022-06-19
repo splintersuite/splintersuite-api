@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import UserRentals from '../../models/UserRentals';
-import UserRentalListings from '../../models/UserRentalListings';
+import UserRentals from '../../models/UserRentals.js';
+import UserRentalListings from '../../models/UserRentalListings.js';
 
 const handleMissedRentalIdsToCancel = async ({ missedRentalIdsToCancel }) => {
     const now = new Date();
