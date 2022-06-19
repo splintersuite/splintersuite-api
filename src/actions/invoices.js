@@ -45,7 +45,7 @@ export const unlockUsers = async ({ userIdsToLock }) => {
         chunks = [chunks];
     }
     for (const idChunk of chunks) {
-        await Users.query().whereIn('id', idChunk).where({ locked: false });
+        await Users.query().whereIn('id', idChunk).patch({ locked: false });
     }
 };
 
@@ -59,8 +59,8 @@ export const createInvoicesForSeason = async () => {
         // wait till next season
         return;
     }
-    const endDate = seasons[1].end_date;
-    const startDate = seasons[1].start_date;
+    const seasonEndDate = seasons[1].end_date;
+    const seasonStartDate = seasons[1].start_date;
 
     const users = await Users.query();
 
@@ -79,11 +79,11 @@ export const createInvoicesForSeason = async () => {
     for (const idChunk of chunks) {
         const thisChunksEarnings = await DailyEarnings.query()
             .whereIn('users_id', idChunk)
-            .whereBetween('earnings_date', [startDate, endDate]);
+            .whereBetween('earnings_date', [seasonStartDate, seasonEndDate]);
         earnings = _.concat(earnings, thisChunksEarnings);
     }
 
-    earningsObj = {};
+    const earningsObj = {};
     earnings.forEach((record) => {
         if (!(record.users_id in earningsObj)) {
             earningsObj[record.users_id] = [];
@@ -116,5 +116,7 @@ export const createInvoicesForSeason = async () => {
         });
     }
 
-    await Invoices.query().insert(invoices);
+    if (invoices.length > 0) {
+        await Invoices.query().insert(invoices);
+    }
 };

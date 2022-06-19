@@ -95,5 +95,3 @@ export const getSLSeasonAndBrawlData = async () => {
         throw err;
     }
 };
-
-getSLSeasonAndBrawlData();
