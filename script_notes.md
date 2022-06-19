@@ -10,3 +10,7 @@ cron:
 
 35 4 \* \* \* DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev NODE_ENV=development /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/endOfSeasonAndBrawl.js >> /home/ubuntu/cronlog.txt 2>&1
 that runs at 4:35 am (UTC time which is 4 hours ahead of EST) everyday (with no \ before \*)
+
+# Deployment, have to use ecosystem.config.json because the config.js doesn't work with es modules
+
+pm2 start ecosystem.config.json --env development
