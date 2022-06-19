@@ -1,29 +1,6 @@
 import DailyEarnings from '../../models/DailyEarnings.js';
+import { firstDayOfWeek, getLastWeek } from '../../util/dates.js';
 import _ from 'lodash';
-
-const firstDayOfWeek = (dateObject, firstDayOfWeekIndex) => {
-    const dayOfWeek = dateObject.getDay(),
-        firstDayOfWeek = new Date(dateObject),
-        diff =
-            dayOfWeek >= firstDayOfWeekIndex
-                ? dayOfWeek - firstDayOfWeekIndex
-                : 6 - dayOfWeek;
-
-    firstDayOfWeek.setDate(dateObject.getDate() - diff);
-    firstDayOfWeek.setHours(0, 0, 0, 0);
-
-    return firstDayOfWeek;
-};
-
-const getLastWeek = () => {
-    const today = new Date();
-    const lastWeek = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() - 7
-    );
-    return lastWeek;
-};
 
 const calcAggregatedEarnings = async ({ users_id }) => {
     const now = new Date();

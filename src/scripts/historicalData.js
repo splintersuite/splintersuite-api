@@ -26,6 +26,8 @@ const getHistoricalData = async () => {
     }
 };
 
+// getHistoricalData();
+
 const historicalFetchMorning = '* 5 * * *';
 const historicalFetchEvening = '* 17 * * *';
 
