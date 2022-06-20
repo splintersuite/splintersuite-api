@@ -44,6 +44,10 @@ const handleLockedUser = async ({ users_id }) => {
         }
     });
 
+    if (!locked) {
+        await Users.query().where({ id: users_id }).patch({ locked });
+    }
+
     return locked;
 };
 

@@ -12,7 +12,7 @@ const insertSeason = async ({ username }) => {
             season_id: '001e1154-d6e3-4697-849e-ed8d3a391fdd',
             discounted_due_at: new Date(),
             due_at: new Date(),
-            amount_due: 2,
+            amount_due: 1,
             season_name: 'lolxd',
         })
         .catch((err) => {
@@ -32,7 +32,7 @@ const patcbUser = async ({ username }) => {
         });
 };
 
-// insertSeason({ username: 'genepoolcardlord' });
+insertSeason({ username: 'genepoolcardlord' });
 
 const queryJboxx = async () => {
     const users = await Users.query().catch((err) => {
