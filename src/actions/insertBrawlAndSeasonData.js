@@ -32,8 +32,9 @@ const insertSeason = async ({ seasonData }) => {
             season_name: name,
         });
 
-        const now = new Date();
-        if (!dbSeason && now.getTime() > dbSeason.end_date.getTime()) {
+        // const now = new Date();
+        if (!dbSeason) {
+            //} && now.getTime() > dbSeason.end_date.getTime()) {
             const newSeason = await Seasons.query().insert({
                 season_id: id,
                 end_date: new Date(ends),
