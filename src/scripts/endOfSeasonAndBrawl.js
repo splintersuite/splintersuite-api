@@ -82,12 +82,12 @@ const getSLSeasonAndBrawlData = async () => {
 
         await insertBrawl({ brawlData });
 
-        const newSeason = await insertSeason({ seasonData });
-        const userIdsToLock = await lockPastDueUsers();
-        await unlockUsers({ userIdsToLock });
         // create invoices for LAST season!
         await createInvoicesForSeason();
+        const newSeason = await insertSeason({ seasonData });
         if (newSeason) {
+            const userIdsToLock = await lockPastDueUsers();
+            await unlockUsers({ userIdsToLock });
         }
         return;
     } catch (err) {
