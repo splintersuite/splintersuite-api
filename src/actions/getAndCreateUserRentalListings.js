@@ -22,7 +22,6 @@ const createNewRentalListings = async ({
         })
         .orWhereBetween('cancelled_at', [yday, tmrw]);
 
-    console.log('currentListings length before', currentListings.length);
     const cardUIDstoRemove = [];
     currentListings.forEach((listing) => {
         rentalListings.forEach((newListing) => {
@@ -34,15 +33,13 @@ const createNewRentalListings = async ({
             }
         });
     });
-    console.log('cardUIDstoRemove length before ', cardUIDstoRemove.length);
 
     const rentalListingsToInsert = rentalListings.filter(
         ({ card_uid }) => !cardUIDstoRemove.includes(card_uid)
     );
 
     console.log('rentalListingsToInsert', rentalListingsToInsert);
-
-    if (rentalListingsToInsert > 0) {
+    if (rentalListingsToInsert.length > 0) {
         await UserRentalListings.query().insert(rentalListingsToInsert);
     }
     return;
