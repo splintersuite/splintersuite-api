@@ -1,4 +1,4 @@
-{
+module.exports = {
     apps: [
         {
             name: 'splitersuite-api',
@@ -20,5 +20,5 @@
             },
             kill_timeout: 3000, //default is 1600
         },
-    ];
-}
+    ],
+};

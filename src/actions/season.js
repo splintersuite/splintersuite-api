@@ -1,30 +1,9 @@
-const Brawls = require('../models/Brawls');
 const Seasons = require('../models/Seasons');
-
-const insertBrawl = async ({ brawlData }) => {
-    try {
-        console.log(`insertBrawl start`);
-
-        const { id, start, end, name } = brawlData;
-
-        const start_date = new Date(start);
-        const end_date = new Date(end);
-        await Brawls.query().insert({
-            brawl_id: id,
-            start_date,
-            end_date,
-            name,
-        });
-        return;
-    } catch (err) {
-        console.error(`insertBrawl error: ${err.message}`);
-        throw err;
-    }
-};
+const logger = require('../util/pinologger');
 
 const insertSeason = async ({ seasonData }) => {
     try {
-        // console.log(`insertSeason start`);
+        logger.debug('insertSeason start');
         const { id, ends, name } = seasonData;
 
         const dbSeason = await Seasons.query().findOne({
@@ -45,7 +24,7 @@ const insertSeason = async ({ seasonData }) => {
         }
         return null;
     } catch (err) {
-        console.error(`insertSeason error: ${err.message}`);
+        logger.error(`insertSeason error: ${err.message}`);
         throw err;
     }
 };
@@ -58,7 +37,6 @@ const getMostRecentSeason = async () => {
 };
 
 module.exports = {
-    insertBrawl,
     insertSeason,
     getMostRecentSeason,
 };

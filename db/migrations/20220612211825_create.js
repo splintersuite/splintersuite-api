@@ -116,6 +116,7 @@ exports.up = function (knex) {
             t.dateTime('end_date').notNullable();
             t.integer('brawl_id').notNullable();
             t.string('name').nullable();
+            t.unique('end_date');
         })
         .createTable('seasons', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
@@ -124,6 +125,7 @@ exports.up = function (knex) {
             t.dateTime('end_date').notNullable();
             t.integer('season_id').notNullable();
             t.string('season_name').nullable();
+            t.unique('end_date');
         })
         .createTable('installs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));

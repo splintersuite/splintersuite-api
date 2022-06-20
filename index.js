@@ -4,8 +4,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const cuid = require('cuid');
 
 const users = require('./src/routes/users');
+const { requestId } = require('./src/middlewares/helpers');
 const rentals = require('./src/routes/rentals');
 const invoices = require('./src/routes/invoices');
 const rentalListings = require('./src/routes/rentalListings');
@@ -26,6 +28,7 @@ app.use('/api/rentals', rentals);
 app.use('/api/invoices', invoices);
 app.use('/api/rentallistings', rentalListings);
 app.use(util.logErrors);
+app.use(requestId(cuid));
 
 app.listen(PORT, () => {
     console.log(`listening on port ${PORT}`);

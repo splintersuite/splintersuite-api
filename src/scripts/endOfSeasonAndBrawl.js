@@ -1,4 +1,3 @@
-const axiosInstance = require('../util/axiosInstance');
 const {
     insertBrawl,
     insertSeason,
@@ -8,27 +7,11 @@ const {
     unlockUsers,
     lockPastDueUsers,
 } = require('../actions/invoices');
-
-const getSplinterlandsSettings = async () => {
-    try {
-        // console.log('getSplinterlandsSettings start');
-
-        const url = 'https://api2.splinterlands.com/settings';
-
-        const res = await axiosInstance(url);
-
-        const data = res.data;
-
-        return data;
-    } catch (err) {
-        console.error(`getSplinterlandsSettings error: ${err.message}`);
-        throw err;
-    }
-};
+const logger = require('../util/pinologger');
 
 const getSLSeasonData = (settings) => {
     try {
-        //console.log(`getSLSeasonData start`);
+        logger.debug(`getSLSeasonData start`);
 
         const { season } = settings;
 
@@ -37,21 +20,6 @@ const getSLSeasonData = (settings) => {
         return { id, name, ends };
     } catch (err) {
         console.error(`getSlSeasonData error: ${err.message}`);
-        throw err;
-    }
-};
-
-const getSLBrawlData = (settings) => {
-    try {
-        //console.log(`getSLBrawlData start`);
-
-        const { brawl_cycle } = settings;
-
-        const { id, name, start, end } = brawl_cycle;
-
-        return { id, name, start, end };
-    } catch (err) {
-        console.error(`getSLBrawlData error: ${err.message}`);
         throw err;
     }
 };
@@ -72,7 +40,7 @@ const getSLBrawlData = (settings) => {
 // runs every 4 days
 const getSLSeasonAndBrawlData = async () => {
     try {
-        //  console.log('getSLSeasonData start');
+        logger.debug('getSLSeasonData start');
 
         const data = await getSplinterlandsSettings();
 
@@ -80,7 +48,9 @@ const getSLSeasonAndBrawlData = async () => {
 
         const brawlData = getSLBrawlData(data);
 
-        await insertBrawl({ brawlData });
+        await insertBrawl({ brawlData }).catch((err) => {
+            logger.error(`insertBrawl error: ${err.message}`);
+        });
 
         // create invoices for LAST season!
         await createInvoicesForSeason();
