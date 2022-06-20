@@ -42,7 +42,7 @@ const createNewRentalListings = async ({
 
     console.log('rentalListingsToInsert', rentalListingsToInsert);
 
-    if (rentalListingsToInsert > 0) {
+    if (rentalListingsToInsert.length > 0) {
         await UserRentalListings.query().insert(rentalListingsToInsert);
     }
     return;
