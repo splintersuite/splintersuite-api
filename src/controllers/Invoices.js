@@ -10,7 +10,7 @@ const payInvoice = async (req, res, next) => {
     const { id } = req.params;
     const { paid_at } = req.body;
 
-    const invoice = await Invoices.query()
+    const [invoice] = await Invoices.query()
         .where({ id })
         .patch({ paid_at })
         .returning('*');
