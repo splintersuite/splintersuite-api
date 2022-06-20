@@ -11,7 +11,7 @@ const roundedNum = (num, decimalPlaces = 0) => {
 const now = Date.now;
 
 const setTimeout_original = setTimeout;
-// tnt note: done is resolve() from a Promise
+// tnt note: done is resolve()  = require(a Promise
 const setTimeout_safe = (
     done,
     ms,
@@ -52,7 +52,7 @@ const sleep = (ms) => {
     return new Promise((resolve) => setTimeout_safe(resolve, ms));
 };
 
-export default {
+module.exports = {
     roundedNum,
     setTimeout_safe,
     sleep,

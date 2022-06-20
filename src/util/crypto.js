@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+const crypto = require('crypto');
 
 // https://attacomsian.com/blog/nodejs-encrypt-decrypt-data
 
@@ -17,4 +17,4 @@ const decrypt = (hash) => {
     return decrypted.toString();
 };
 
-export default decrypt;
+module.exports = decrypt;

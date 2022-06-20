@@ -1,4 +1,4 @@
-import decrypt from '../util/crypto.js';
+const decrypt = require('../util/crypto');
 
 const checkSignature = (req, res, next) => {
     if (
@@ -19,4 +19,4 @@ const checkSignature = (req, res, next) => {
     res.sendStatus(403);
 };
 
-export default checkSignature;
+module.exports = checkSignature;

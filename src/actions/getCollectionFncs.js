@@ -1,4 +1,4 @@
-import axiosInstance from '../util/axiosInstance.js';
+const axiosInstance = require('../util/axiosInstance');
 
 // could add cache functionality here to limit api calls
 const getCollection = async ({ username }) => {
@@ -60,4 +60,4 @@ const getActiveRentals = async ({ username }) => {
     return activeRentals.data;
 };
 
-export default { getCollection, getCollectionListings, getActiveRentals };
+module.exports = { getCollection, getCollectionListings, getActiveRentals };

@@ -1,4 +1,4 @@
-export const firstDayOfWeek = (dateObject, firstDayOfWeekIndex) => {
+const firstDayOfWeek = (dateObject, firstDayOfWeekIndex) => {
     const dayOfWeek = dateObject.getDay(),
         firstDayOfWeek = new Date(dateObject),
         diff =
@@ -12,7 +12,7 @@ export const firstDayOfWeek = (dateObject, firstDayOfWeekIndex) => {
     return firstDayOfWeek;
 };
 
-export const getLastWeek = () => {
+const getLastWeek = () => {
     const today = new Date();
     const lastWeek = new Date(
         today.getFullYear(),
@@ -22,7 +22,7 @@ export const getLastWeek = () => {
     return lastWeek;
 };
 
-export const dateRange = (startDate, endDate, steps = 1) => {
+const dateRange = (startDate, endDate, steps = 1) => {
     const dateArray = [];
     let currentDate = new Date(startDate);
 
@@ -33,4 +33,10 @@ export const dateRange = (startDate, endDate, steps = 1) => {
     }
 
     return dateArray;
+};
+
+module.exports = {
+    firstDayOfWeek,
+    getLastWeek,
+    dateRange,
 };

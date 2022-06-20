@@ -1,7 +1,7 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 dotenv.config();
 
-import Users from '../models/Users';
+const Users = require('../models/Users');
 
 const insertUser = async ({ username }) => {
     const now = new Date();

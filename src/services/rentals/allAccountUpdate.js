@@ -1,9 +1,9 @@
-import _ from 'lodash';
-import UserRentals from '../../models/UserRentals.js';
-import findCardLevel from '../calculateCardLevel.js';
-import collectionFncs from '../../actions/getCollectionFncs.js';
-import updateListings from './updateListings.js';
-import rentalHelpers from './rentalHelpers.js';
+const _ = require('lodash');
+const UserRentals = require('../../models/UserRentals');
+const findCardLevel = require('../calculateCardLevel');
+const collectionFncs = require('../../actions/getCollectionFncs');
+const updateListings = require('./updateListings');
+const rentalHelpers = require('./rentalHelpers');
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
@@ -60,7 +60,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         }
     });
 
-    // getting active rentals from /activerentals?{username} endpoint
+    // getting active rentals  = require(/activerentals?{username} endpoint
     // again - could have done this with the collections endpoints.
     const activeRentals = await collectionFncs.getActiveRentals({
         username,
@@ -308,7 +308,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         relistingToInsert,
     });
 
-    // we need to pluck the ids from these new listings so we can create rentals
+    // we need to pluck the ids  = require(these new listings so we can create rentals
     await rentalHelpers.insertRentalsFromNewListings({
         aggInsertedListings: _.concat(insertedListings, newlyInsertedListings),
         rentalsWithoutListingsToInsert,
@@ -328,4 +328,4 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
 
 // updateRentalsInDb({ username: 'xdww' });
 
-export default { updateRentalsInDb };
+module.exports = { updateRentalsInDb };

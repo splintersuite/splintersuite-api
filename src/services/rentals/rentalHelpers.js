@@ -1,6 +1,6 @@
-import _ from 'lodash';
-import UserRentals from '../../models/UserRentals.js';
-import UserRentalListings from '../../models/UserRentalListings.js';
+const _ = require('lodash');
+const UserRentals = require('../../models/UserRentals');
+const UserRentalListings = require('../../models/UserRentalListings');
 
 const handleMissedRentalIdsToCancel = async ({ missedRentalIdsToCancel }) => {
     const now = new Date();
@@ -215,7 +215,7 @@ const patchCancelledRecords = async ({ users_id }) => {
     }
 };
 
-export default {
+module.exports = {
     handleMissedRentalIdsToCancel,
     updateListingsAsActiveRentals,
     patchRentalsToCancel,

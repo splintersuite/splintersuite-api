@@ -114,7 +114,7 @@ const bcxToLevel = ({ bcx, rarity, gold, edition, id, tier }) => {
 
             if (bcx >= bcxForNextHighestLevel) {
                 // this means that we have enough bcx to be at this level or higher
-                // since we are going from the highest first, this should automatically give us our answer and we are good
+                // since we are going  = require(the highest first, this should automatically give us our answer and we are good
                 // console.log(
                 //     `we found a match for the level of the card! i is: ${i} and combinationRates length is ${combinationRates}`
                 // );
@@ -145,7 +145,7 @@ const getBcxLevelComboForEdition = ({ rarity, gold, edition, id, tier }) => {
                 ? goldAlphaCombineRates[rarity - 1]
                 : alphaCombineRates[rarity - 1];
         } else {
-            // this will include reward cards that aren't untamed and above (aka beta reward cards + promo cards from beta)
+            // this will include reward cards that aren't untamed and above (aka beta reward cards + promo cards  = require(beta)
             combinationRates = gold
                 ? goldBetaCombineRates[rarity - 1]
                 : betaCombineRates[rarity - 1];
@@ -158,4 +158,4 @@ const getBcxLevelComboForEdition = ({ rarity, gold, edition, id, tier }) => {
     }
 };
 
-export default findCardLevel;
+module.exports = findCardLevel;

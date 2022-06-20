@@ -1,7 +1,7 @@
-import UserRentals from '../../models/UserRentals.js';
-import MarketRentalPrices from '../../models/MarketRentalPrices.js';
-import { dateRange } from '../../util/dates.js';
-import _ from 'lodash';
+const UserRentals = require('../../models/UserRentals');
+const MarketRentalPrices = require('../../models/MarketRentalPrices');
+const { dateRange } = require('../../util/dates');
+const _ = require('lodash');
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
@@ -219,6 +219,6 @@ const performanceVsMarket = async ({ users_id }) => {
     return { rentalsVsAllOpenTrades, rentalsVsCurrentTrades };
 };
 
-performanceVsMarket({ users_id: '5eadd15a-b7d1-4fe5-a636-f4fa5d42c447' });
+// performanceVsMarket({ users_id: '5eadd15a-b7d1-4fe5-a636-f4fa5d42c447' });
 
-export default { getMarketRatesAndUserRentals, performanceVsMarket };
+module.exports = { getMarketRatesAndUserRentals, performanceVsMarket };

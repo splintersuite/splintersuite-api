@@ -1,4 +1,4 @@
-import Model from '../../db/model.js';
+const Model = require('../../db/model');
 
 class Brawls extends Model {
     static get tableName() {
@@ -20,4 +20,4 @@ class Brawls extends Model {
     }
 }
 
-export default Brawls;
+module.exports = Brawls;

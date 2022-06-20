@@ -1,11 +1,11 @@
-import Invoices from '../models/Invoices.js';
-import { getUser } from '../actions/createAndGetUser.js';
-import {
+const Invoices = require('../models/Invoices');
+const { getUser } = require('../actions/createAndGetUser');
+const {
     createInvoiceForUsersId,
     getInvoicesForUser,
-} from '../actions/getAndCreateInvoices.js';
+} = require('../actions/getAndCreateInvoices');
 
-export const payInvoice = async (req, res, next) => {
+const payInvoice = async (req, res, next) => {
     const { id } = req.params;
     const { paid_at } = req.body;
 
@@ -15,7 +15,7 @@ export const payInvoice = async (req, res, next) => {
     res.send('Your invoice is confirmed as paid off');
 };
 
-export const createInvoice = async (req, res, next) => {
+const createInvoice = async (req, res, next) => {
     const { username } = req.params;
 
     const user = await getUser({ username });
@@ -24,7 +24,7 @@ export const createInvoice = async (req, res, next) => {
     res.send(invoice);
 };
 
-export const getInvoices = async (req, res, next) => {
+const getInvoices = async (req, res, next) => {
     const { username } = req.params;
 
     if (!username) {
@@ -35,4 +35,10 @@ export const getInvoices = async (req, res, next) => {
         const invoices = await getInvoicesForUser({ users_id: user.id });
         res.send(invoices);
     }
+};
+
+module.exports = {
+    payInvoice,
+    createInvoice,
+    getInvoices,
 };

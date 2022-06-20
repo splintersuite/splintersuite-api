@@ -1,4 +1,4 @@
-import Model from '../../db/model.js';
+const Model = require('../../db/model');
 
 class Installs extends Model {
     static get tableName() {
@@ -18,4 +18,4 @@ class Installs extends Model {
     }
 }
 
-export default Installs;
+module.exports = Installs;

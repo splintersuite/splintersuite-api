@@ -1,17 +1,18 @@
-import axios from 'axios';
-import findCardLevel from '../calculateCardLevel.js';
-import mathFncs from '../../util/math.js';
-import MarketRentalPrices from '../../models/MarketRentalPrices.js';
+const axiosInstance = require('../../util/axiosInstance');
+const findCardLevel = require('../calculateCardLevel');
+const mathFncs = require('../../util/math');
+const MarketRentalPrices = require('../../models/MarketRentalPrices');
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
+
 const collectData = async ({
     card,
     now,
     twelveHoursAgo,
     twelveHoursAgoTime,
 }) => {
-    const activeTrades = await axios.get(
+    const activeTrades = await axiosInstance.get(
         `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}`
     );
 
@@ -120,4 +121,4 @@ const collectData = async ({
     }
 };
 
-export default { collectData };
+module.exports = { collectData };

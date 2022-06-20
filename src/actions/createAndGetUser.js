@@ -1,7 +1,7 @@
-import Users from '../models/Users.js';
-import earningsFncs from '../services/earnings/earningsMetrics.js';
+const Users = require('../models/Users');
+const earningsFncs = require('../services/earnings/earningsMetrics');
 
-export const createAndReturnUser = async ({ username }) => {
+const createAndReturnUser = async ({ username }) => {
     //const now = new Date();
     const user = await Users.query().insert({
         username,
@@ -9,15 +9,21 @@ export const createAndReturnUser = async ({ username }) => {
     return user;
 };
 
-export const getUser = async ({ username }) => {
+const getUser = async ({ username }) => {
     const user = await Users.query().findOne({ username });
 
     return user;
 };
 
-export const getUsersDataForFrontend = async ({ users_id }) => {
+const getUsersDataForFrontend = async ({ users_id }) => {
     const earningsObj = await earningsFncs.calcAggregatedEarnings({
         users_id,
     });
     return earningsObj;
+};
+
+module.exports = {
+    createAndReturnUser,
+    getUser,
+    getUsersDataForFrontend,
 };

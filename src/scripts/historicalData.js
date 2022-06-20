@@ -1,6 +1,6 @@
-import histFncs from '../services/marketData/historicalData.js';
-import cardFncs from '../actions/getCardDetails.js';
-import retryFncs from '../services/axios_retry/general.js';
+const histFncs = require('../services/marketData/historicalData');
+const cardFncs = require('../actions/getCardDetails');
+const retryFncs = require('../services/axios_retry/general');
 
 const getHistoricalData = async () => {
     // runs at 05:00 EST
@@ -36,7 +36,7 @@ const historicalFetchOptions = {
     timezone: 'America/New_York',
 };
 
-export default {
+module.exports = {
     getHistoricalData,
     historicalFetchMorning,
     historicalFetchEvening,

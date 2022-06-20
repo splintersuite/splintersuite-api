@@ -1,8 +1,8 @@
-import Users from '../models/Users.js';
-import earningsFncs from '../services/earnings/calcEarnings.js';
-import retryFncs from '../services/axios_retry/general.js';
-import cardFncs from '../actions/getCardDetails.js';
-import rentalFncs from '../services/rentals/updateRentals.js';
+const Users = require('../models/Users');
+const earningsFncs = require('../services/earnings/calcEarnings');
+const retryFncs = require('../services/axios_retry/general');
+const cardFncs = require('../actions/getCardDetails');
+const rentalFncs = require('../services/rentals/updateRentals');
 
 const updateRentalsForUsersMorning = async () => {
     // runs at 11:00 EST
@@ -74,7 +74,7 @@ const rentalOptions = {
     timezone: 'America/New_York',
 };
 
-export default {
+module.exports = {
     updateRentalsForUsersMorning,
     updateRentalsForUsersEvening,
     rentalWhenToRunMorning,

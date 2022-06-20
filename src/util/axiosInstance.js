@@ -1,7 +1,7 @@
 'use strict';
 
-import axios from 'axios';
-import axiosRetry from '../services/axios_retry/axios_retry.js';
+const axios = require('axios');
+const axiosRetry = require('../services/axios_retry/axios_retry');
 
 const axiosInstance = axios.create({
     timeout: 5000,
@@ -23,4 +23,4 @@ axiosRetry.axiosRetry(axiosInstance, {
     shouldResetTimeout: true,
 });
 
-export default axiosInstance;
+module.exports = axiosInstance;

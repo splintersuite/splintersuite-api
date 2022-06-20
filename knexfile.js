@@ -1,7 +1,7 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 dotenv.config();
 
-export default {
+module.exports = {
     development: {
         client: 'pg',
         connection: {
@@ -21,7 +21,7 @@ export default {
                     } else {
                         // do the second query...
                         conn.query('SELECT 1;', (err) => {
-                            // if err is not falsy, connection is discarded from pool
+                            // if err is not falsy, connection is discarded  = require(pool
                             // if connection acquire was triggered by a query the error is passed to query promise
                             done(err, conn);
                         });

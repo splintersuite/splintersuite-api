@@ -1,7 +1,7 @@
 const knexfile = require('../../knexfile');
 
 /**
- * @param { import("knex").Knex } knex
+ * @param { const("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
@@ -143,19 +143,15 @@ exports.up = function (knex) {
             t.string('tx_id').nullable();
             t.string('season_name').nullable();
         })
-        .then(() => knex.raw(knexfile.default.onUpdateTrigger('users')))
-        .then(() => knex.raw(knexfile.default.onUpdateTrigger('invoices')))
-        .then(() => knex.raw(knexfile.default.onUpdateTrigger('user_rentals')))
-        .then(() =>
-            knex.raw(knexfile.default.onUpdateTrigger('user_rental_listings'))
-        )
-        .then(() =>
-            knex.raw(knexfile.default.onUpdateTrigger('daily_earnings'))
-        );
+        .then(() => knex.raw(knexfile.onUpdateTrigger('users')))
+        .then(() => knex.raw(knexfile.onUpdateTrigger('invoices')))
+        .then(() => knex.raw(knexfile.onUpdateTrigger('user_rentals')))
+        .then(() => knex.raw(knexfile.onUpdateTrigger('user_rental_listings')))
+        .then(() => knex.raw(knexfile.onUpdateTrigger('daily_earnings')));
 };
 
 /**
- * @param { import("knex").Knex } knex
+ * @param { const("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {

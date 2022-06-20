@@ -1,5 +1,5 @@
-import Model from '../../db/model.js';
-import Invoices from './Invoices.js';
+const Model = require('../../db/model');
+const Invoices = require('./Invoices');
 
 class Seasons extends Model {
     static get tableName() {
@@ -34,4 +34,4 @@ class Seasons extends Model {
     }
 }
 
-export default Seasons;
+module.exports = Seasons;
