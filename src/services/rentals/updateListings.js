@@ -1,7 +1,7 @@
-import UserRentalListings from '../../models/UserRentalListings.js';
-import collectionFncs from '../../actions/getCollectionFncs.js';
-import findCardLevel from '../calculateCardLevel.js';
-import _ from 'lodash';
+const UserRentalListings = require('../../models/UserRentalListings');
+const collectionFncs = require('../../actions/getCollectionFncs');
+const findCardLevel = require('../calculateCardLevel');
+const _ = require('lodash');
 
 const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
     const today = new Date();
@@ -47,7 +47,7 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
                     alpha_xp: apiListing.alpha_xp,
                 }),
                 card_uid: apiListing.uid,
-                sell_trx_id: apiListing.sell_trx_id, // also received from the api as market_id
+                sell_trx_id: apiListing.sell_trx_id, // also received  = require(the api as market_id
                 price: Number(apiListing.buy_price),
                 is_rental_active: false,
                 is_gold: apiListing.gold,
@@ -69,4 +69,4 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
     };
 };
 
-export default { updateListingsInDb };
+module.exports = { updateListingsInDb };

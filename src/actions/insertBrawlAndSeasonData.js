@@ -1,7 +1,7 @@
-import Brawls from '../models/Brawls.js';
-import Seasons from '../models/Seasons.js';
+const Brawls = require('../models/Brawls');
+const Seasons = require('../models/Seasons');
 
-export const insertBrawl = async ({ brawlData }) => {
+const insertBrawl = async ({ brawlData }) => {
     try {
         //  console.log(`insertBrawl start`);
 
@@ -22,7 +22,7 @@ export const insertBrawl = async ({ brawlData }) => {
     }
 };
 
-export const insertSeason = async ({ seasonData }) => {
+const insertSeason = async ({ seasonData }) => {
     try {
         // console.log(`insertSeason start`);
         const { id, ends, name } = seasonData;
@@ -49,9 +49,15 @@ export const insertSeason = async ({ seasonData }) => {
     }
 };
 
-export const getMostRecentSeason = async () => {
+const getMostRecentSeason = async () => {
     // TNT IDEA; should we add a boolean to season being active/ended? Therefore we could search for most recent season that ended cuz otherwise it would get season in progress
 
     const season = await Seasons.query().orderBy('end_date', 'desc');
     return season[0];
+};
+
+module.exports = {
+    insertBrawl,
+    insertSeason,
+    getMostRecentSeason,
 };

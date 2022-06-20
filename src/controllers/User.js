@@ -1,12 +1,12 @@
-import {
+const {
     createAndReturnUser,
     getUser,
     getUsersDataForFrontend,
-} from '../actions/createAndGetUser.js';
+} = require('../actions/createAndGetUser');
 
-// import { getRecentSeasonInvoicesForUsersId } from '../actions/getAndCreateInvoices';
+// const { getRecentSeasonInvoicesForUsersId }  = require('../actions/getAndCreateInvoices';
 
-export const getUserInfo = async (req, res, next) => {
+const getUserInfo = async (req, res, next) => {
     const { username } = req.params;
     let user = await getUser({ username });
 
@@ -25,3 +25,5 @@ export const getUserInfo = async (req, res, next) => {
     // user.invoices = invoices || [];
     res.send(user);
 };
+
+module.exports = { getUserInfo };

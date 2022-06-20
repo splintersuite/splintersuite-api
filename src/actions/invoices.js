@@ -1,9 +1,9 @@
-import Seasons from '../models/Seasons.js';
-import Users from '../models/Users.js';
-import _ from 'lodash';
-import Invoices from '../models/Invoices.js';
+const Seasons = require('../models/Seasons');
+const Users = require('../models/Users');
+const _ = require('lodash');
+const Invoices = require('../models/Invoices');
 
-export const lockPastDueUsers = async () => {
+const lockPastDueUsers = async () => {
     const nowTime = new Date().getTime();
     const invoices = await Invoices.query().where({
         paid_at: null,
@@ -30,7 +30,7 @@ export const lockPastDueUsers = async () => {
     return usersIdsToLock;
 };
 
-export const unlockUsers = async ({ userIdsToLock }) => {
+const unlockUsers = async ({ userIdsToLock }) => {
     const lockedUsers = await Users.query().where({ locked: true });
     const lockedUserIds = lockedUsers.map(({ id }) => id);
     const usersIdsToUnlock = lockedUserIds.filter(
@@ -49,7 +49,7 @@ export const unlockUsers = async ({ userIdsToLock }) => {
     }
 };
 
-export const createInvoicesForSeason = async () => {
+const createInvoicesForSeason = async () => {
     const seasons = await Seasons.query().orderBy('end_date', 'desc');
 
     // seasons[0] will be the NEWEST season
@@ -119,4 +119,10 @@ export const createInvoicesForSeason = async () => {
     if (invoices.length > 0) {
         await Invoices.query().insert(invoices);
     }
+};
+
+module.exports = {
+    lockPastDueUsers,
+    unlockUsers,
+    createInvoicesForSeason,
 };

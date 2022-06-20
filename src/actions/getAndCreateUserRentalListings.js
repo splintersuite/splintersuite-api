@@ -1,7 +1,7 @@
-import UserRentalListings from '../models/UserRentalListings.js';
-import _ from 'lodash';
+const UserRentalListings = require('../models/UserRentalListings');
+const _ = require('lodash');
 
-export const createNewRentalListings = async ({
+const createNewRentalListings = async ({
     // users_id,
     rentalListings,
 }) => {
@@ -24,3 +24,5 @@ export const createNewRentalListings = async ({
 
     return;
 };
+
+module.exports = { createNewRentalListings };

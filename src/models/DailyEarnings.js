@@ -1,5 +1,5 @@
-import Model from '../../db/model.js';
-import Users from './Users.js';
+const Model = require('../../db/model');
+const Users = require('./Users');
 
 class DailyEarnings extends Model {
     static get tableName() {
@@ -41,4 +41,4 @@ class DailyEarnings extends Model {
     }
 }
 
-export default DailyEarnings;
+module.exports = DailyEarnings;

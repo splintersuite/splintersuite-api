@@ -1,6 +1,6 @@
-import express from 'express';
-import Users from '../models/Users.js';
-import { getUserInfo } from '../controllers/User.js';
+const express = require('express');
+const Users = require('../models/Users');
+const { getUserInfo } = require('../controllers/User');
 
 const router = express.Router();
 
@@ -19,4 +19,4 @@ router.get('/:id', async (req, res) => {
     res.send(user);
 });
 
-export default router;
+module.exports = router;

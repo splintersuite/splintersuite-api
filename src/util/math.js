@@ -88,4 +88,4 @@ const mathFncs = {
     },
 };
 
-export default mathFncs;
+module.exports = mathFncs;

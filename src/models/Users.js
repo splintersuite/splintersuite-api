@@ -1,8 +1,8 @@
-import Model from '../../db/model.js';
-import UserRentalListings from './UserRentalListings.js';
-import DailyEarnings from './DailyEarnings.js';
-import Invoices from './Invoices.js';
-import UserRentals from './UserRentals.js';
+const Model = require('../../db/model');
+const UserRentalListings = require('./UserRentalListings');
+const DailyEarnings = require('./DailyEarnings');
+const Invoices = require('./Invoices');
+const UserRentals = require('./UserRentals');
 
 class Users extends Model {
     static get tableName() {
@@ -60,4 +60,4 @@ class Users extends Model {
     }
 }
 
-export default Users;
+module.exports = Users;

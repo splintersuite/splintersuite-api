@@ -1,16 +1,16 @@
-import cron from 'node-cron';
-import {
+const cron = require('node-cron');
+const {
     updateRentalsForUsers,
     rentalWhenToRunMorning,
     rentalWhenToRunEvening,
     rentalOptions,
-} from './rentals';
-import {
+} = require('./rentals');
+const {
     getHistoricalData,
     historicalFetchMorning,
     historicalFetchEvening,
     historicalFetchOptions,
-} from './historicalData';
+} = require('./historicalData');
 
 // runs at 11:00 and grabs listings/rentals
 const morningUpdateRentals = cron.schedule(

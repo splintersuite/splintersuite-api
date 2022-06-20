@@ -1,4 +1,4 @@
-import axios from 'axios';
+const axios = require('axios');
 
 axios
     .get('http://127.0.0.1:6900/api/users/hackinhukk')

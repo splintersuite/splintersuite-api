@@ -1,4 +1,4 @@
-import Model from '../../db/model.js';
+const Model = require('../../db/model');
 
 class MarketRentalListings extends Model {
     static get tableName() {
@@ -26,4 +26,4 @@ class MarketRentalListings extends Model {
     }
 }
 
-export default MarketRentalListings;
+module.exports = MarketRentalListings;

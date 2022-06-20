@@ -1,7 +1,7 @@
-import Invoices from '../models/Invoices.js';
-import { getMostRecentSeason } from './insertBrawlAndSeasonData.js';
+const Invoices = require('../models/Invoices');
+const { getMostRecentSeason } = require('./insertBrawlAndSeasonData');
 
-export const getRecentSeasonInvoicesForUsersId = async ({ users_id }) => {
+const getRecentSeasonInvoicesForUsersId = async ({ users_id }) => {
     const invoice = await Invoices.query()
         .join('season', { 'invoices.season_id': 'seasons.id' })
         .select('invoices.*', 'seasons.season_name')
@@ -10,7 +10,7 @@ export const getRecentSeasonInvoicesForUsersId = async ({ users_id }) => {
     return invoice;
 };
 
-export const createInvoiceForUsersId = async ({ users_id }) => {
+const createInvoiceForUsersId = async ({ users_id }) => {
     const recentSeason = await getMostRecentSeason();
 
     const now = new Date();
@@ -24,7 +24,7 @@ export const createInvoiceForUsersId = async ({ users_id }) => {
     return invoice;
 };
 
-export const getInvoicesForUser = async ({ users_id }) => {
+const getInvoicesForUser = async ({ users_id }) => {
     const invoices = await Invoices.query().where({ users_id });
 
     if (!Array.isArray(invoices)) {
@@ -32,4 +32,10 @@ export const getInvoicesForUser = async ({ users_id }) => {
     }
 
     return invoices;
+};
+
+module.exports = {
+    getRecentSeasonInvoicesForUsersId,
+    createInvoiceForUsersId,
+    getInvoicesForUser,
 };

@@ -1,13 +1,13 @@
-import axiosInstance from '../util/axiosInstance.js';
-import {
+const axiosInstance = require('../util/axiosInstance');
+const {
     insertBrawl,
     insertSeason,
-} from '../actions/insertBrawlAndSeasonData.js';
-import {
+} = require('../actions/insertBrawlAndSeasonData');
+const {
     createInvoicesForSeason,
     unlockUsers,
     lockPastDueUsers,
-} from '../actions/invoices';
+} = require('../actions/invoices');
 
 const getSplinterlandsSettings = async () => {
     try {
@@ -70,7 +70,7 @@ const getSLBrawlData = (settings) => {
 // }
 
 // runs every 4 days
-export const getSLSeasonAndBrawlData = async () => {
+const getSLSeasonAndBrawlData = async () => {
     try {
         //  console.log('getSLSeasonData start');
 
@@ -95,3 +95,5 @@ export const getSLSeasonAndBrawlData = async () => {
         throw err;
     }
 };
+
+module.exports = { getSLSeasonAndBrawlData };

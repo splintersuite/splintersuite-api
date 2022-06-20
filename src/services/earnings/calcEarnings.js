@@ -1,6 +1,6 @@
-import DailyEarnings from '../../models/DailyEarnings.js';
-import UserRentals from '../../models/UserRentals.js';
-import _ from 'lodash';
+const DailyEarnings = require('../../models/DailyEarnings');
+const UserRentals = require('../../models/UserRentals');
+const _ = require('lodash');
 
 const calcDailyEarnings = async ({ users_id }) => {
     const rentals = await UserRentals.query().where({
@@ -26,7 +26,7 @@ const insertDailyEarnings = async ({ users_id, earnings_date }) => {
     });
 };
 
-export default {
+module.exports = {
     insertDailyEarnings,
     calcDailyEarnings,
 };

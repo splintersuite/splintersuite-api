@@ -1,5 +1,5 @@
 /**
- * @param { import("knex").Knex } knex
+ * @param { const("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
@@ -7,11 +7,11 @@ exports.up = function (knex) {
 };
 
 /**
- * @param { import("knex").Knex } knex
+ * @param { const("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
     return knex.schema.raw('DROP EXTENSION pgcrypto CASCADE');
 };
 
-// importing knex.raw('gen_random_uuid()')
+// consting knex.raw('gen_random_uuid()')

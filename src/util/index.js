@@ -5,6 +5,6 @@ const logErrors = (err, req, res, next) => {
     }
 };
 
-export default {
+module.exports = {
     logErrors,
 };

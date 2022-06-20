@@ -1,7 +1,7 @@
-import knexInstance from './index.js';
-import addFormats from 'ajv-formats';
+const knexInstance = require('./index.js');
+const addFormats = require('ajv-formats');
 
-import { Model, AjvValidator } from 'objection';
+const { Model, AjvValidator } = require('objection');
 
 class BaseModel extends Model {
     static createValidator() {
@@ -22,4 +22,4 @@ class BaseModel extends Model {
 
 BaseModel.knex(knexInstance);
 
-export default BaseModel;
+module.exports = BaseModel;

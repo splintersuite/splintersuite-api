@@ -1,16 +1,16 @@
-import express from 'express';
-import 'express-async-errors';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import helmet from 'helmet';
-import morgan from 'morgan';
+const express = require('express');
+require('express-async-errors');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
 
-import users from './src/routes/users.js';
-import rentals from './src/routes/rentals.js';
-import invoices from './src/routes/invoices';
-import rentalListings from './src/routes/rentalListings.js';
-import util from './src/util/index.js';
-import checkSignature from './src/middlewares/checkSignature.js';
+const users = require('./src/routes/users');
+const rentals = require('./src/routes/rentals');
+const invoices = require('./src/routes/invoices');
+const rentalListings = require('./src/routes/rentalListings');
+const util = require('./src/util/index');
+const checkSignature = require('./src/middlewares/checkSignature');
 
 const app = express();
 const PORT = 6900;

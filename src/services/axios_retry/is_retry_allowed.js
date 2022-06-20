@@ -4,7 +4,7 @@ const denyList = new Set([
     'ENOTFOUND',
     'ENETUNREACH',
 
-    // SSL errors from https://github.com/nodejs/node/blob/fc8e3e2cdc521978351de257030db0076d79e0ab/src/crypto/crypto_common.cc#L301-L328
+    // SSL errors  = require(https://github.com/nodejs/node/blob/fc8e3e2cdc521978351de257030db0076d79e0ab/src/crypto/crypto_common.cc#L301-L328
     'UNABLE_TO_GET_ISSUER_CERT',
     'UNABLE_TO_GET_CRL',
     'UNABLE_TO_DECRYPT_CERT_SIGNATURE',
@@ -40,4 +40,4 @@ const isRetryAllowed = (error) => {
     return !denyList.has(error && error.code);
 };
 
-export default isRetryAllowed;
+module.exports = isRetryAllowed;

@@ -1,6 +1,6 @@
-import DailyEarnings from '../../models/DailyEarnings.js';
-import { firstDayOfWeek, getLastWeek } from '../../util/dates.js';
-import _ from 'lodash';
+const DailyEarnings = require('../../models/DailyEarnings');
+const { firstDayOfWeek, getLastWeek } = require('../../util/dates');
+const _ = require('lodash');
 
 const calcAggregatedEarnings = async ({ users_id }) => {
     const now = new Date();
@@ -107,7 +107,7 @@ const calcAggregatedEarnings = async ({ users_id }) => {
     };
 };
 
-export default { calcAggregatedEarnings };
+module.exports = { calcAggregatedEarnings };
 
 // user.stats = {
 //     daily: {

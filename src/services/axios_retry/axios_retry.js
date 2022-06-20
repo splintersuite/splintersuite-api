@@ -1,7 +1,7 @@
 'use strict';
 
-import isRetryAllowed from './is_retry_allowed.js';
-import general from './general.js';
+const isRetryAllowed = require('./is_retry_allowed');
+const general = require('./general');
 
 const namespace = 'axios-retry-sl-api';
 
@@ -158,7 +158,7 @@ const shouldRetry = async (retries, retryCondition, currentState, error) => {
  *
  * @example
  *
- * import axios from 'axios';
+ * const axios  = require('axios';
  *
  * axiosRetry(axios, { retries: 3 });
  *
@@ -195,7 +195,7 @@ const shouldRetry = async (retries, retryCondition, currentState, error) => {
  *     error !== undefined
  *   });
  *
- * @param {Axios} axios An axios instance (the axios object or one created from axios.create)
+ * @param {Axios} axios An axios instance (the axios object or one created  = require(axios.create)
  * @param {Object} [defaultOptions]
  * @param {number} [defaultOptions.retries=3] Number of retries
  * @param {boolean} [defaultOptions.shouldResetTimeout=false]
@@ -263,7 +263,7 @@ const axiosRetry = (axios, defaultOptions) => {
     });
 };
 
-export default {
+module.exports = {
     isRetryableError,
     isNetworkError,
     isSafeRequestError,

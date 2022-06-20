@@ -1,8 +1,8 @@
-import _ from 'lodash';
-import UserRentalListings from '../../models/UserRentalListings.js';
-import UserRentals from '../../models/UserRentals.js';
-import collectionFncs from '../../actions/getCollectionFncs.js';
-import rentalHelpers from './rentalHelpers.js';
+const _ = require('lodash');
+const UserRentalListings = require('../../models/UserRentalListings');
+const UserRentals = require('../../models/UserRentals');
+const collectionFncs = require('../../actions/getCollectionFncs');
+const rentalHelpers = require('./rentalHelpers');
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username, users_id }) => {
@@ -30,7 +30,7 @@ const updateRentalsInDb = async ({ username, users_id }) => {
             }
         });
 
-    // getting active rentals from /activerentals?{username} endpoint
+    // getting active rentals  = require(/activerentals?{username} endpoint
     // again - could have done this with the collections endpoints.
     const activeRentals = await collectionFncs.getActiveRentals({
         username,
@@ -185,4 +185,4 @@ const updateRentalsInDb = async ({ username, users_id }) => {
     }
 };
 
-export default { updateRentalsInDb };
+module.exports = { updateRentalsInDb };

@@ -1,4 +1,4 @@
-import axiosInstance from '../util/axiosInstance.js';
+const axiosInstance = require('../util/axiosInstance');
 
 const getCardDetail = async () => {
     const cards = await axiosInstance.get(
@@ -7,4 +7,4 @@ const getCardDetail = async () => {
     return cards.data;
 };
 
-export default { getCardDetail };
+module.exports = { getCardDetail };

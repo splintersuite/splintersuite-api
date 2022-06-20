@@ -1,7 +1,9 @@
-import { getUser } from '../actions/createAndGetUser.js';
-import { createNewRentalListings } from '../actions/getAndCreateUserRentalListings.js';
+const { getUser } = require('../actions/createAndGetUser');
+const {
+    createNewRentalListings,
+} = require('../actions/getAndCreateUserRentalListings');
 
-export const addRentalListings = async (req, res, next) => {
+const addRentalListings = async (req, res, next) => {
     // const { username } = req.params;
     const { rentalListings } = req.body;
     console.debug('rentalListings :');
@@ -13,3 +15,5 @@ export const addRentalListings = async (req, res, next) => {
     await createNewRentalListings({ rentalListings });
     res.send('ok');
 };
+
+module.exports = { addRentalListings };

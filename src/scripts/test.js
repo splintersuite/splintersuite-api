@@ -11,7 +11,7 @@ const test = (cardInfo) => {
         } = cardInfo;
         console.log('adjustCollectionRentalListingDataForDB start');
         const cardToInsert = {};
-        // TNT NOTE: we need to actually get this ideally from the userData stored in the store
+        // TNT NOTE: we need to actually get this ideally  = require(the userData stored in the store
         cardToInsert.users_id = 'b6f60d73-c219-413b-9b9c-85833a757f4d';
         cardToInsert.sl_created_at = new Date(market_created_date);
         cardToInsert.card_detail_id = card_detail_id;
