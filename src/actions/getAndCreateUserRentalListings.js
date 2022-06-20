@@ -1,5 +1,4 @@
 const UserRentalListings = require('../models/UserRentalListings');
-const _ = require('lodash');
 
 const createNewRentalListings = async ({
     // users_id,
@@ -9,19 +8,38 @@ const createNewRentalListings = async ({
         rentalListing.sl_created_at = new Date(rentalListing.sl_created_at);
     });
 
-    let chunks = rentalListings;
-
-    if (rentalListings.length > 1000) {
-        chunks = _.chunk(rentalListingss, 1000);
+    let users_id;
+    if (rentalListings.length > 0) {
+        users_id = rentalListings[0].users_id;
     }
+    const yday = new Date(today.setDate(today.getDate() - 1));
+    const tmrw = new Date(today.setDate(today.getDate() + 1));
+    const currentListings = await UserRentalListings.query()
+        .where({
+            users_id,
+            cancelled_at: null,
+        })
+        .orWhereBetween('cancelled_at', [yday, tmrw]);
 
-    if (chunks.length === rentalListings.length) {
-        chunks = [chunks];
-    }
-    for (const transChunk of chunks) {
-        await UserRentalListings.query().insert(transChunk);
-    }
+    const cardUIDstoRemove = [];
+    currentListings.forEach((listing) => {
+        rentalListings.forEach((newListing) => {
+            if (
+                listing.sell_trx_id === newListing.sell_trx_id &&
+                listing.card_uid === newListing.card_uid
+            ) {
+                cardUIDstoRemove.push(newListing.card_uid);
+            }
+        });
+    });
 
+    const rentalListingsToInsert = rentalListings.filter(
+        ({ card_uid }) => !cardUIDstoRemove.includes(card_uid)
+    );
+
+    if (rentalListingsToInsert > 0) {
+        await UserRentalListings.query().insert(rentalListingsToInsert);
+    }
     return;
 };
 
