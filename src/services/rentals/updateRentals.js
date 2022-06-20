@@ -64,8 +64,8 @@ const updateRentalsInDb = async ({ username, users_id }) => {
                 activeRental.card_id === listing.card_uid
             ) {
                 if (
-                    dbRentals[activeRental.sell_trx_id] &&
-                    dbRentals[activeRental.sell_trx_id].card_uid ===
+                    dbRentalsObj[activeRental.sell_trx_id] &&
+                    dbRentalsObj[activeRental.sell_trx_id].card_uid ===
                         listing.card_uid
                 ) {
                     // was this one of our listings??
@@ -96,14 +96,14 @@ const updateRentalsInDb = async ({ username, users_id }) => {
 
                     // check to see it's the same player.  if not we need to add a new record to rentals
                     if (
-                        dbRentals[activeRental.player_rented_to] !==
+                        dbRentalsObj[activeRental.player_rented_to] !==
                         activeRental.player_rented_to
                     ) {
                         // the listing re-listed automatically and has been re-rented.
                         // set the current rental to inactive
                         // create a new rental
                         rentalsIdsToMarkInactive.push(
-                            dbRentals[activeRental.player_rented_to].id
+                            dbRentalsObj[activeRental.player_rented_to].id
                         );
                         rentalsToInsert.push({
                             users_id,
@@ -139,6 +139,18 @@ const updateRentalsInDb = async ({ username, users_id }) => {
                         });
                     }
                 } else {
+                    // if (
+                    //     activeRental.sell_trx_id ===
+                    //     '406ce36181b22b2a63bea6a371e5fd84b7be3a38-4'
+                    // ) {
+                    //     console.log(
+                    //         'dbRentals[activeRental.sell_trx_id]',
+                    //         dbRentals[activeRental.sell_trx_id]
+                    //     );
+                    //     console.log('listing', listing);
+                    //     console.log('activeRental', activeRental);
+                    //     process.exit();
+                    // }
                     // we don't know about this rental!
                     // update the listing as active! Add a new rental
 
@@ -180,6 +192,8 @@ const updateRentalsInDb = async ({ username, users_id }) => {
     await rentalHelpers.markRentalsInactive({ rentalsIdsToMarkInactive });
 
     // oh yeah.  finally insert what we came for in the first place...
+    console.log('rentalsToInsert', rentalsToInsert);
+    process.exit();
     if (rentalsToInsert.length > 0) {
         await UserRentals.query().insert(rentalsToInsert);
     }

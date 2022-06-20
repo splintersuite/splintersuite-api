@@ -66,6 +66,8 @@ const updateRentalsForUsersEvening = async () => {
     }
 };
 
+updateRentalsForUsersMorning();
+
 const rentalWhenToRunMorning = '* 11 * * *';
 const rentalWhenToRunEvening = '* 23 * * *';
 
