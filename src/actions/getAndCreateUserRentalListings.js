@@ -12,6 +12,7 @@ const createNewRentalListings = async ({
     if (rentalListings.length > 0) {
         users_id = rentalListings[0].users_id;
     }
+    const today = new Date();
     const yday = new Date(today.setDate(today.getDate() - 1));
     const tmrw = new Date(today.setDate(today.getDate() + 1));
     const currentListings = await UserRentalListings.query()
