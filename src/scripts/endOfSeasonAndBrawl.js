@@ -53,7 +53,7 @@ const getSLSeasonAndBrawlData = async () => {
         });
 
         // create invoices for LAST season!
-        // await createInvoicesForSeason();
+        await createInvoicesForSeason();
         const newSeason = await insertSeason({ seasonData });
         if (newSeason) {
             const userIdsToLock = await lockPastDueUsers();
