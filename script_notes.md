@@ -14,3 +14,5 @@ that runs at 4:35 am (UTC time which is 4 hours ahead of EST) everyday (with no 
 # Deployment, have to use ecosystem.config.json because the config.js doesn't work with es modules
 
 pm2 start ecosystem.config.json --env development
+
+DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/scripts-splintersuite-dev NODE_ENV=development

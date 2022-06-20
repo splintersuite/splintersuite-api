@@ -3,7 +3,7 @@ const Seasons = require('../models/Seasons');
 
 const insertBrawl = async ({ brawlData }) => {
     try {
-        //  console.log(`insertBrawl start`);
+        console.log(`insertBrawl start`);
 
         const { id, start, end, name } = brawlData;
 

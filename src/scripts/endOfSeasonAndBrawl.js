@@ -8,10 +8,11 @@ const {
     unlockUsers,
     lockPastDueUsers,
 } = require('../actions/invoices');
+const logger = require('../util/pinologger');
 
 const getSplinterlandsSettings = async () => {
     try {
-        // console.log('getSplinterlandsSettings start');
+        logger.debug('getSplinterlandsSettings start');
 
         const url = 'https://api2.splinterlands.com/settings';
 
@@ -21,14 +22,14 @@ const getSplinterlandsSettings = async () => {
 
         return data;
     } catch (err) {
-        console.error(`getSplinterlandsSettings error: ${err.message}`);
+        logger.error(`getSplinterlandsSettings error: ${err.message}`);
         throw err;
     }
 };
 
 const getSLSeasonData = (settings) => {
     try {
-        //console.log(`getSLSeasonData start`);
+        logger.debug(`getSLSeasonData start`);
 
         const { season } = settings;
 
@@ -43,7 +44,7 @@ const getSLSeasonData = (settings) => {
 
 const getSLBrawlData = (settings) => {
     try {
-        //console.log(`getSLBrawlData start`);
+        logger.debug(`getSLBrawlData start`);
 
         const { brawl_cycle } = settings;
 
@@ -72,7 +73,7 @@ const getSLBrawlData = (settings) => {
 // runs every 4 days
 const getSLSeasonAndBrawlData = async () => {
     try {
-        //  console.log('getSLSeasonData start');
+        logger.debug('getSLSeasonData start');
 
         const data = await getSplinterlandsSettings();
 
@@ -80,10 +81,12 @@ const getSLSeasonAndBrawlData = async () => {
 
         const brawlData = getSLBrawlData(data);
 
-        await insertBrawl({ brawlData });
+        await insertBrawl({ brawlData }).catch((err) => {
+            logger.error(`insertBrawl error: ${err.message}`);
+        });
 
         // create invoices for LAST season!
-        await createInvoicesForSeason();
+        // await createInvoicesForSeason();
         const newSeason = await insertSeason({ seasonData });
         if (newSeason) {
             const userIdsToLock = await lockPastDueUsers();
