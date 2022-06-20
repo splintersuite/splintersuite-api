@@ -28,7 +28,7 @@ const getHistoricalData = async () => {
             count++;
         }
         logger.debug('getHistoricalData done');
-        return;
+        process.exit(0);
     } catch (err) {
         logger.error(`getHistoricalData error: ${err.message}`);
         throw err;

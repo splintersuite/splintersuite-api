@@ -33,7 +33,7 @@ const getSLBrawlData = async () => {
                     duplicate
                 )}`
             );
-            return;
+            process.exit(0);
         }
 
         await brawl.insertBrawl({ brawlData }).catch((err) => {
@@ -41,7 +41,7 @@ const getSLBrawlData = async () => {
             throw err;
         });
         logger.info(`getSlBrawl done`);
-        return;
+        process.exit(0);
     } catch (err) {
         logger.error(`getSLBrawlData error: ${err.message}`);
         throw err;

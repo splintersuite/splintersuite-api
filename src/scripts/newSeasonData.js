@@ -36,7 +36,7 @@ const getSLSeasonData = async () => {
             await invoices.unlockUsers({ userIdsToLock });
         }
         logger.info('getSLSeasonData done');
-        return;
+        process.exit(0);
     } catch (err) {
         logger.error(`getSLSeasonData error: ${err.message}`);
         throw err;
@@ -44,4 +44,3 @@ const getSLSeasonData = async () => {
 };
 
 getSLSeasonData();
-module.exports = { getSLSeasonData };

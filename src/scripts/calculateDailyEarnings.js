@@ -42,7 +42,7 @@ const calculateEarningsForUsers = async () => {
             });
         }
         logger.info('calculateEarningsForUsers done');
-        return;
+        process.exit(0);
     } catch (err) {
         logger.error(`calculateEarningsForUsers error: ${err.message}`);
         throw err;

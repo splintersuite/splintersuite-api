@@ -30,7 +30,7 @@ const updateRentalsForUsers = async () => {
             count++;
         }
         logger.info('updateRentalsForUsers done');
-        return;
+        process.exit(0);
     } catch (err) {
         logger.error(`updateRentalsForUsers error: ${err.message}`);
         throw err;
