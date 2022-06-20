@@ -30,6 +30,23 @@ const lockPastDueUsers = async () => {
     return usersIdsToLock;
 };
 
+const handleLockedUser = async ({ users_id }) => {
+    const nowTime = new Date().getTime();
+    const invoices = await Invoices.query().where({
+        paid_at: null,
+        users_id,
+    });
+
+    let locked = false;
+    invoices.forEach((invoice) => {
+        if (invoice.due_at.getTime() > nowTime) {
+            locked = true;
+        }
+    });
+
+    return locked;
+};
+
 const unlockUsers = async ({ userIdsToLock }) => {
     const lockedUsers = await Users.query().where({ locked: true });
     const lockedUserIds = lockedUsers.map(({ id }) => id);
@@ -125,4 +142,5 @@ module.exports = {
     lockPastDueUsers,
     unlockUsers,
     createInvoicesForSeason,
+    handleLockedUser,
 };
