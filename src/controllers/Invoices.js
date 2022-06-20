@@ -4,15 +4,21 @@ const {
     createInvoiceForUsersId,
     getInvoicesForUser,
 } = require('../actions/getAndCreateInvoices');
+const { handleLockedUser } = require('../actions/invoices');
 
 const payInvoice = async (req, res, next) => {
     const { id } = req.params;
     const { paid_at } = req.body;
 
-    await Invoices.query().where({ id }).update({ paid_at });
+    const invoice = await Invoices.query()
+        .where({ id })
+        .patch({ paid_at })
+        .returning('*');
+
+    const locked = await handleLockedUser({ users_id: invoice.users_id });
 
     // return whether or not the user is locked out
-    res.send('Your invoice is confirmed as paid off');
+    res.send({ locked });
 };
 
 const createInvoice = async (req, res, next) => {

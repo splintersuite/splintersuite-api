@@ -192,8 +192,6 @@ const updateRentalsInDb = async ({ username, users_id }) => {
     await rentalHelpers.markRentalsInactive({ rentalsIdsToMarkInactive });
 
     // oh yeah.  finally insert what we came for in the first place...
-    console.log('rentalsToInsert', rentalsToInsert);
-    process.exit();
     if (rentalsToInsert.length > 0) {
         await UserRentals.query().insert(rentalsToInsert);
     }
