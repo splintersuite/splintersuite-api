@@ -1,4 +1,3 @@
-const axiosInstance = require('../util/axiosInstance');
 const {
     insertBrawl,
     insertSeason,
@@ -9,23 +8,6 @@ const {
     lockPastDueUsers,
 } = require('../actions/invoices');
 const logger = require('../util/pinologger');
-
-const getSplinterlandsSettings = async () => {
-    try {
-        logger.debug('getSplinterlandsSettings start');
-
-        const url = 'https://api2.splinterlands.com/settings';
-
-        const res = await axiosInstance(url);
-
-        const data = res.data;
-
-        return data;
-    } catch (err) {
-        logger.error(`getSplinterlandsSettings error: ${err.message}`);
-        throw err;
-    }
-};
 
 const getSLSeasonData = (settings) => {
     try {
@@ -38,21 +20,6 @@ const getSLSeasonData = (settings) => {
         return { id, name, ends };
     } catch (err) {
         console.error(`getSlSeasonData error: ${err.message}`);
-        throw err;
-    }
-};
-
-const getSLBrawlData = (settings) => {
-    try {
-        logger.debug(`getSLBrawlData start`);
-
-        const { brawl_cycle } = settings;
-
-        const { id, name, start, end } = brawl_cycle;
-
-        return { id, name, start, end };
-    } catch (err) {
-        console.error(`getSLBrawlData error: ${err.message}`);
         throw err;
     }
 };

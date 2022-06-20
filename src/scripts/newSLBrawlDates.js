@@ -1,8 +1,6 @@
 const { getSplinterlandsSettings } = require('./getSLAPI');
 const logger = require('../util/pinologger');
-//const { insertBrawl, } = require('../actions/insertBrawlAndSeasonData');
 const brawl = require('../actions/brawl');
-const knex = require('knex');
 
 const extractSLBrawlData = (settings) => {
     try {
@@ -42,13 +40,7 @@ const getSLBrawlData = async () => {
             logger.error(`insertBrawl error: ${err.message}`);
             throw err;
         });
-        logger.info(`getSlBrawl finished with res: `);
-        logger.info(res);
-        // knex.destroy()
-        //     .then((res) =>
-        //         logger.info(`knex.destroy res:${JSON.stringify(res)}`)
-        //     )
-        //     .catch((err) => logger.error(`knex.destroy error: ${err.message}`));
+        logger.info(`getSlBrawl done`);
         return;
     } catch (err) {
         logger.error(`getSLBrawlData error: ${err.message}`);
