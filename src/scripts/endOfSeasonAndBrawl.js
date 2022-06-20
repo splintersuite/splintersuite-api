@@ -83,11 +83,11 @@ const getSLSeasonAndBrawlData = async () => {
         await insertBrawl({ brawlData });
 
         const newSeason = await insertSeason({ seasonData });
+        const userIdsToLock = await lockPastDueUsers();
+        await unlockUsers({ userIdsToLock });
+        // create invoices for LAST season!
+        await createInvoicesForSeason();
         if (newSeason) {
-            const userIdsToLock = await lockPastDueUsers();
-            await unlockUsers({ userIdsToLock });
-            // create invoices for LAST season!
-            await createInvoicesForSeason();
         }
         return;
     } catch (err) {
@@ -95,5 +95,7 @@ const getSLSeasonAndBrawlData = async () => {
         throw err;
     }
 };
+
+getSLSeasonAndBrawlData();
 
 module.exports = { getSLSeasonAndBrawlData };

@@ -2,13 +2,18 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const Users = require('../models/Users');
+const Invoices = require('../models/Invoices');
 
-const insertUser = async ({ username }) => {
+const insertSeason = async ({ username }) => {
     const now = new Date();
-    await Users.query()
+    await Invoices.query()
         .insert({
-            username,
-            created_at: now,
+            users_id: '0f16186c-744c-4d68-8dba-99e7ee91a690',
+            season_id: '001e1154-d6e3-4697-849e-ed8d3a391fdd',
+            discounted_due_at: new Date(),
+            due_at: new Date(),
+            amount_due: 2,
+            season_name: 'lolxd',
         })
         .catch((err) => {
             console.log(err);
@@ -27,7 +32,7 @@ const patcbUser = async ({ username }) => {
         });
 };
 
-// insertUser({ username: 'genepoolcardlord' });
+// insertSeason({ username: 'genepoolcardlord' });
 
 const queryJboxx = async () => {
     const users = await Users.query().catch((err) => {

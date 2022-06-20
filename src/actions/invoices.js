@@ -11,7 +11,7 @@ const lockPastDueUsers = async () => {
 
     const usersIdsToLock = [];
     invoices.forEach((invoice) => {
-        if (invoice.due_at.getTime() > nowTime) {
+        if (nowTime > invoice.due_at.getTime()) {
             usersIdsToLock.push(invoice.users_id);
         }
     });
@@ -39,7 +39,7 @@ const handleLockedUser = async ({ users_id }) => {
 
     let locked = false;
     invoices.forEach((invoice) => {
-        if (invoice.due_at.getTime() > nowTime) {
+        if (nowTime > invoice.due_at.getTime()) {
             locked = true;
         }
     });
