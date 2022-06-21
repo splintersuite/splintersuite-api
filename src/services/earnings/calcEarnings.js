@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const DailyEarnings = require('../../models/DailyEarnings');
 const UserRentals = require('../../models/UserRentals');
-const { SPLINTERSUITE_BOT } = require('../rentals/types');
+const { SPLINTERSUITE_BOT, SPLINTERLANDS_API } = require('../rentals/types');
 
 const calcDailyEarnings = async ({ users_id }) => {
     // const rentals = await UserRentals.query().where({
@@ -19,14 +19,14 @@ const calcDailyEarnings = async ({ users_id }) => {
         )
         .select('user_rentals.*', 'user_rental_listings.source');
 
+    const botRentals = rentals.filter(
+        ({ source }) => source === SPLINTERSUITE_BOT
+    );
     return {
-        numRentals: rentals.length,
+        bot_num_rentals: botRentals.length,
+        bot_earnings_dec: _.sum(botRentals.map(({ price }) => price)),
+        num_rentals: rentals.length,
         earnings_dec: _.sum(rentals.map(({ price }) => price)),
-        bot_earnings_dec: _.sum(
-            rentals
-                .filter(({ source }) => source === SPLINTERSUITE_BOT)
-                .map(({ price }) => price)
-        ),
     };
 };
 
@@ -38,8 +38,9 @@ const insertDailyEarnings = async ({ users_id, earnings_date }) => {
         users_id,
         earnings_date,
         earnings_dec: earningsData.earnings_dec,
+        num_rentals: earningsData.num_rentals,
         bot_earnings_dec: earningsData.bot_earnings_dec,
-        num_rentals: earningsData.numRentals,
+        bot_num_rentals: earningsData.bot_num_rentals,
     });
 };
 
