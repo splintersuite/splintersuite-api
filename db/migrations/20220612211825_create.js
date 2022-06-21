@@ -72,7 +72,9 @@ exports.up = function (knex) {
             t.timestamps(true, true);
             t.dateTime('earnings_date').notNullable();
             t.float('earnings_dec').notNullable();
+            t.float('bot_earnings_dec').notNullable();
             t.integer('num_rentals').notNullable();
+            t.integer('bot_num_rentals').notNullable();
             // should add market rate for that card in the future...
         })
         .createTable('user_rental_listings', (t) => {
@@ -87,6 +89,7 @@ exports.up = function (knex) {
             t.boolean('is_rental_active').notNullable().defaultTo(false);
             t.boolean('is_gold').notNullable();
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
+            t.string('source').notNullable(); // assigned by splinterlands WHEN LISTED
             t.string('card_uid').notNullable();
             t.unique(['created_at', 'card_uid']); // TNT NOTE: I think we need to make this a larger composite key imo
         })
