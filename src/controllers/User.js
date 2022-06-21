@@ -11,7 +11,7 @@ const getUserInfo = async (req, res, next) => {
     let user = await getUser({ username });
 
     if (!user?.id) {
-        [user] = await createAndReturnUser({ username });
+        user = await createAndReturnUser({ username });
     }
 
     const earningsObj = await getUsersDataForFrontend({
@@ -19,10 +19,6 @@ const getUserInfo = async (req, res, next) => {
     });
     user.stats = earningsObj;
 
-    // const invoices = await getRecentSeasonInvoicesForUsersId({
-    //     users_id: user.id,
-    // });
-    // user.invoices = invoices || [];
     res.send(user);
 };
 

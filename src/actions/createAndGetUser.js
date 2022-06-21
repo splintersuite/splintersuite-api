@@ -2,9 +2,9 @@ const Users = require('../models/Users');
 const earningsFncs = require('../services/earnings/earningsMetrics');
 
 const createAndReturnUser = async ({ username }) => {
-    //const now = new Date();
     const user = await Users.query().insert({
         username,
+        locked: false,
     });
     return user;
 };
