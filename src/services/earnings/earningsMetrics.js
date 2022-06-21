@@ -53,7 +53,74 @@ const calcAggregatedEarnings = async ({ users_id }) => {
     const totalEarned = await DailyEarnings.query().where({ users_id });
 
     return {
-        earnings: {
+        bot: {
+            daily: {
+                amount: _.sum(
+                    todaysEarnings.map(
+                        ({ bot_earnings_dec }) => bot_earnings_dec
+                    )
+                ),
+                // dec_today / dec_yday - 1
+                change:
+                    _.sum(
+                        todaysEarnings.map(
+                            ({ bot_earnings_dec }) => bot_earnings_dec
+                        )
+                    ) /
+                        _.sum(
+                            lastYdayEarnings.map(
+                                ({ bot_earnings_dec }) => bot_earnings_dec
+                            )
+                        ) -
+                    1,
+            },
+            wtd: {
+                amount: _.sum(
+                    wtdEarnings.map(({ bot_earnings_dec }) => bot_earnings_dec)
+                ),
+                // dec_today / dec_yday - 1
+                change:
+                    _.sum(
+                        wtdEarnings.map(
+                            ({ bot_earnings_dec }) => bot_earnings_dec
+                        )
+                    ) /
+                        _.sum(
+                            lastWtdEarnings.map(
+                                ({ bot_earnings_dec }) => bot_earnings_dec
+                            )
+                        ) -
+                    1,
+            },
+            mtd: {
+                amount: _.sum(
+                    mtdEarnings.map(({ bot_earnings_dec }) => bot_earnings_dec)
+                ),
+                // dec_today / dec_yday - 1
+                change:
+                    _.sum(
+                        mtdEarnings.map(
+                            ({ bot_earnings_dec }) => bot_earnings_dec
+                        )
+                    ) /
+                        _.sum(
+                            lastMtdEarnings.map(
+                                ({ bot_earnings_dec }) => bot_earnings_dec
+                            )
+                        ) -
+                    1,
+            },
+            weekly: weeklyEarnings.map(
+                ({ bot_earnings_dec, earnings_date }) => ({
+                    earnings: bot_earnings_dec,
+                    date: earnings_date,
+                })
+            ),
+            totalEarned: totalEarned.map(
+                ({ bot_earnings_dec }) => bot_earnings_dec
+            ),
+        },
+        total: {
             daily: {
                 amount: _.sum(
                     todaysEarnings.map(({ earnings_dec }) => earnings_dec)
@@ -70,7 +137,7 @@ const calcAggregatedEarnings = async ({ users_id }) => {
                         ) -
                     1,
             },
-            wtdEarnings: {
+            wtd: {
                 amount: _.sum(
                     wtdEarnings.map(({ earnings_dec }) => earnings_dec)
                 ),
@@ -84,7 +151,7 @@ const calcAggregatedEarnings = async ({ users_id }) => {
                         ) -
                     1,
             },
-            mtdEarnings: {
+            mtd: {
                 amount: _.sum(
                     mtdEarnings.map(({ earnings_dec }) => earnings_dec)
                 ),
@@ -98,12 +165,12 @@ const calcAggregatedEarnings = async ({ users_id }) => {
                         ) -
                     1,
             },
+            weekly: weeklyEarnings.map(({ earnings_dec, earnings_date }) => ({
+                earnings: earnings_dec,
+                date: earnings_date,
+            })),
+            totalEarned: totalEarned.map(({ earnings_dec }) => earnings_dec),
         },
-        weekly: weeklyEarnings.map(({ earnings_dec, earnings_date }) => ({
-            earnings: earnings_dec,
-            date: earnings_date,
-        })),
-        totalEarned: totalEarned.map(({ earnings_dec }) => earnings_dec),
     };
 };
 

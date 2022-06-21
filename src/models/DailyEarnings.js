@@ -14,6 +14,8 @@ class DailyEarnings extends Model {
                 'users_id',
                 'earnings_dec',
                 'num_rentals',
+                'bot_earnings_dec',
+                'bot_num_rentals',
             ],
             properties: {
                 id: { type: 'string' },
@@ -22,7 +24,9 @@ class DailyEarnings extends Model {
                 created_at: { type: 'object', format: 'date-time' },
                 updated_at: { type: 'object', format: 'date-time' },
                 num_rentals: { type: 'number' },
+                bot_num_rentals: { type: 'number' },
                 earnings_dec: { type: 'number' },
+                bot_earnings_dec: { type: 'number' },
             },
         };
     }

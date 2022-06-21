@@ -5,6 +5,7 @@ const collectionFncs = require('../../actions/getCollectionFncs');
 const updateListings = require('./updateListings');
 const rentalHelpers = require('./rentalHelpers');
 const logger = require('../../util/pinologger');
+const { SPLINTERLANDS_API } = require('./types');
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
@@ -23,6 +24,9 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             username,
             cardDetailsObj,
         });
+
+        // sets is_active_rental to null if they dropped off...
+        await rentalHelpers.patchCancelledRecords({ users_id });
 
         // setting up objects for faster lookup later on
         const dbListingsObj = {};
@@ -134,6 +138,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                         ),
                         card_uid: activeRental.card_id,
                         sell_trx_id: activeRental.sell_trx_id,
+                        source: SPLINTERLANDS_API,
                         price: Number(activeRental.buy_price),
                         is_rental_active: true,
                         is_gold: activeRental.gold,
@@ -206,6 +211,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                         sell_trx_id: activeRental.sell_trx_id,
                         price: Number(activeRental.buy_price),
                         is_rental_active: true,
+                        source: SPLINTERLANDS_API,
                         is_gold: activeRental.gold,
                     });
                     // need to CREATE a new Rental associated with this listing!
@@ -266,6 +272,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                     card_uid: activeRental.card_id,
                     sell_trx_id: activeRental.sell_trx_id,
                     price: Number(activeRental.buy_price),
+                    source: SPLINTERLANDS_API,
                     is_rental_active: true,
                     is_gold: activeRental.gold,
                 });
@@ -344,4 +351,4 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
 
 // updateRentalsInDb({ username: 'xdww' });
 
-module.exports = { updateRentalsInDb };
+module.exports = { updateRentalsInDb, SPLINTERLANDS_API };

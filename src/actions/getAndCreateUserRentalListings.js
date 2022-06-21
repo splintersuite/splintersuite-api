@@ -1,4 +1,5 @@
 const UserRentalListings = require('../models/UserRentalListings');
+const { SPLINTERSUITE_BOT } = require('../services/rentals/types');
 
 const createNewRentalListings = async ({
     // users_id,
@@ -38,7 +39,10 @@ const createNewRentalListings = async ({
         ({ card_uid }) => !cardUIDstoRemove.includes(card_uid)
     );
 
-    console.log('rentalListingsToInsert', rentalListingsToInsert);
+    rentalListingsToInsert.forEach((rental) => {
+        rental.source = SPLINTERSUITE_BOT;
+    });
+
     if (rentalListingsToInsert.length > 0) {
         await UserRentalListings.query().insert(rentalListingsToInsert);
     }
