@@ -27,11 +27,13 @@ const getSLSeasonData = async () => {
 
         const seasonData = extractSLSeasonData(data);
 
-        const newSeason = await season.insertSeason({ seasonData });
+        const newSeason = await season.insertSeason({
+            seasonData,
+        });
 
-        // create invoices for LAST season!
-        await invoices.createInvoicesForSeason();
         if (newSeason) {
+            // create invoices for LAST season!
+            await invoices.createInvoicesForSeason();
             const userIdsToLock = await invoices.lockPastDueUsers();
             await invoices.unlockUsers({ userIdsToLock });
         }
