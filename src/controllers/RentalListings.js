@@ -11,8 +11,10 @@ const addRentalListings = async (req, res, next) => {
     // const user = await getUser([username]);
 
     //await createNewRentalListings({users_id, })
-
-    await createNewRentalListings({ rentalListings });
+    if (!rentalListings || rentalListings.length === 0) {
+    } else {
+        await createNewRentalListings({ rentalListings });
+    }
     res.send('ok');
 };
 
