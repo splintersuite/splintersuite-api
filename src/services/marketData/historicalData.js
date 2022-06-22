@@ -28,12 +28,12 @@ const collectData = async ({
         const trades = {};
         activeTrades.data.forEach((trade) => {
             const level = findCardLevel({
-                id: card.card_detail_id,
+                id: card.id,
                 rarity: card.rarity,
                 _xp: trade.xp,
                 gold: trade.gold,
                 edition: trade.edition,
-                tier: trade.tier,
+                tier: card.tier,
                 alpha_xp: 0,
             });
             const levelString = `level-${String(level)}`;
