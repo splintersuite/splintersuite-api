@@ -23,6 +23,7 @@ const getHistoricalData = async () => {
                 twelveHoursAgoTime,
             });
             if (count !== 0 && count % 100 === 0) {
+                logger.debug('sleeping 5 mins');
                 await retryFncs.sleep(fiveMinutesInMS);
             }
             count++;

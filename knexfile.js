@@ -35,7 +35,7 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
-        debug: process.env.DEBUG,
+        debug: process.env.DEBUG || true,
     },
     production: {
         client: 'pg',
@@ -70,7 +70,7 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
-        debug: process.env.DEBUG,
+        debug: process.env.DEBUG || false,
     },
     onUpdateTrigger: (table) => `
         CREATE TRIGGER ${table}_updated_at

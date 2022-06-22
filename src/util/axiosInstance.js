@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 axiosRetry.axiosRetry(axiosInstance, {
     retryDelay: (retryCount, error) => {
         logger.error(`retryCount: ${retryCount}`);
-        logger.error('retryDelay called with error: ', error);
+        logger.error(`retryDelay called with error: ${JSON.stringify(error)}`);
         logger.error(`error message is: ${error.message}`);
         return 500000;
     },

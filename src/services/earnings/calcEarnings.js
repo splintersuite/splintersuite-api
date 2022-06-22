@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const DailyEarnings = require('../../models/DailyEarnings');
 const UserRentals = require('../../models/UserRentals');
-const logger = require('../util/pinologger');
+const logger = require('../../util/pinologger');
 const { SPLINTERSUITE_BOT, SPLINTERLANDS_API } = require('../rentals/types');
 
 const calcDailyEarnings = async ({ users_id }) => {
