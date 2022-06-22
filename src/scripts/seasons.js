@@ -1,11 +1,11 @@
-const logger = require('../../util/pinologger');
-const seasonService = require('../../services/seasons');
-const invoiceService = require('../../services/invoices');
-const splinterlandsService = require('../../services/splinterlands');
+const logger = require('../util/pinologger');
+const seasonService = require('../services/seasons');
+const invoiceService = require('../services/invoices');
+const splinterlandsService = require('../services/splinterlands');
 
 const extractSLSeasonData = (settings) => {
     try {
-        logger.debug(`extractSLSeasonData start`);
+        logger.debug(`/scripts/seasons/extractSLSeasonData`);
         const { season } = settings;
         const { id, name, ends } = season;
         return { id, name, ends };
@@ -19,7 +19,7 @@ const extractSLSeasonData = (settings) => {
 
 const getSLSeasonData = async () => {
     try {
-        logger.debug(`getSLSeasonData start`);
+        logger.debug(`/scripts/seasons/getSLSeasonData`);
         const data = await splinterlandsService.getSettings();
         const seasonData = extractSLSeasonData(data);
         const newSeason = await seasonService.create({

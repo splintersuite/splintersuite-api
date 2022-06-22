@@ -1,13 +1,12 @@
-const cardsDetails = require('../../../util/cardDetails.json');
-const retryFncs = require('../../../services/axios_retry/general');
-const logger = require('../../../util/pinologger');
-
-const marketService = require('../../../services/market');
+const cardsDetails = require('../util/cardDetails.json');
+const retryFncs = require('../services/axios_retry/general');
+const logger = require('../util/pinologger');
+const marketService = require('../services/market');
 
 // TNT TODO: actually insert the data into our db
 const getHistoricalData = async () => {
     try {
-        logger.debug('getHistoricalData start');
+        logger.debug(`/scripts/rentals/getHistoricalData`);
         // runs at 05:00 EST
         // runs at 17:00 EST
         const now = new Date();

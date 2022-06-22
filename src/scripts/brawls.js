@@ -1,6 +1,6 @@
-const logger = require('../../util/pinologger');
-const brawlService = require('../../services/brawls');
-const splinterlandsService = require('../../services/splinterlands');
+const logger = require('../util/pinologger');
+const brawlService = require('../services/brawls');
+const splinterlandsService = require('../services/splinterlands');
 
 const extractSLBrawlData = (settings) => {
     try {
