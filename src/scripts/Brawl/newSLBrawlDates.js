@@ -1,6 +1,6 @@
-const { getSplinterlandsSettings } = require('./getSLAPI');
-const logger = require('../util/pinologger');
-const brawl = require('../actions/brawl');
+const { getSplinterlandsSettings } = require('../../actions/SL_API');
+const logger = require('../../util/pinologger');
+const brawl = require('../../actions/brawl');
 
 const extractSLBrawlData = (settings) => {
     try {

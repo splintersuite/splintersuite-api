@@ -1,7 +1,7 @@
-const histFncs = require('../services/marketData/historicalData');
-const cardsDetails = require('../util/cardDetails.json');
-const retryFncs = require('../services/axios_retry/general');
-const logger = require('../util/pinologger');
+const histFncs = require('../../../services/marketData/historicalData');
+const cardsDetails = require('../../../util/cardDetails.json');
+const retryFncs = require('../../../services/axios_retry/general');
+const logger = require('../../../util/pinologger');
 
 // TNT TODO: actually insert the data into our db
 const getHistoricalData = async () => {
