@@ -1,9 +1,9 @@
-const earningsFncs = require('../services/earnings/calcEarnings');
-const logger = require('../util/pinologger');
-const Users = require('../models/Users');
-const retryFncs = require('../services/axios_retry/general');
-const cardDetails = require('../util/cardDetails.json');
-const rentalFncs = require('../services/rentals/allAccountUpdate');
+const earningsFncs = require('../../services/earnings/calcEarnings');
+const logger = require('../../util/pinologger');
+const Users = require('../../models/Users');
+const retryFncs = require('../../services/axios_retry/general');
+const cardDetails = require('../../util/cardDetails.json');
+const rentalFncs = require('../../services/rentals/allAccountUpdate');
 
 // we should run this like
 const calculateEarningsForUsers = async () => {

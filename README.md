@@ -24,3 +24,28 @@ $ knex migrate:latest
 
 node --experimental-specifier-resolution=node index.js
 to handle for "type": "module", in package.json
+
+# Cron Scripts
+
+when you run something in the scripts page (ie like in a cron process)
+
+you need to explicitly pass the environment variables
+
+55 4 \* \* \* DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=development /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/calculateDailyEarnings.js >> /home/ubuntu/Earnings.log 2>&1
+
+-> this script calls the calculateDailyEarnings function
+
+# previous season information from API :
+
+// output of getSLSeasonAndBrawlData function:
+// seasonData, brawlData:
+// {
+// id: 88,
+// name: 'Splinterlands Season 74',
+// ends: '2022-06-15T14:00:00.000Z'
+// } {
+// id: 89,
+// name: 'Brawl Cycle 89',
+// start: '2022-06-13T06:00:00.000Z',
+// end: '2022-06-18T07:00:00.000Z'
+// }
