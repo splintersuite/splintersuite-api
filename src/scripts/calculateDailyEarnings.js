@@ -9,7 +9,7 @@ const rentalFncs = require('../services/rentals/allAccountUpdate');
 const calculateEarningsForUsers = async () => {
     try {
         logger.debug(`calculateEarningsForUsers start`);
-        // runs at 23:00 EST
+        // runs at 0:00 EST and 12:00 PM EST
         const todaysDate = new Date(new Date().toISOString().split('T')[0]);
         const cardDetailsObj = {};
         cardDetails.forEach((card) => {

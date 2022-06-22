@@ -16,3 +16,8 @@ that runs at 4:35 am (UTC time which is 4 hours ahead of EST) everyday (with no 
 pm2 start ecosystem.config.js --env development
 
 DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/scripts-splintersuite-dev NODE_ENV=development
+
+55 4 \* \* \* DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=development /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/calculateDailyEarnings.js >> /home/ubuntu/Earnings.log 2>&1
+
+35 4 \* \* \* DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev \
+NODE_ENV=development \/home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/endOfSeasonAndBrawl.js >> /home/ubuntu/cronlog.txt 2>&1

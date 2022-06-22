@@ -34,3 +34,5 @@ const getHistoricalData = async () => {
         throw err;
     }
 };
+
+getHistoricalData();

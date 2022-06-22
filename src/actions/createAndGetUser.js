@@ -1,5 +1,6 @@
 const Users = require('../models/Users');
 const earningsFncs = require('../services/earnings/earningsMetrics');
+const logger = require('../util/pinologger');
 
 const createAndReturnUser = async ({ username }) => {
     const user = await Users.query().insert({
@@ -10,6 +11,7 @@ const createAndReturnUser = async ({ username }) => {
 };
 
 const getUser = async ({ username }) => {
+    logger.info('getUser is called');
     const user = await Users.query().findOne({ username });
 
     return user;
