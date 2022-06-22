@@ -16,6 +16,7 @@ const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
 // from services/earnings/performance.js
 // -----------------
 const getMarketRatesAndUserRentals = async ({ users_id }) => {
+    logger.debug(`/services/market/getMarketRatesAndUserRentals`);
     const today = new Date();
     const firstOfLastMonth = new Date();
     firstOfLastMonth.setDate(1);
@@ -240,7 +241,9 @@ const collectData = async ({
     twelveHoursAgoTime,
 }) => {
     try {
-        logger.info('collectData start');
+        logger.debug(`/services/market/collectData`);
+
+        // these api calls should live in services/splinterlands.js
         const activeTrades = await axiosInstance.get(
             `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}`
         );

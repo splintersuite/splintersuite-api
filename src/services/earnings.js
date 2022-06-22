@@ -184,7 +184,7 @@ const get = async ({ users_id }) => {
 
 const calcDailyEarnings = async ({ users_id }) => {
     try {
-        logger.debug('calcDailyEarnings start');
+        logger.debug(`/services/earnings/calcDailyEarnings`);
         // const rentals = await UserRentals.query().where({
         //     users_id,
         //     is_rental_active: true,
@@ -219,7 +219,7 @@ const calcDailyEarnings = async ({ users_id }) => {
 // NEEDS TO BE RUN ON A DAILY BASIS
 const insertDailyEarnings = async ({ users_id, earnings_date }) => {
     try {
-        logger.debug('insertDailyEarnings start');
+        logger.debug(`/services/earnings/insertDailyEarnings`);
         const earningsData = await calcDailyEarnings({ users_id });
 
         await DailyEarnings.query().insert({

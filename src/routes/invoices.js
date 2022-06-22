@@ -3,7 +3,7 @@ const invoices = require('../controllers/invoices');
 
 const router = express.Router();
 
-router.post('/:id', invoices.get);
-router.get('/:username', invoices.pay);
+router.post('/:id', invoices.pay);
+router.get('/:username', invoices.get);
 
 module.exports = router;

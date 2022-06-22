@@ -1,6 +1,8 @@
+const logger = require('../util/pinologger');
 const axiosInstance = require('../util/axiosInstance');
 
 const getCardDetail = async () => {
+    logger.debug(`/services/splinterlands/getCardDetail`);
     const cards = await axiosInstance.get(
         'https://api2.splinterlands.com/cards/get_details'
     );
@@ -9,6 +11,7 @@ const getCardDetail = async () => {
 
 // could add cache functionality here to limit api calls
 const getCollection = async ({ username }) => {
+    logger.debug(`/services/splinterlands/getCollection`);
     const collection = await axiosInstance.get(
         `https://api2.splinterlands.com/cards/collection/${username}`
     );
@@ -28,6 +31,7 @@ const getCollection = async ({ username }) => {
 };
 
 const getCollectionListings = async ({ username }) => {
+    logger.debug(`/services/splinterlands/getCollectionListings`);
     const collection = await getCollection({ username });
 
     // listed but not rented market_listing_status = 0
@@ -54,6 +58,7 @@ const getCollectionListings = async ({ username }) => {
 };
 
 const getActiveRentals = async ({ username }) => {
+    logger.debug(`/services/splinterlands/getActiveRentals`);
     const activeRentals = await axiosInstance.get(
         `https://api2.splinterlands.com/market/active_rentals?owner=${username}`
     );
@@ -69,7 +74,7 @@ const getActiveRentals = async ({ username }) => {
 
 const getSettings = async () => {
     try {
-        logger.debug('getSplinterlandsSettings start');
+        logger.debug(`/services/splinterlands/getSettings`);
 
         const url = 'https://api2.splinterlands.com/settings';
 
