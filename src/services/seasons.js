@@ -1,9 +1,9 @@
-const Seasons = require('../models/Seasons');
 const logger = require('../util/pinologger');
+const Seasons = require('../models/Seasons');
 
-const insertSeason = async ({ seasonData }) => {
+const create = async ({ seasonData }) => {
     try {
-        logger.debug('insertSeason start');
+        logger.debug(`/services/seasons/create`);
         const { id, ends, name } = seasonData;
 
         const dbSeason = await Seasons.query().findOne({
@@ -11,12 +11,7 @@ const insertSeason = async ({ seasonData }) => {
             season_name: name,
         });
 
-        // const now = new Date();
         if (!dbSeason) {
-            logger.debug(
-                `previous season not found, season: ${JSON.stringify(dbSeason)}`
-            );
-            //} && now.getTime() > dbSeason.end_date.getTime()) {
             const newSeason = await Seasons.query().insert({
                 season_id: id,
                 end_date: new Date(ends),
@@ -24,24 +19,19 @@ const insertSeason = async ({ seasonData }) => {
             });
 
             return newSeason;
-        } else {
-            logger.debug('season already inserted');
-            return null;
         }
+        return null;
     } catch (err) {
-        logger.error(`insertSeason error: ${err.message}`);
+        console.error(`insertSeason error: ${err.message}`);
         throw err;
     }
 };
 
-const getMostRecentSeason = async () => {
+const getLast = async () => {
     // TNT IDEA; should we add a boolean to season being active/ended? Therefore we could search for most recent season that ended cuz otherwise it would get season in progress
-
+    logger.debug(`/services/seasons/getLast`);
     const season = await Seasons.query().orderBy('end_date', 'desc');
     return season[0];
 };
 
-module.exports = {
-    insertSeason,
-    getMostRecentSeason,
-};
+module.exports = { create, getLast };

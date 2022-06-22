@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const UserRentalListings = require('../../models/UserRentalListings');
 const UserRentals = require('../../models/UserRentals');
-const collectionFncs = require('../../actions/getCollectionFncs');
+const splinterlandsService = require('../../services/splinterlands');
 const rentalHelpers = require('./rentalHelpers');
 
 // to be run EVERY 12 HOURS for EVERY USER
@@ -32,7 +32,7 @@ const updateRentalsInDb = async ({ username, users_id }) => {
 
     // getting active rentals  = require(/activerentals?{username} endpoint
     // again - could have done this with the collections endpoints.
-    const activeRentals = await collectionFncs.getActiveRentals({
+    const activeRentals = await splinterlandsService.getActiveRentals({
         username,
     });
 

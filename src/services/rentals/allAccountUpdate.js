@@ -1,11 +1,11 @@
 const _ = require('lodash');
 const UserRentals = require('../../models/UserRentals');
-const findCardLevel = require('../calculateCardLevel');
-const collectionFncs = require('../../actions/getCollectionFncs');
+const findCardLevel = require('../../util/calculateCardLevel');
 const updateListings = require('./updateListings');
 const rentalHelpers = require('./rentalHelpers');
 const logger = require('../../util/pinologger');
 const { SPLINTERLANDS_API } = require('./types');
+const splinterlandsService = require('../../services/splinterlands');
 
 // to be run EVERY 12 HOURS for EVERY USER
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
@@ -71,7 +71,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
 
         // getting active rentals  = require(/activerentals?{username} endpoint
         // again - could have done this with the collections endpoints.
-        const activeRentals = await collectionFncs.getActiveRentals({
+        const activeRentals = await splinterlandsService.getActiveRentals({
             username,
         });
 

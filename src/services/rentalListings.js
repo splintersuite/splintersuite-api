@@ -1,10 +1,9 @@
+const logger = require('../util/pinologger');
 const UserRentalListings = require('../models/UserRentalListings');
 const { SPLINTERSUITE_BOT } = require('../services/rentals/types');
 
-const createNewRentalListings = async ({
-    // users_id,
-    rentalListings,
-}) => {
+const create = async ({ rentalListings }) => {
+    logger.debug(`/services/rentalListings/create`);
     rentalListings.forEach((rentalListing) => {
         rentalListing.sl_created_at = new Date(rentalListing.sl_created_at);
     });
@@ -49,4 +48,4 @@ const createNewRentalListings = async ({
     return;
 };
 
-module.exports = { createNewRentalListings };
+module.exports = { create };
