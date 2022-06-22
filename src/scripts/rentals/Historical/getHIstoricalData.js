@@ -1,7 +1,8 @@
-const histFncs = require('../../../services/marketData/historicalData');
 const cardsDetails = require('../../../util/cardDetails.json');
 const retryFncs = require('../../../services/axios_retry/general');
 const logger = require('../../../util/pinologger');
+
+const marketService = require('../../../services/market');
 
 // TNT TODO: actually insert the data into our db
 const getHistoricalData = async () => {
@@ -16,7 +17,7 @@ const getHistoricalData = async () => {
         const fiveMinutesInMS = 1000 * 60 * 5;
         let count = 0;
         for (const card of cardsDetails) {
-            await histFncs.collectData({
+            await marketService.collectData({
                 card,
                 now,
                 twelveHoursAgo,

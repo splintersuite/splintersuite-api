@@ -1,7 +1,7 @@
 'use strict';
 
 const axios = require('axios');
-const axiosRetry = require('../services/axios_retry/axios_retry');
+const axiosRetry = require('./axios_retry/axios_retry');
 const logger = require('./pinologger');
 
 const axiosInstance = axios.create({

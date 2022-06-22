@@ -1,5 +1,5 @@
 const UserRentalListings = require('../../models/UserRentalListings');
-const collectionFncs = require('../../actions/getCollectionFncs');
+const splinterlandsService = require('../../services/splinterlands');
 const { SPLINTERLANDS_API } = require('./types');
 const _ = require('lodash');
 
@@ -19,7 +19,7 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
         ({ is_rental_active }) => !is_rental_active
     );
 
-    const apiListings = await collectionFncs.getCollectionListings({
+    const apiListings = await splinterlandsService.getCollectionListings({
         username,
     });
 

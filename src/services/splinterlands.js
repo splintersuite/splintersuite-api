@@ -1,5 +1,12 @@
 const axiosInstance = require('../util/axiosInstance');
 
+const getCardDetail = async () => {
+    const cards = await axiosInstance.get(
+        'https://api2.splinterlands.com/cards/get_details'
+    );
+    return cards.data;
+};
+
 // could add cache functionality here to limit api calls
 const getCollection = async ({ username }) => {
     const collection = await axiosInstance.get(
@@ -60,4 +67,27 @@ const getActiveRentals = async ({ username }) => {
     return activeRentals.data;
 };
 
-module.exports = { getCollection, getCollectionListings, getActiveRentals };
+const getSettings = async () => {
+    try {
+        logger.debug('getSplinterlandsSettings start');
+
+        const url = 'https://api2.splinterlands.com/settings';
+
+        const res = await axiosInstance(url);
+
+        const data = res.data;
+
+        return data;
+    } catch (err) {
+        logger.error(`getSplinterlandsSettings error: ${err.message}`);
+        throw err;
+    }
+};
+
+module.exports = {
+    getCardDetail,
+    getCollection,
+    getCollectionListings,
+    getActiveRentals,
+    getSettings,
+};

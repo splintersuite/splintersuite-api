@@ -1,11 +1,11 @@
 const histFncs = require('../src/services/marketData/historicalData');
-const cardFncs = require('../src/actions/getCardDetails');
 const retryFncs = require('../src/services/axios_retry/general');
+const splinterlandsService = require('../src/services/splinterlands');
 
 const getHistoricalData = async () => {
     // runs at 05:00 EST
     // runs at 17:00 EST
-    const cardsDetails = await cardFncs.getCardDetail();
+    const cardsDetails = await splinterlandsService.getCardDetail();
     const now = new Date();
     const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
     const twelveHoursAgoTime = twelveHoursAgo.getTime();

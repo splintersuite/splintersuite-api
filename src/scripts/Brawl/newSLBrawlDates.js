@@ -1,13 +1,12 @@
-const { getSplinterlandsSettings } = require('../../actions/SL_API');
 const logger = require('../../util/pinologger');
-const brawl = require('../../actions/brawl');
+const brawlService = require('../../services/brawls');
+const splinterlandsService = require('../../services/splinterlands');
 
 const extractSLBrawlData = (settings) => {
     try {
-        logger.debug(`gextractSLBrawlData start`);
+        logger.debug(`/scripts/brawls/extractSLBrawlData`);
 
         const { brawl_cycle } = settings;
-
         const { id, name, start, end } = brawl_cycle;
 
         logger.debug(`id: ${id}, name: ${name}, start: ${start}, end: ${end}`);
@@ -20,13 +19,11 @@ const extractSLBrawlData = (settings) => {
 
 const getSLBrawlData = async () => {
     try {
-        logger.info('getSLBrawlData start');
+        logger.debug(`/scripts/brawls/getSLBrawlData`);
 
-        const data = await getSplinterlandsSettings();
-
+        const data = await splinterlandsService.getSettings();
         const brawlData = extractSLBrawlData(data);
-
-        const duplicate = await brawl.getBrawl({ brawlData });
+        const duplicate = await brawlService.get({ brawlData });
 
         logger.debug(`duplicate is: `);
         logger.debug(duplicate);
@@ -40,7 +37,7 @@ const getSLBrawlData = async () => {
             process.exit(0);
         }
 
-        await brawl.insertBrawl({ brawlData }).catch((err) => {
+        await brawlService.create({ brawlData }).catch((err) => {
             logger.error(`insertBrawl error: ${err.message}`);
             throw err;
         });

@@ -1,13 +1,7 @@
-const {
-    insertBrawl,
-    insertSeason,
-} = require('../src/actions/insertBrawlAndSeasonData');
-const {
-    createInvoicesForSeason,
-    unlockUsers,
-    lockPastDueUsers,
-} = require('../src/actions/invoices');
 const logger = require('../src/util/pinologger');
+const invoiceService = require('../src/services/invoices');
+const brawlService = require('../src/services/brawls');
+const seasonService = require('../src/services/seasons');
 
 const getSLSeasonData = (settings) => {
     try {
@@ -43,21 +37,19 @@ const getSLSeasonAndBrawlData = async () => {
         logger.debug('getSLSeasonData start');
 
         const data = await getSplinterlandsSettings();
-
         const seasonData = getSLSeasonData(data);
-
         const brawlData = getSLBrawlData(data);
 
-        await insertBrawl({ brawlData }).catch((err) => {
+        await brawlService.create({ brawlData }).catch((err) => {
             logger.error(`insertBrawl error: ${err.message}`);
         });
 
         // create invoices for LAST season!
-        await createInvoicesForSeason();
-        const newSeason = await insertSeason({ seasonData });
+        await invoiceService.createInvoicesForSeason();
+        const newSeason = await seasonService.create({ seasonData });
         if (newSeason) {
-            const userIdsToLock = await lockPastDueUsers();
-            await unlockUsers({ userIdsToLock });
+            const userIdsToLock = await invoiceService.lockUsers();
+            await invoiceService.unlockUsers({ userIdsToLock });
         }
         return;
     } catch (err) {

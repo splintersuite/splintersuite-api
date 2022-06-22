@@ -1,7 +1,9 @@
 const express = require('express');
-const { addRentalListings } = require('../controllers/RentalListings');
+
+const rentalListings = require('../controllers/rentalListings');
+
 const router = express.Router();
 
-router.post(`/newrentallistings`, addRentalListings);
+router.post(`/newrentallistings`, rentalListings.addRentalListings);
 
 module.exports = router;

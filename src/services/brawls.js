@@ -1,14 +1,14 @@
-const Brawls = require('../models/Brawls');
 const logger = require('../util/pinologger');
+const Brawls = require('../models/Brawls');
 
-const insertBrawl = async ({ brawlData }) => {
+// const insertBrawl = async ({ brawlData }) => {
+const create = async ({ brawlData }) => {
     try {
-        logger.debug(`insertBrawl start`);
-
+        logger.debug(`/services/brawls/create`);
         const { id, start, end, name } = brawlData;
-
         const start_date = new Date(start);
         const end_date = new Date(end);
+
         await Brawls.query().insert({
             brawl_id: id,
             start_date,
@@ -22,12 +22,11 @@ const insertBrawl = async ({ brawlData }) => {
     }
 };
 
-const getBrawl = async ({ brawlData }) => {
+// const getBrawl = async ({ brawlData }) => {
+const get = async ({ brawlData }) => {
     try {
-        logger.debug('getBrawl start');
-
+        logger.debug(`/services/brawls/get`);
         const { start, end } = brawlData;
-
         const start_date = new Date(start);
         const end_date = new Date(end);
 
@@ -43,6 +42,6 @@ const getBrawl = async ({ brawlData }) => {
     }
 };
 module.exports = {
-    insertBrawl,
-    getBrawl,
+    create,
+    get,
 };

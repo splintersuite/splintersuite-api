@@ -1,12 +1,12 @@
 const Users = require('../src/models/Users');
 const earningsFncs = require('../src/services/earnings/calcEarnings');
 const retryFncs = require('../src/services/axios_retry/general');
-const cardFncs = require('../src/actions/getCardDetails');
 const rentalFncs = require('../src/services/rentals/allAccountUpdate');
+const splinterlandsService = require('../src/services/splinterlands');
 
 const updateRentalsForUsersMorning = async () => {
     // runs at 11:00 EST
-    const cardDetails = await cardFncs.getCardDetail();
+    const cardDetails = await splinterlandsService.getCardDetail();
     const cardDetailsObj = {};
     cardDetails.forEach((card) => {
         cardDetailsObj[card.id] = card;
@@ -33,7 +33,7 @@ const updateRentalsForUsersMorning = async () => {
 const updateRentalsForUsersEvening = async () => {
     // runs at 23:00 EST
     const todaysDate = new Date(new Date().toISOString().split('T')[0]);
-    const cardDetails = await cardFncs.getCardDetail();
+    const cardDetails = await splinterlandsService.getCardDetail();
     const cardDetailsObj = {};
     cardDetails.forEach((card) => {
         cardDetailsObj[card.id] = card;
