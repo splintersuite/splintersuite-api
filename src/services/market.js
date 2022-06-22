@@ -3,7 +3,6 @@ const _ = require('lodash');
 const logger = require('../util/pinologger');
 const UserRentals = require('../models/UserRentals');
 const MarketRentalPrices = require('../models/MarketRentalPrices');
-const MarketRentalPrices = require('../models/MarketRentalPrices');
 const { dateRange } = require('../util/dates');
 const axiosInstance = require('../util/axiosInstance');
 const findCardLevel = require('../util/calculateCardLevel');

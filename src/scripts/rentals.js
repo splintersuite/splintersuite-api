@@ -1,5 +1,5 @@
 const cardsDetails = require('../util/cardDetails.json');
-const retryFncs = require('../services/axios_retry/general');
+const retryFncs = require('../util/axios_retry/general');
 const logger = require('../util/pinologger');
 const marketService = require('../services/market');
 
