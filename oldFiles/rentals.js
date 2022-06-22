@@ -1,8 +1,8 @@
-const Users = require('../models/Users');
-const earningsFncs = require('../services/earnings/calcEarnings');
-const retryFncs = require('../services/axios_retry/general');
-const cardFncs = require('../actions/getCardDetails');
-const rentalFncs = require('../services/rentals/allAccountUpdate');
+const Users = require('../src/models/Users');
+const earningsFncs = require('../src/services/earnings/calcEarnings');
+const retryFncs = require('../src/services/axios_retry/general');
+const cardFncs = require('../src/actions/getCardDetails');
+const rentalFncs = require('../src/services/rentals/allAccountUpdate');
 
 const updateRentalsForUsersMorning = async () => {
     // runs at 11:00 EST

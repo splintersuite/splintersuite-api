@@ -1,6 +1,6 @@
-const histFncs = require('../services/marketData/historicalData');
-const cardFncs = require('../actions/getCardDetails');
-const retryFncs = require('../services/axios_retry/general');
+const histFncs = require('../src/services/marketData/historicalData');
+const cardFncs = require('../src/actions/getCardDetails');
+const retryFncs = require('../src/services/axios_retry/general');
 
 const getHistoricalData = async () => {
     // runs at 05:00 EST

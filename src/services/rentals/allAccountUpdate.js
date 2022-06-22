@@ -205,7 +205,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                             activeRental.cancel_player === username
                                 ? new Date(activeRental.cancel_date)
                                 : null,
-                        card_detail_id: activeRental.card_detail_id,
+                        card_detail_id: activeRental.card_detail_id, // TNT QUESTION: HOW IS THIS POSSIBLE?  on collection it is id
                         level: dbRentalsObj[activeRental.sell_trx_id].level,
                         card_uid: activeRental.card_id,
                         sell_trx_id: activeRental.sell_trx_id,
@@ -259,16 +259,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                             ? new Date(activeRental.cancel_date)
                             : null,
                     card_detail_id: activeRental.card_detail_id,
-                    level: findCardLevel({
-                        id: activeRental.card_detail_id,
-                        rarity: cardDetailsObj[activeRental.card_detail_id]
-                            .rarity,
-                        _xp: activeRental.xp,
-                        gold: activeRental.gold,
-                        edition: activeRental.edition,
-                        tier: cardDetailsObj[activeRental.card_detail_id].tier,
-                        alpha_xp: 0,
-                    }),
+                    level: activeRental.level,
                     card_uid: activeRental.card_id,
                     sell_trx_id: activeRental.sell_trx_id,
                     price: Number(activeRental.buy_price),

@@ -1,6 +1,5 @@
 const UserRentalListings = require('../../models/UserRentalListings');
 const collectionFncs = require('../../actions/getCollectionFncs');
-const findCardLevel = require('../calculateCardLevel');
 const { SPLINTERLANDS_API } = require('./types');
 const _ = require('lodash');
 
@@ -38,15 +37,7 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
                 sl_created_at: new Date(apiListing.market_created_date),
                 cancelled_at: null,
                 card_detail_id: apiListing.card_detail_id,
-                level: findCardLevel({
-                    id: apiListing.card_detail_id,
-                    rarity: cardDetailsObj[apiListing.card_detail_id].rarity,
-                    _xp: apiListing.xp,
-                    gold: apiListing.gold,
-                    edition: apiListing.edition,
-                    tier: cardDetailsObj[apiListing.card_detail_id].tier,
-                    alpha_xp: apiListing.alpha_xp,
-                }),
+                level: apiListing.level,
                 card_uid: apiListing.uid,
                 sell_trx_id: apiListing.sell_trx_id, // also received  = require(the api as market_id
                 price: Number(apiListing.buy_price),

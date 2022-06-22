@@ -1,13 +1,13 @@
 const {
     insertBrawl,
     insertSeason,
-} = require('../actions/insertBrawlAndSeasonData');
+} = require('../src/actions/insertBrawlAndSeasonData');
 const {
     createInvoicesForSeason,
     unlockUsers,
     lockPastDueUsers,
-} = require('../actions/invoices');
-const logger = require('../util/pinologger');
+} = require('../src/actions/invoices');
+const logger = require('../src/util/pinologger');
 
 const getSLSeasonData = (settings) => {
     try {

@@ -1,8 +1,8 @@
-const { getSplinterlandsSettings } = require('./getSLAPI');
-const logger = require('../util/pinologger');
-const season = require('../actions/season');
+const { getSplinterlandsSettings } = require('../../actions/SL_API');
+const logger = require('../../util/pinologger');
+const season = require('../../actions/season');
 
-const invoices = require('../actions/invoices');
+const invoices = require('../../actions/invoices');
 
 const extractSLSeasonData = (settings) => {
     try {

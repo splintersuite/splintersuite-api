@@ -1,6 +1,6 @@
-const { getSplinterlandsSettings } = require('./getSLAPI');
-const logger = require('../util/pinologger');
-const brawl = require('../actions/brawl');
+const { getSplinterlandsSettings } = require('../../actions/SL_API');
+const logger = require('../../util/pinologger');
+const brawl = require('../../actions/brawl');
 
 const extractSLBrawlData = (settings) => {
     try {
@@ -10,6 +10,7 @@ const extractSLBrawlData = (settings) => {
 
         const { id, name, start, end } = brawl_cycle;
 
+        logger.debug(`id: ${id}, name: ${name}, start: ${start}, end: ${end}`);
         return { id, name, start, end };
     } catch (err) {
         logger.error(`extractSLBrawlData error: ${err.message}`);
@@ -26,6 +27,9 @@ const getSLBrawlData = async () => {
         const brawlData = extractSLBrawlData(data);
 
         const duplicate = await brawl.getBrawl({ brawlData });
+
+        logger.debug(`duplicate is: `);
+        logger.debug(duplicate);
 
         if (duplicate.length > 0) {
             logger.info(

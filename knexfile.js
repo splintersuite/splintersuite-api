@@ -35,7 +35,42 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
-        debug: process.env.DEBUG,
+        debug: process.env.DEBUG || true,
+    },
+    production: {
+        client: 'pg',
+        connection: {
+            connectionString: process.env.DB_CONNECTION,
+            ssl: {
+                rejectUnauthorized: false,
+            },
+        },
+        pool: {
+            min: 5,
+            max: 30,
+            afterCreate(conn, done) {
+                conn.query('SET timezone="UTC";', (err) => {
+                    if (err) {
+                        // first query failed, return error and don't try to make next query
+                        done(err, conn);
+                    } else {
+                        // do the second query...
+                        conn.query('SELECT 1;', (err) => {
+                            // if err is not falsy, connection is discarded  = require(pool
+                            // if connection acquire was triggered by a query the error is passed to query promise
+                            done(err, conn);
+                        });
+                    }
+                });
+            },
+        },
+        migrations: {
+            directory: './db/migrations',
+        },
+        seeds: {
+            directory: './db/seeds',
+        },
+        debug: process.env.DEBUG || false,
     },
     onUpdateTrigger: (table) => `
         CREATE TRIGGER ${table}_updated_at

@@ -13,6 +13,9 @@ const insertSeason = async ({ seasonData }) => {
 
         // const now = new Date();
         if (!dbSeason) {
+            logger.debug(
+                `previous season not found, season: ${JSON.stringify(dbSeason)}`
+            );
             //} && now.getTime() > dbSeason.end_date.getTime()) {
             const newSeason = await Seasons.query().insert({
                 season_id: id,
@@ -21,8 +24,10 @@ const insertSeason = async ({ seasonData }) => {
             });
 
             return newSeason;
+        } else {
+            logger.debug('season already inserted');
+            return null;
         }
-        return null;
     } catch (err) {
         logger.error(`insertSeason error: ${err.message}`);
         throw err;
