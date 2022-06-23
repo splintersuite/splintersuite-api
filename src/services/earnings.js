@@ -1,5 +1,4 @@
 const _ = require('lodash');
-
 const logger = require('../util/pinologger');
 const DailyEarnings = require('../models/DailyEarnings');
 const UserRentals = require('../models/UserRentals');
@@ -31,7 +30,7 @@ const get = async ({ users_id }) => {
         .whereBetween('earnings_date', [firstOfTheMonth, now]);
 
     const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 1);
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
     const firstOfLastWeek = firstDayOfWeek(getLastWeek(), 0);
     const sameDayLastWeek = new Date(firstOfLastWeek);
