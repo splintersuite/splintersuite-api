@@ -228,7 +228,7 @@ const insertDailyEarnings = async ({ users_id, earnings_date }) => {
             earnings_date: earningsDate,
         });
 
-        if (!record?.id) {
+        if (!record) {
             await DailyEarnings.query().insert({
                 users_id,
                 earnings_date: earningsDate,
