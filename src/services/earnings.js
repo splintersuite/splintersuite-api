@@ -222,14 +222,30 @@ const insertDailyEarnings = async ({ users_id, earnings_date }) => {
         logger.debug(`/services/earnings/insertDailyEarnings`);
         const earningsData = await calcDailyEarnings({ users_id });
 
-        await DailyEarnings.query().insert({
+        const earningsDate = new Date(earnings_date);
+        const [record] = await DailyEarnings.query().where({
             users_id,
-            earnings_date,
-            earnings_dec: earningsData.earnings_dec,
-            num_rentals: earningsData.num_rentals,
-            bot_earnings_dec: earningsData.bot_earnings_dec,
-            bot_num_rentals: earningsData.bot_num_rentals,
+            earnings_date: earningsDate,
         });
+
+        if (record?.id) {
+            await DailyEarnings.query().insert({
+                users_id,
+                earnings_date: earningsDate,
+                earnings_dec: earningsData.earnings_dec,
+                num_rentals: earningsData.num_rentals,
+                bot_earnings_dec: earningsData.bot_earnings_dec,
+                bot_num_rentals: earningsData.bot_num_rentals,
+            });
+        } else {
+            await DailyEarnings.query().where({ id: record.id }).patch({
+                earnings_dec: earningsData.earnings_dec,
+                num_rentals: earningsData.num_rentals,
+                bot_earnings_dec: earningsData.bot_earnings_dec,
+                bot_num_rentals: earningsData.bot_num_rentals,
+            });
+        }
+
         logger.info('insertDailyEarnings done');
         return;
     } catch (err) {

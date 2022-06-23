@@ -28,6 +28,7 @@ class MarketRentalPrices extends Model {
                 price_currency: { type: 'string' },
                 is_gold: { type: 'boolean' },
                 aggregation_type: { type: 'string' },
+                volume: { type: 'number' },
                 avg: { type: 'number' },
                 low: { type: 'number' },
                 high: { type: 'number' },

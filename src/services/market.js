@@ -319,6 +319,9 @@ const collectData = async ({
                     created_at: now,
                     card_detail_id: card.id,
                     level: Number(level.split('-')[1]),
+                    volume: Number.isFinite(allArr.length)
+                        ? allArr.length
+                        : NaN,
                     avg: Number.isFinite(meanAll) ? meanAll : NaN,
                     low: Number.isFinite(lowAll) ? lowAll : NaN,
                     high: Number.isFinite(highAll) ? highAll : NaN,
@@ -334,6 +337,9 @@ const collectData = async ({
                     created_at: now,
                     card_detail_id: card.id,
                     level: Number(level.split('-')[1]),
+                    volume: Number.isFinite(twelveHoursArr.length)
+                        ? twelveHoursArr.length
+                        : NaN,
                     avg: Number.isFinite(meanTwelve) ? meanTwelve : NaN,
                     low: Number.isFinite(lowTwelve) ? lowTwelve : NaN,
                     high: Number.isFinite(highTwelve) ? highTwelve : NaN,
