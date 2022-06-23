@@ -34,7 +34,7 @@ const calculateEarningsForUsers = async () => {
         }
 
         // could split this in functions, w/e
-        // calculate and insert earnings
+        // calculate and insert (or patch) earnings
         for (const user of users) {
             await earningsService.insertDailyEarnings({
                 users_id: user.id,

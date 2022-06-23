@@ -44,11 +44,14 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
 
         // storing object for future use since /activerentals doesnt have the endpoint
         const slCreatedAtObj = {};
+        const slLevelObj = {};
         apiListings.rented.forEach((listing) => {
             slCreatedAtObj[listing.sell_trx_id] = listing.market_created_date;
+            slLevelObj[listing.sell_trx_id] = listing.level;
         });
         apiListings.notRented.forEach((listing) => {
             slCreatedAtObj[listing.sell_trx_id] = listing.market_created_date;
+            slLevelObj[listing.sell_trx_id] = listing.level;
         });
 
         // getting call active rentals... creating object for faster lookup
@@ -206,7 +209,9 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                                 ? new Date(activeRental.cancel_date)
                                 : null,
                         card_detail_id: activeRental.card_detail_id, // TNT QUESTION: HOW IS THIS POSSIBLE?  on collection it is id
-                        level: dbRentalsObj[activeRental.sell_trx_id].level,
+                        level: parseInt(
+                            dbRentalsObj[activeRental.sell_trx_id].level
+                        ),
                         card_uid: activeRental.card_id,
                         sell_trx_id: activeRental.sell_trx_id,
                         price: Number(activeRental.buy_price),
@@ -259,7 +264,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                             ? new Date(activeRental.cancel_date)
                             : null,
                     card_detail_id: activeRental.card_detail_id,
-                    level: activeRental.level,
+                    level: parseInt(slLevelObj[activeRental.sell_trx_id]),
                     card_uid: activeRental.card_id,
                     sell_trx_id: activeRental.sell_trx_id,
                     price: Number(activeRental.buy_price),
@@ -336,6 +341,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         await rentalHelpers.patchRentalsToCancel({ rentalsToCancel });
     } catch (err) {
         logger.error(`updateRentalsInDb error: ${err.message}`);
+        logger.error(err.stack);
         throw err;
     }
 };

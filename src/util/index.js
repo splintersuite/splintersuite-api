@@ -1,6 +1,8 @@
+const logger = require('./pinologger');
+
 const logErrors = (err, req, res, next) => {
     if (err) {
-        console.error(err.stack);
+        logger.error(err.stack);
         res.status(500);
     }
 };
