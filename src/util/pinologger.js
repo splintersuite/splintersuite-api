@@ -5,9 +5,9 @@ dotenv.config();
 const logger = pino({
     level: process.env.PINO_LOG_LEVEL || 'debug',
     timestamp: pino.stdTimeFunctions.isoTime, // https://getpino.io/#/docs/api?id=pinostdtimefunctions-object
-    transport: {
-        target: process.env.NODE_ENV === 'development' ? 'pino-pretty' : null,
-    },
+    // transport: {
+    //     target: process.env.NODE_ENV === 'development' ? 'pino-pretty' : null,
+    // },
 });
 
 module.exports = logger;

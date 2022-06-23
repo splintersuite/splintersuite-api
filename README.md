@@ -41,7 +41,7 @@ DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2
 
 DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev NODE_ENV=development PINO_LOG_LEVEL=debug node earnings.js
 
-0 3 */6 * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/earnings.js >> /home/ubuntu/Earnings.log 2>&1
+0 3/6 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/earnings.js >> /home/ubuntu/Earnings.log 2>&1
 
 -- newSeasonData script:
 
