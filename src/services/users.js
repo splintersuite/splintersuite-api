@@ -22,7 +22,6 @@ const getEarnings = async ({ users_id }) => {
     const earningsObj = await earningsService.get({
         users_id,
     });
-    console.log('earningsObj', earningsObj);
     return earningsObj;
 };
 

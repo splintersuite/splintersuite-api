@@ -103,6 +103,38 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
     return { userRentalsObj, pricesObj, firstOfLastMonth, today };
 };
 
+const getCurrentPrices = async () => {
+    // CACHE TODO
+    // CACHE THIS OBJECT...
+
+    const eighteenHoursAgo = new Date(
+        new Date().getTime() - 1000 * 60 * 60 * 18
+    );
+
+    const prices = await MarketRentalPrices.query()
+        .whereBetween('period_start_time', [eighteenHoursAgo, new Date()])
+        .orderBy('period_start_time', 'desc');
+
+    const pricesObj = {};
+    prices.forEach((price) => {
+        const keyString = `${price.card_detail_id}-${price.level}=${price.is_gold}`;
+        if (!(keyString in pricesObj)) {
+            pricesObj[keyString] = {};
+        }
+        if (!(price.aggregation_type in pricesObj[keyString])) {
+            pricesObj[keyString][aggregation_type] = {
+                avg: price.avg,
+                low: price.low,
+                high: price.high,
+                stdDev: price.std_dev,
+                median: price.median,
+            };
+        }
+    });
+
+    return pricesObj;
+};
+
 const performanceVsMarket = async ({ users_id }) => {
     const { userRentalsObj, pricesObj, firstOfLastMonth, today } =
         await getMarketRatesAndUserRentals({
@@ -369,4 +401,5 @@ module.exports = {
     getMarketRatesAndUserRentals,
     performanceVsMarket,
     collectData,
+    getCurrentPrices,
 };
