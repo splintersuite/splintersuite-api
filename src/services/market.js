@@ -296,20 +296,22 @@ const collectData = async ({
                 tier: card.tier,
                 alpha_xp: 0,
             });
-            const levelString = `level-${String(level)}`;
-            if (!(levelString in trades)) {
-                trades[levelString] = {};
+            const levelEditionString = `level-${String(level)}-${String(
+                trade.edition
+            )}`;
+            if (!(levelEditionString in trades)) {
+                trades[levelEditionString] = {};
             }
-            if (trade.gold && !('gold' in trades[levelString])) {
-                trades[levelString]['gold'] = [];
-            }
-
-            if (!trade.gold && !('regular' in trades[levelString])) {
-                trades[levelString]['regular'] = [];
+            if (trade.gold && !('gold' in trades[levelEditionString])) {
+                trades[levelEditionString]['gold'] = [];
             }
 
-            const goldKey = trade.gold ? 'gold' : 'regular';
-            trades[levelString][goldKey].push({
+            if (!trade.gold && !('regular' in trades[levelEditionString])) {
+                trades[levelEditionString]['regular'] = [];
+            }
+
+            const cardType = trade.gold ? 'gold' : 'regular';
+            trades[levelEditionString][cardType].push({
                 rentalId: trade.rental_tx,
                 price: Number(trade.buy_price),
                 feePct: Number(trade.fee_percent),
@@ -321,10 +323,10 @@ const collectData = async ({
 
         // do math
         const uploadArr = [];
-        for (const level of Object.keys(trades)) {
-            for (const cardType of Object.keys(trades[level])) {
+        for (const levelEditionKey of Object.keys(trades)) {
+            for (const cardType of Object.keys(trades[levelEditionKey])) {
                 // average of everything on loan...
-                const twelveHoursArr = trades[level][cardType]
+                const twelveHoursArr = trades[levelEditionKey][cardType]
                     .filter((trade) => {
                         return (
                             new Date(trade.rentalDate).getTime() >
@@ -332,7 +334,7 @@ const collectData = async ({
                         );
                     })
                     .map(({ price }) => price);
-                const allArr = trades[level][cardType].map(
+                const allArr = trades[levelEditionKey][cardType].map(
                     ({ price }) => price
                 );
                 const stdDevAll = mathFncs.standardDeviation(allArr);
@@ -350,7 +352,8 @@ const collectData = async ({
                 uploadArr.push({
                     created_at: now,
                     card_detail_id: card.id,
-                    level: Number(level.split('-')[1]),
+                    level: Number(levelEditionKey.split('-')[1]),
+                    edition: Number(levelEditionKey.split('-')[2]),
                     volume: Number.isFinite(allArr.length)
                         ? allArr.length
                         : NaN,
@@ -368,7 +371,8 @@ const collectData = async ({
                 uploadArr.push({
                     created_at: now,
                     card_detail_id: card.id,
-                    level: Number(level.split('-')[1]),
+                    level: Number(levelEditionKey.split('-')[1]),
+                    edition: Number(levelEditionKey.split('-')[2]),
                     volume: Number.isFinite(twelveHoursArr.length)
                         ? twelveHoursArr.length
                         : NaN,
