@@ -37,6 +37,7 @@ const updateListingsInDb = async ({ users_id, username, cardDetailsObj }) => {
                 sl_created_at: new Date(apiListing.market_created_date),
                 cancelled_at: null,
                 card_detail_id: apiListing.card_detail_id,
+                edition: apiListing.edition,
                 level: apiListing.level,
                 card_uid: apiListing.uid,
                 sell_trx_id: apiListing.sell_trx_id, // also received  = require(the api as market_id

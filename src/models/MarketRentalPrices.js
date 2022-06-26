@@ -16,6 +16,7 @@ class MarketRentalPrices extends Model {
                 'price_currency',
                 'is_gold',
                 'aggregation_type',
+                'edition',
             ],
             properties: {
                 id: { type: 'string' },
@@ -24,7 +25,7 @@ class MarketRentalPrices extends Model {
                 period_end_time: { type: 'object', format: 'date-time' },
                 card_detail_id: { type: 'integer' },
                 level: { type: 'integer' },
-                color: { type: 'string' }, // more like an enumeration
+                edition: { type: 'integer' }, // more like an enumeration
                 price_currency: { type: 'string' },
                 is_gold: { type: 'boolean' },
                 aggregation_type: { type: 'string' },

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const logger = require('../util/pinologger');
 const DailyEarnings = require('../models/DailyEarnings');
 const UserRentals = require('../models/UserRentals');
-const { SPLINTERSUITE_BOT, SPLINTERLANDS_API } = require('./rentals/types');
+const { SPLINTERSUITE_BOT } = require('./rentals/types');
 const { firstDayOfWeek, getLastWeek } = require('../util/dates');
 
 // ---

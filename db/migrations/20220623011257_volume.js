@@ -14,6 +14,6 @@ exports.up = function (knex) {
  */
 exports.down = function (knex) {
     return knex.schema.table('market_rental_prices', (t) => {
-        t.integer('volume'); // calculated by tnt's function
+        t.dropColumn('volume'); // calculated by tnt's function
     });
 };
