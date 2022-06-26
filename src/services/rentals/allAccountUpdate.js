@@ -139,6 +139,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                         level: parseInt(
                             dbListingsObj[activeRental.sell_trx_id].level
                         ),
+                        edition: parseInt(activeRental.edition),
                         card_uid: activeRental.card_id,
                         sell_trx_id: activeRental.sell_trx_id,
                         source: SPLINTERLANDS_API,
@@ -212,6 +213,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                         level: parseInt(
                             dbRentalsObj[activeRental.sell_trx_id].level
                         ),
+                        edition: parseInt(activeRental.edition),
                         card_uid: activeRental.card_id,
                         sell_trx_id: activeRental.sell_trx_id,
                         price: Number(activeRental.buy_price),
@@ -263,6 +265,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                         activeRental.cancel_player === username
                             ? new Date(activeRental.cancel_date)
                             : null,
+                    edition: parseInt(activeRental.edition),
                     card_detail_id: activeRental.card_detail_id,
                     level: parseInt(slLevelObj[activeRental.sell_trx_id]),
                     card_uid: activeRental.card_id,

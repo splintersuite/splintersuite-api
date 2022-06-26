@@ -20,6 +20,7 @@ class UserRentalListings extends Model {
                 'price',
                 'card_detail_id',
                 'is_gold',
+                'edition',
             ],
             properties: {
                 id: { type: 'string' },
@@ -30,6 +31,7 @@ class UserRentalListings extends Model {
                 card_detail_id: { type: 'integer' },
                 is_rental_active: { type: 'boolean' },
                 level: { type: 'integer' },
+                edition: { type: 'integer' },
                 sell_trx_id: { type: 'string' },
                 source: { type: 'string' },
                 is_gold: { type: 'boolean' },
