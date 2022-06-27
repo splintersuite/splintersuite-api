@@ -107,22 +107,22 @@ const getCurrentPrices = async () => {
     // CACHE TODO
     // CACHE THIS OBJECT...
 
-    const eighteenHoursAgo = new Date(
-        new Date().getTime() - 1000 * 60 * 60 * 18
+    const twentyFiveHoursAgo = new Date(
+        new Date().getTime() - 1000 * 60 * 60 * 25
     );
 
     const prices = await MarketRentalPrices.query()
-        .whereBetween('period_start_time', [eighteenHoursAgo, new Date()])
+        .whereBetween('period_start_time', [twentyFiveHoursAgo, new Date()])
         .orderBy('period_start_time', 'desc');
 
     const pricesObj = {};
     prices.forEach((price) => {
-        const keyString = `${price.card_detail_id}-${price.level}=${price.is_gold}`;
+        const keyString = `${price.card_detail_id}-${price.level}-${price.is_gold}-${price.edition}`;
         if (!(keyString in pricesObj)) {
             pricesObj[keyString] = {};
         }
         if (!(price.aggregation_type in pricesObj[keyString])) {
-            pricesObj[keyString][aggregation_type] = {
+            pricesObj[keyString][price.aggregation_type] = {
                 avg: price.avg,
                 low: price.low,
                 high: price.high,
