@@ -4,6 +4,7 @@ const DailyEarnings = require('../models/DailyEarnings');
 const UserRentals = require('../models/UserRentals');
 const { SPLINTERSUITE_BOT } = require('./rentals/types');
 const { firstDayOfWeek, getLastWeek } = require('../util/dates');
+const { orderBy } = require('lodash');
 
 // ---
 // Calculate aggregated earnings
@@ -19,15 +20,20 @@ const get = async ({ users_id }) => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const todaysEarnings = await DailyEarnings.query()
+    let todaysEarnings = await DailyEarnings.query()
         .where({ users_id })
-        .whereBetween('earnings_date', [yesterday, now]);
+        .whereBetween('earnings_date', [yesterday, now])
+        .orderBy('created_at', 'desc');
     const wtdEarnings = await DailyEarnings.query()
         .where({ users_id })
         .whereBetween('earnings_date', [firstOfTheWeek, now]);
     const mtdEarnings = await DailyEarnings.query()
         .where({ users_id })
         .whereBetween('earnings_date', [firstOfTheMonth, now]);
+    // get rid of yesterday if it's there
+    if (Array.isArray(todaysEarnings) && todaysEarnings.length > 1) {
+        todaysEarnings = [todaysEarnings[0]];
+    }
 
     const twoDaysAgo = new Date();
     twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
