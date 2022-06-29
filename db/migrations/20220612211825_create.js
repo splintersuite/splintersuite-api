@@ -107,6 +107,7 @@ exports.up = function (knex) {
             t.string('player_rented_to').notNullable(); // good to have to identify noobs
             t.string('rental_tx').notNullable();
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
+            // t.string('card_uid').notNullable(); should be added, and unique should be changed imo
             // shouldn't always reference user_rental_listings
             // in the case that we are hitting bids instead of offering
             // handle for updated prices mid rental?  is that a new rental?

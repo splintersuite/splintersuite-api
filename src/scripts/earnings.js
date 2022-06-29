@@ -38,19 +38,19 @@ const calculateEarningsForUsers = async () => {
             count++;
         }
 
-        // could split this in functions, w/e
-        // calculate and insert (or patch) earnings
-        for (const user of users) {
-            await earningsService
-                .insertDailyEarnings({
-                    users_id: user.id,
-                    earnings_date: todaysDate,
-                })
-                .catch((err) => {
-                    logger.error(`insertDailyEarnings error: ${err.message}`);
-                    throw err;
-                });
-        }
+        // // could split this in functions, w/e
+        // // calculate and insert (or patch) earnings
+        // for (const user of users) {
+        //     await earningsService
+        //         .insertDailyEarnings({
+        //             users_id: user.id,
+        //             earnings_date: todaysDate,
+        //         })
+        //         .catch((err) => {
+        //             logger.error(`insertDailyEarnings error: ${err.message}`);
+        //             throw err;
+        //         });
+        // }
         logger.info('calculateEarningsForUsers done');
         process.exit(0);
     } catch (err) {

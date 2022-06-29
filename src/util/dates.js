@@ -52,14 +52,15 @@ const getYesterdayAndTomorrow = () => {
     }
 };
 
-const getOneDayAgoMS = ({ date }) => {
+const getOneDayAgo = ({ date }) => {
     try {
         console.log('/util/dates/getOneDayAgo');
         const dateInMs = new Date(date).getTime();
         const msInADay = 1000 * 60 * 60 * 24;
         const oneDayAgoInMS = dateInMs - msInADay;
+        const oneDayAgo = new Date(oneDayAgoInMS);
 
-        return parseInt(oneDayAgoInMS);
+        return { oneDayAgoInMS: parseInt(oneDayAgoInMS), oneDayAgo };
     } catch (err) {
         console.error(`getOneDayAgo error: ${err.message}`);
         throw err;
@@ -70,5 +71,5 @@ module.exports = {
     getLastWeek,
     dateRange,
     getYesterdayAndTomorrow,
-    getOneDayAgoMS,
+    getOneDayAgo,
 };
