@@ -86,7 +86,7 @@ exports.up = function (knex) {
             t.integer('card_detail_id').notNullable(); // do we want this?  technically all of the data is stored on card_uid
             t.integer('level').notNullable();
             t.float('price').notNullable();
-            t.boolean('is_rental_active').notNullable().defaultTo(false);
+            t.boolean('is_rental_active').notNullable().defaultTo(false); // THIS NEEDS TO GO
             t.boolean('is_gold').notNullable();
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED
             t.string('source').notNullable(); // assigned by splinterlands WHEN LISTED
