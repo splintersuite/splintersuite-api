@@ -12,12 +12,14 @@ const get = async ({ users_id }) => {
         logger.info('testing to see if utilDates.getNumDaysAgo is working');
 
         const numberOfDaysAgo = 1;
+        const now = new Date();
         const { daysAgo, msDaysAgo, nowMs } = utilDates.getNumDaysAgo({
             numberOfDaysAgo,
+            date: now,
         });
 
         const { oneDayAgoInMS, oneDayAgo } = utilDates.getOneDayAgo({
-            date: nowMs,
+            date: now,
         });
         logger.info(
             `daysAgo: ${daysAgo}, msDaysAgo: ${msDaysAgo}, nowMs: ${nowMs}`

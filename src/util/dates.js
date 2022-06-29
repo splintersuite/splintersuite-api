@@ -67,10 +67,10 @@ const getOneDayAgo = ({ date }) => {
     }
 };
 
-const getNumDaysAgo = ({ numberOfDaysAgo }) => {
+const getNumDaysAgo = ({ numberOfDaysAgo, date }) => {
     try {
         console.log('/util/dates/getNumDaysAgo');
-        const nowMs = new Date().getTime();
+        const nowMs = date.getTime();
         const msInADay = 1000 * 60 * 60 * 24;
         const numOfDaysAgoMs = msInADay * numberOfDaysAgo;
         const msDaysAgo = nowMs - numOfDaysAgoMs;
