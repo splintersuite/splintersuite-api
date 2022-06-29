@@ -58,18 +58,23 @@ const getCollectionListings = async ({ username }) => {
 };
 
 const getActiveRentals = async ({ username }) => {
-    logger.debug(`/services/splinterlands/getActiveRentals`);
-    const activeRentals = await axiosInstance.get(
-        `https://api2.splinterlands.com/market/active_rentals?owner=${username}`
-    );
-
-    if (!Array.isArray(activeRentals.data)) {
-        throw new Error(
-            `https://api2.splinterlands.com/market/active_rentals?owner=${username} returning something crazy`
+    try {
+        logger.debug(`/services/splinterlands/getActiveRentals`);
+        const activeRentals = await axiosInstance.get(
+            `https://api2.splinterlands.com/market/active_rentals?owner=${username}`
         );
-    }
 
-    return activeRentals.data;
+        if (!Array.isArray(activeRentals.data)) {
+            throw new Error(
+                `https://api2.splinterlands.com/market/active_rentals?owner=${username} returning something crazy`
+            );
+        }
+
+        return activeRentals.data;
+    } catch (err) {
+        logger.error(`getActiveRentals error: ${err.messagee}`);
+        throw err;
+    }
 };
 
 const getSettings = async () => {
