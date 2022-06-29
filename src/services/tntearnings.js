@@ -16,6 +16,24 @@ const get = async ({ users_id }) => {
         const oneMonth = 30;
         const now = new Date();
 
+        const dailyEarnings = await getEarningsForDaysAgo({
+            numberOfDaysAgo: oneDay,
+            now,
+            users_id,
+        });
+
+        const weeklyEarnings = await getEarningsForDaysAgo({
+            numberOfDaysAgo: oneWeek,
+            now,
+            users_id,
+        });
+
+        const monthlyEarnings = await getEarningsForDaysAgo({
+            numberOfDaysAgo: oneMonth,
+            now,
+            users_id,
+        });
+        /*
         const one = utilDates.getNumDaysAgo({
             numberOfDaysAgo: oneDay,
             date: now,
@@ -53,7 +71,7 @@ const get = async ({ users_id }) => {
         const weeklyEarnings = sumRentals({ activeRentals: weeklyRentals });
 
         const monthlyEarnings = sumRentals({ activeRentals: monthlyRentals });
-
+*/
         logger.info(
             `dailyEarnings: ${dailyEarnings}, weeklyEarnings: ${weeklyEarnings}, monthlyEarnings: ${monthlyEarnings}`
         );
@@ -67,6 +85,30 @@ const get = async ({ users_id }) => {
     } catch (err) {
         logger.error(`/services/tntearnings/get error: ${err.message}`);
         throw err;
+    }
+};
+
+const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
+    try {
+        logger.debug('/services/tntearnings/getEarningsForDaysAgo');
+        const { daysAgo } = utilDates.getNumDaysAgo({
+            numberOfDaysAgo,
+            date: now,
+        });
+
+        const activeRentalsforDays = await getActiveRentalsFromDate({
+            users_id,
+            date: daysAgo,
+            now,
+        });
+
+        const daysEarnings = sumRentals({
+            activeRentals: activeRentalsforDays,
+        });
+        logger.info(`/services/tntearnings/getEarningsForDaysAgo`);
+        return daysEarnings;
+    } catch (err) {
+        logger.error();
     }
 };
 
