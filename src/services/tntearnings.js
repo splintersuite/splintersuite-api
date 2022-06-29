@@ -61,6 +61,7 @@ const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
             activeRentals: activeRentalsforDays,
         });
         logger.info(`/services/tntearnings/getEarningsForDaysAgo done`);
+
         return daysEarnings;
     } catch (err) {
         logger.error(
@@ -79,6 +80,7 @@ const sumRentals = ({ activeRentals }) => {
             total = total + rental.price;
         });
         logger.info(`/services/tntearnings/sumRentals`);
+
         return total;
     } catch (err) {
         logger.error(`/services/tntearnings/sumRentals error: ${err.message}`);
@@ -89,10 +91,12 @@ const sumRentals = ({ activeRentals }) => {
 const getActiveRentalsFromDate = async ({ users_id, date, now }) => {
     try {
         logger.debug(`/services/tntearnings/getActiveRentalsFromDate`);
+
         const activeRentals = await UserRentals.query()
             .where({ users_id })
             .whereBetween('last_rental_payment', [date, now]);
         logger.info('/services/tntearnings/getActiveRentalsFromDate done');
+
         return activeRentals;
     } catch (err) {
         logger.error(
