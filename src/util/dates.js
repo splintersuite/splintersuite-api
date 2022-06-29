@@ -76,7 +76,7 @@ const getNumDaysAgo = ({ numberOfDaysAgo, date }) => {
         const msDaysAgo = nowMs - numOfDaysAgoMs;
         const daysAgo = new Date(msDaysAgo);
         console.log('/util/dates/getNumDaysAgo done');
-        return { daysAgo, msDaysAgo: parseInt(msDaysAgo), nowMs };
+        return { daysAgo, msDaysAgo: parseInt(msDaysAgo) };
     } catch (err) {
         console.error(`/util/dates/getNumDaysAgo error: ${err.message}`);
         throw err;

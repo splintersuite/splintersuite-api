@@ -11,20 +11,54 @@ const get = async ({ users_id }) => {
 
         logger.info('testing to see if utilDates.getNumDaysAgo is working');
 
-        const numberOfDaysAgo = 1;
+        const oneDay = 1;
+        const oneWeek = 7;
+        const oneMonth = 30;
         const now = new Date();
-        const { daysAgo, msDaysAgo, nowMs } = utilDates.getNumDaysAgo({
-            numberOfDaysAgo,
+
+        const one = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: oneDay,
             date: now,
         });
 
-        const { oneDayAgoInMS, oneDayAgo } = utilDates.getOneDayAgo({
+        const seven = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: oneWeek,
             date: now,
         });
+
+        const thirty = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: oneMonth,
+            date: now,
+        });
+        const dailyRentals = await getActiveRentalsFromDate({
+            users_id,
+            date: one.daysAgo,
+            now,
+        });
+
+        const weeklyRentals = await getActiveRentalsFromDate({
+            users_id,
+            date: seven.daysAgo,
+            now,
+        });
+
+        const monthlyRentals = await getActiveRentalsFromDate({
+            users_id,
+            date: thirty.daysAgo,
+            now,
+        });
+
+        const dailyEarnings = sumRentals({ activeRentals: dailyRentals });
+
+        const weeklyEarnings = sumRentals({ activeRentals: weeklyRentals });
+
+        const monthlyEarnings = sumRentals({ activeRentals: monthlyRentals });
+
         logger.info(
-            `daysAgo: ${daysAgo}, msDaysAgo: ${msDaysAgo}, nowMs: ${nowMs}`
+            `dailyEarnings: ${dailyEarnings}, weeklyEarnings: ${weeklyEarnings}, monthlyEarnings: ${monthlyEarnings}`
         );
-        logger.info(`oneDayAgoInMs: ${oneDayAgoInMS}, oneDayAgo: ${oneDayAgo}`);
+
+        // need to sum these to get actual daily earnings
 
         return;
         // we need an sql statement that lets us select from user_rentals .where ({users_id}), whereBetween 'whatevertime, now');
@@ -36,13 +70,30 @@ const get = async ({ users_id }) => {
     }
 };
 
-const getActiveRentalsFromDate = ({ date }) => {
+const sumRentals = ({ activeRentals }) => {
+    try {
+        logger.debug('/services/tntearnings/sumRentals');
+
+        let total = 0;
+        activeRentals.forEach((rental) => {
+            total = total + rental.price;
+        });
+        logger.info(`/services/tntearnings/sumRentals`);
+        return total;
+    } catch (err) {
+        logger.error(`/services/tntearnings/sumRentals error: ${err.message}`);
+        throw err;
+    }
+};
+
+const getActiveRentalsFromDate = async ({ users_id, date, now }) => {
     try {
         logger.debug(`/services/tntearnings/getActiveRentalsFromDate`);
-
-        const activeRentals = UserRentals.query()
+        const activeRentals = await UserRentals.query()
             .where({ users_id })
             .whereBetween('last_rental_payment', [date, now]);
+        logger.info('/services/tntearnings/getActiveRentalsFromDate done');
+        return activeRentals;
     } catch (err) {
         logger.error(
             `/services/tntearnings/getActiveRentalsFromDate error: ${err.message}`

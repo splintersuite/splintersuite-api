@@ -20,24 +20,24 @@ const calculateEarningsForUsers = async () => {
         const users = await Users.query();
         let count = 0;
         const fiveMinutesInMS = 1000 * 60 * 5;
-        // for (const user of users) {
-        //     // 100 users in a batch, then wait 5 minutes
-        //     await rentalFncs
-        //         .updateRentalsInDb({
-        //             username: user.username,
-        //             users_id: user.id,
-        //             cardDetailsObj,
-        //         })
-        //         .catch((err) => {
-        //             logger.error(`updateRentalsInDb error: ${err.message}`);
-        //             throw err;
-        //         });
-        //     if (count !== 0 && count % 100 === 0) {
-        //         await retryFncs.sleep(fiveMinutesInMS);
-        //     }
-        //     await retryFncs.sleep(1000);
-        //     count++;
-        // }
+        for (const user of users) {
+            // 100 users in a batch, then wait 5 minutes
+            await rentalFncs
+                .updateRentalsInDb({
+                    username: user.username,
+                    users_id: user.id,
+                    cardDetailsObj,
+                })
+                .catch((err) => {
+                    logger.error(`updateRentalsInDb error: ${err.message}`);
+                    throw err;
+                });
+            if (count !== 0 && count % 100 === 0) {
+                await retryFncs.sleep(fiveMinutesInMS);
+            }
+            await retryFncs.sleep(1000);
+            count++;
+        }
 
         // could split this in functions, w/e
         // calculate and insert (or patch) earnings
