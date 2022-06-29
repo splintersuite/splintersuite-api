@@ -110,3 +110,9 @@ DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2
 30 */12 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/market.js >> /home/ubuntu/Market.log 2>&1
 
 ```
+
+# API Notes:
+
+collection = https://api2.splinterlands.com/cards/collection/xdww
+collection.market_created_date is when the listing is made.
+activeRentals.rental_date is different than this date, and is when the listing is actually rented.
