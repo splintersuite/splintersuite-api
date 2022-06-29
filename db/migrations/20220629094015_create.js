@@ -16,6 +16,8 @@ exports.up = function (knex) {
             t.integer('card_detail_id').notNullable();
             t.integer('level').notNullable(); // calculated by tnt's function
             t.integer('xp').notNullable();
+            t.integer('volume').notNullable();
+            t.integer('edition').notNullable();
             t.float('avg').nullable();
             t.float('low').nullable();
             t.float('high').nullable();
@@ -30,6 +32,7 @@ exports.up = function (knex) {
                 'card_detail_id',
                 'level',
                 'is_gold',
+                'edition',
             ]);
         })
         .createTable('users', (t) => {
@@ -54,6 +57,7 @@ exports.up = function (knex) {
             t.uuid('users_id').references('users.id').notNullable();
             t.dateTime('sl_created_at').notNullable();
             t.timestamps(true, true);
+            t.integer('edition').notNullable();
             t.integer('card_detail_id').notNullable();
             t.integer('level').notNullable();
             t.float('price').notNullable();
@@ -62,7 +66,7 @@ exports.up = function (knex) {
             t.string('source').notNullable(); // assigned by splinterlands WHEN LISTED
             t.string('card_uid').notNullable();
             t.unique(['sl_created_at', 'card_uid']); // TNT TODO: look into this
-        })
+        }) // TNT NOTE: WE NEED TO MAKE ONE USER_RENTAL APPLICABLE TO MANY user_rental_listings imo
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
@@ -71,10 +75,20 @@ exports.up = function (knex) {
                 .notNullable();
             t.timestamps(true, true);
             t.dateTime('rented_at').notNullable();
+            t.dateTime('next_rental_payment').notNullable();
+            t.dateTime('last_rental_payment').notNullable();
             t.float('price').notNullable();
             t.string('player_rented_to').notNullable();
             t.string('rental_tx').notNullable(); // this is collection.delegation_tx and activeRentals.rental_tx, when listing there is a collection placeholder @ sm_rental_payments`numbers4390245` + market_listing_status = parseInt(0) & market_listing_type === "RENT"
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED, is collection.market_id or activeRentals.sell_trx_id
+            t.unique([
+                'users_id',
+                'rental_tx',
+                'sell_trx_id',
+                'next_rental_payment',
+                'user_rental_listing_id', // TBD IF WE CAN DO THIS
+                //  'last_rental_payment',
+            ]);
         })
         .createTable('brawls', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
