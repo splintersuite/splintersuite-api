@@ -8,8 +8,6 @@ const get = async ({ users_id }) => {
     try {
         logger.debug('/services/tntearnings/get');
 
-        logger.info('testing to see if utilDates.getNumDaysAgo is working');
-
         const oneDay = 1;
         const oneWeek = 7;
         const oneMonth = 30;
@@ -47,6 +45,7 @@ const get = async ({ users_id }) => {
 const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
     try {
         logger.debug('/services/tntearnings/getEarningsForDaysAgo');
+
         const { daysAgo } = utilDates.getNumDaysAgo({
             numberOfDaysAgo,
             date: now,
