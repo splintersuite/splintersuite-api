@@ -56,16 +56,18 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
             t.dateTime('sl_created_at').notNullable();
+            t.dateTime('cancelled_at').nullable();
             t.timestamps(true, true);
             t.integer('edition').notNullable();
             t.integer('card_detail_id').notNullable();
             t.integer('level').notNullable();
             t.float('price').notNullable();
+            t.boolean('got_rented').notNullable().defaultTo(false);
             t.boolean('is_gold').notNullable();
-            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED, is collection.market_id or activeRentals.sell_trx_id
+            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED, is collection.market_id or activeRentals.sell_trx_id.  collection.market_id changes everytime you list a card for the first time (ie if its listed, you cancel and then list again, new market_id, doesn't change with relisting tho)
             t.string('source').notNullable(); // assigned by splinterlands WHEN LISTED
             t.string('card_uid').notNullable();
-            t.unique(['sl_created_at', 'card_uid']); // TNT TODO: look into this
+            t.unique(['sl_created_at', 'card_uid', 'sell_trx_id']); // TNT TODO: look into this
         }) // TNT NOTE: WE NEED TO MAKE ONE USER_RENTAL APPLICABLE TO MANY user_rental_listings imo
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));

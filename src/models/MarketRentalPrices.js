@@ -13,6 +13,7 @@ class MarketRentalPrices extends Model {
                 'period_end_time',
                 'card_detail_id',
                 'level',
+                'volume',
                 'price_currency',
                 'is_gold',
                 'aggregation_type',
