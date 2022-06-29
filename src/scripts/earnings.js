@@ -10,7 +10,7 @@ const calculateEarningsForUsers = async () => {
     try {
         logger.debug(`/scripts/earnings/calculateEarningsForUsers`);
         // runs at 0:00 EST and 12:00 PM EST
-        const todaysDate = new Date(new Date().toISOString().split('T')[0]);
+        const todaysDate = new Date(new Date().toISOString().split('T')[0]); // Mon Jun 27 2022 20:00:00 GMT-0400 (Eastern Daylight Time)
         const cardDetailsObj = {};
         cardDetails.forEach((card) => {
             cardDetailsObj[card.id] = card;
@@ -21,11 +21,16 @@ const calculateEarningsForUsers = async () => {
         const fiveMinutesInMS = 1000 * 60 * 5;
         for (const user of users) {
             // 100 users in a batch, then wait 5 minutes
-            await rentalFncs.updateRentalsInDb({
-                username: user.username,
-                users_id: user.id,
-                cardDetailsObj,
-            });
+            await rentalFncs
+                .updateRentalsInDb({
+                    username: user.username,
+                    users_id: user.id,
+                    cardDetailsObj,
+                })
+                .catch((err) => {
+                    logger.error(`updateRentalsInDb error: ${err.message}`);
+                    throw err;
+                });
             if (count !== 0 && count % 100 === 0) {
                 await retryFncs.sleep(fiveMinutesInMS);
             }
@@ -36,10 +41,15 @@ const calculateEarningsForUsers = async () => {
         // could split this in functions, w/e
         // calculate and insert (or patch) earnings
         for (const user of users) {
-            await earningsService.insertDailyEarnings({
-                users_id: user.id,
-                earnings_date: todaysDate,
-            });
+            await earningsService
+                .insertDailyEarnings({
+                    users_id: user.id,
+                    earnings_date: todaysDate,
+                })
+                .catch((err) => {
+                    logger.error(`insertDailyEarnings error: ${err.message}`);
+                    throw err;
+                });
         }
         logger.info('calculateEarningsForUsers done');
         process.exit(0);

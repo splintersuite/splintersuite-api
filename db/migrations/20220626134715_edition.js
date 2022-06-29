@@ -39,5 +39,13 @@ exports.down = function (knex) {
             'is_gold',
             'edition',
         ]);
+        t.unique([
+            // remove this once youve run knex migrate:latest
+            'created_at',
+            'aggregation_type',
+            'card_detail_id',
+            'level',
+            'is_gold',
+        ]);
     });
 };
