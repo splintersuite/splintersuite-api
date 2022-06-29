@@ -64,15 +64,6 @@ const getActiveRentalsInDB = async ({ users_id }) => {
         const now = new Date();
         const { oneDayAgo } = utilDates.getOneDayAgo({ date: now });
 
-        // const dbActiveRentals = await UserRentals.query()
-        //     .join('user_rental_listings', {
-        //         'user_rentals.user_rental_listing_id':
-        //             'user_rental_listings.id',
-        //     })
-        //     .select('user_rentals.*', 'user_rental_listings.card_uid')
-        //     .where({ users_id })
-        //     .whereBetween('last_rental_payment', [oneDayAgo, now]);
-
         const dbActiveRentals = await UserRentals.query()
             .where({ users_id })
             .whereBetween('last_rental_payment', [oneDayAgo, now]);

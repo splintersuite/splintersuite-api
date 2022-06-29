@@ -1,8 +1,7 @@
 'use strict';
 const logger = require('../util/pinologger');
 const UserRentals = require('../models/UserRentals');
-const DailyEarnings = require('../models/DailyEarnings');
-const { SPLINTERSUITE_BOT } = require('./rentals/types');
+
 const utilDates = require('../util/dates');
 
 const get = async ({ users_id }) => {
@@ -33,55 +32,12 @@ const get = async ({ users_id }) => {
             now,
             users_id,
         });
-        /*
-        const one = utilDates.getNumDaysAgo({
-            numberOfDaysAgo: oneDay,
-            date: now,
-        });
 
-        const seven = utilDates.getNumDaysAgo({
-            numberOfDaysAgo: oneWeek,
-            date: now,
-        });
-
-        const thirty = utilDates.getNumDaysAgo({
-            numberOfDaysAgo: oneMonth,
-            date: now,
-        });
-        const dailyRentals = await getActiveRentalsFromDate({
-            users_id,
-            date: one.daysAgo,
-            now,
-        });
-
-        const weeklyRentals = await getActiveRentalsFromDate({
-            users_id,
-            date: seven.daysAgo,
-            now,
-        });
-
-        const monthlyRentals = await getActiveRentalsFromDate({
-            users_id,
-            date: thirty.daysAgo,
-            now,
-        });
-
-        const dailyEarnings = sumRentals({ activeRentals: dailyRentals });
-
-        const weeklyEarnings = sumRentals({ activeRentals: weeklyRentals });
-
-        const monthlyEarnings = sumRentals({ activeRentals: monthlyRentals });
-*/
         logger.info(
             `dailyEarnings: ${dailyEarnings}, weeklyEarnings: ${weeklyEarnings}, monthlyEarnings: ${monthlyEarnings}`
         );
 
-        // need to sum these to get actual daily earnings
-
         return;
-        // we need an sql statement that lets us select from user_rentals .where ({users_id}), whereBetween 'whatevertime, now');
-        // we could then use this to get back the daily earnings from the past 24 hours, past week, and past 30 days, or past whenever, just able to be computed.
-        // we can then add this up and save the say 30 days of earnings of whatever we want to save in DailyEarnings
     } catch (err) {
         logger.error(`/services/tntearnings/get error: ${err.message}`);
         throw err;
@@ -105,10 +61,13 @@ const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
         const daysEarnings = sumRentals({
             activeRentals: activeRentalsforDays,
         });
-        logger.info(`/services/tntearnings/getEarningsForDaysAgo`);
+        logger.info(`/services/tntearnings/getEarningsForDaysAgo done`);
         return daysEarnings;
     } catch (err) {
-        logger.error();
+        logger.error(
+            `/services/tntearnings/getEarningsForDaysAgo error: ${err.message}`
+        );
+        throw err;
     }
 };
 
