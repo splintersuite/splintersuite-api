@@ -2,7 +2,8 @@ const logger = require('../util/pinologger');
 const Users = require('../models/Users');
 const retryFncs = require('../util/axios_retry/general');
 const cardDetails = require('../util/cardDetails.json');
-const rentalFncs = require('../services/rentals/allAccountUpdate');
+// const rentalFncs = require('../services/rentals/allAccountUpdate');
+const rentalFncs = require('../services/rentals/tntAllAccountUpdate');
 const earningsService = require('../services/earnings');
 
 // we should run this like
