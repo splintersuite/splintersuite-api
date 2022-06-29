@@ -1,12 +1,13 @@
 'use strict';
 const _ = require('lodash');
-const UserRentalListings = require('../../models/UserRentalListings');
 const UserRentals = require('../../models/UserRentals');
 const logger = require('../../util/pinologger');
 const splinterlandsService = require('../../services/splinterlands');
 const utilDates = require('../../util/dates');
+const calculateCardLevel = require('../../util/calculateCardLevel');
+const findCardLevel = require('../../util/calculateCardLevel');
 
-const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
+const updateRentalsInDb = async ({ username, users_id }) => {
     try {
         logger.debug('/services/rentals/tntAllAccountUpdate/updateRentalsInDB');
 
@@ -46,11 +47,15 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             await UserRentals.query().insert(rentalsToInsert);
         }
 
-        logger.info('updateRentalsInDB done');
+        logger.info(
+            '/services/rentals/tntAllAccountUpdate/updateRentalsInDB done'
+        );
 
         return;
     } catch (err) {
-        logger.error(`updateRentalsInDb error: ${err.message}`);
+        logger.error(
+            `/services/rentals/tntAllAccountUpdate/updateRentalsInDb error: ${err.message}`
+        );
         throw err;
     }
 };
@@ -68,8 +73,11 @@ const getActiveRentalsInDB = async ({ users_id }) => {
             .where({ users_id })
             .whereBetween('last_rental_payment', [oneDayAgo, now]);
 
-        logger.info('getActiveRentalsInDB returning dbActiveRentals: ');
+        logger.info(
+            '/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB done'
+        );
         logger.info(dbActiveRentals);
+
         return dbActiveRentals;
     } catch (err) {
         logger.error(`getActiveRentalsInDB error: ${err.message}`);
@@ -83,11 +91,13 @@ const searchableByUidDBRentals = ({ rentals }) => {
         logger.debug(
             '/services/rentals/tntAllAccountUpdate/searchableByUidDBRentals'
         );
+
         const rentalsObj = {};
         rentals.forEach((rental) => {
             rentalsObj[rental.card_uid] = rental;
         });
         logger.info('searchableByUidDBRentals done');
+
         return rentalsObj;
     } catch (err) {
         logger.error(`searchableByUidDBRentals error: ${err.message}`);
@@ -113,6 +123,7 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
         });
 
         logger.info('cleanAPIActiveRentals done');
+
         return activeRentals;
     } catch (err) {
         logger.error(`cleanAPIActiveRentals error: ${err.message}`);
@@ -123,6 +134,7 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
 const filterIfInDB = ({ newActiveRentals, dbRentalsByUid, users_id }) => {
     try {
         logger.debug('/services/rentals/tntAllAccountUpdate/filterIfInDB');
+
         const rentalsToInsert = [];
         const rentalsAlreadyInserted = [];
         const rentalsThatMightCrossover = [];
@@ -135,16 +147,31 @@ const filterIfInDB = ({ newActiveRentals, dbRentalsByUid, users_id }) => {
                 date: next_rental_payment,
             });
             const last_rental_payment = oneDayAgo;
+            // findCardLevel = ({ id, rarity, _xp, gold, edition, tier, alpha_xp }) => {
+            const level = findCardLevel({
+                id: rental.card_detail_id,
+                rarity: 'xdww',
+                _xp: rental.xp,
+                gold: rental.gold,
+                edition: rental.edition,
+                tier: 'xdww',
+                alpha_xp: 0,
+            });
             const rentalToAdd = {
                 users_id,
+                rented_at: new Date(rental.rental_date),
+                next_rental_payment,
+                last_rental_payment,
+                edition: rental.edition,
+                card_detail_id: rental.card_detail_id,
                 sell_trx_id: rental.sell_trx_id,
                 rental_tx: rental.rental_tx,
                 price: Number(rental.buy_price),
-                rented_at: new Date(rental.rental_date),
+
                 player_rented_to: rental.renter,
-                next_rental_payment,
+
                 card_uid,
-                last_rental_payment,
+
                 // user_rental_listing_id
             };
             const matchedRental = dbRentalsByUid[card_uid];
@@ -165,6 +192,7 @@ const filterIfInDB = ({ newActiveRentals, dbRentalsByUid, users_id }) => {
             }
         });
         logger.info('filterIfInDb done');
+
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,

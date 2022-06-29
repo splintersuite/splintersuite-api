@@ -52,33 +52,20 @@ exports.up = function (knex) {
             t.integer('num_rentals').notNullable();
             t.integer('bot_num_rentals').notNullable();
         })
-        .createTable('user_rental_listings', (t) => {
-            t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-            t.uuid('users_id').references('users.id').notNullable();
-            t.dateTime('sl_created_at').notNullable();
-            t.timestamps(true, true);
-            t.integer('edition').notNullable();
-            t.integer('card_detail_id').notNullable();
-            t.integer('level').notNullable();
-            t.float('price').notNullable();
-            t.boolean('got_rented').notNullable().defaultTo(false);
-            t.boolean('is_gold').notNullable();
-            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED, is collection.market_id or activeRentals.sell_trx_id.  collection.market_id changes everytime you list a card for the first time (ie if its listed, you cancel and then list again, new market_id, doesn't change with relisting tho)
-            t.string('source').notNullable(); // assigned by splinterlands WHEN LISTED
-            t.string('card_uid').notNullable();
-            t.unique(['sl_created_at', 'card_uid', 'sell_trx_id']); // TNT TODO: look into this
-        }) // TNT NOTE: WE NEED TO MAKE ONE USER_RENTAL APPLICABLE TO MANY user_rental_listings imo
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            // t.uuid('user_rental_listing_id')
-            //     .references('user_rental_listings.id')
-            //     .notNullable();
             t.timestamps(true, true);
             t.dateTime('rented_at').notNullable();
             t.dateTime('next_rental_payment').notNullable();
             t.dateTime('last_rental_payment').notNullable();
+            t.integer('edition').notNullable();
+            t.integer('card_detail_id').notNullable();
+            t.integer('level').notNullable();
+            t.integer('xp').notNullable();
             t.float('price').notNullable();
+            t.boolean('is_gold').notNullable();
+            t.boolean('confirmed').notNullable().defaultTo(false); // this would be for the future confirming if it was our bot that did this
             t.string('card_uid').notNullable();
             t.string('player_rented_to').notNullable();
             t.string('rental_tx').notNullable(); // this is collection.delegation_tx and activeRentals.rental_tx, when listing there is a collection placeholder @ sm_rental_payments`numbers4390245` + market_listing_status = parseInt(0) & market_listing_type === "RENT"
@@ -88,8 +75,7 @@ exports.up = function (knex) {
                 'rental_tx',
                 'sell_trx_id',
                 'next_rental_payment',
-                //    'user_rental_listing_id', // TBD IF WE CAN DO THIS
-                //  'last_rental_payment',
+                'card_uid',
             ]);
         })
         .createTable('brawls', (t) => {
@@ -132,7 +118,6 @@ exports.up = function (knex) {
         .then(() => knex.raw(knexfile.onUpdateTrigger('users')))
         .then(() => knex.raw(knexfile.onUpdateTrigger('daily_earnings')))
         .then(() => knex.raw(knexfile.onUpdateTrigger('user_rentals')))
-        .then(() => knex.raw(knexfile.onUpdateTrigger('user_rental_listings')))
         .then(() => knex.raw(knexfile.onUpdateTrigger('brawls')))
         .then(() => knex.raw(knexfile.onUpdateTrigger('seasons')))
         .then(() => knex.raw(knexfile.onUpdateTrigger('installs')))
@@ -149,7 +134,6 @@ exports.down = function (knex) {
         .dropTableIfExists('market_rental_prices')
         .dropTableIfExists('daily_earnings')
         .dropTableIfExists('user_rentals')
-        .dropTableIfExists('user_rental_listings')
         .dropTableIfExists('invoices')
         .dropTableIfExists('users')
         .dropTableIfExists('brawls')

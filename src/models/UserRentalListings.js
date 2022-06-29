@@ -39,27 +39,6 @@ class UserRentalListings extends Model {
             },
         };
     }
-
-    static get relationMappings() {
-        return {
-            // user_user_rental_listings: {
-            //     relation: Model.BelongsToOneRelation,
-            //     modelClass: Users,
-            //     join: {
-            //         from: 'user_rental_listings.users_id',
-            //         to: 'users.id',
-            //     },
-            // },
-            user_daily_earnings: {
-                relation: Model.HasManyRelation,
-                modelClass: UserRentals,
-                join: {
-                    from: 'user_rental_listings.id',
-                    to: 'user_rentals.user_rental_listing_id',
-                },
-            },
-        };
-    }
 }
 
 module.exports = UserRentalListings;
