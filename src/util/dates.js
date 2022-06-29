@@ -66,10 +66,27 @@ const getOneDayAgo = ({ date }) => {
         throw err;
     }
 };
+
+const getNumDaysAgo = ({ numberOfDaysAgo }) => {
+    try {
+        console.log('/util/dates/getNumDaysAgo');
+        const nowMs = new Date().getTime();
+        const msInADay = 1000 * 60 * 60 * 24;
+        const numOfDaysAgoMs = msInADay * numberOfDaysAgo;
+        const msDaysAgo = nowMs - numOfDaysAgoMs;
+        const daysAgo = new Date(msDaysAgo);
+        console.log('/util/dates/getNumDaysAgo done');
+        return { daysAgo, msDaysAgo: parseInt(msDaysAgo), nowMs };
+    } catch (err) {
+        console.error(`/util/dates/getNumDaysAgo error: ${err.message}`);
+        throw err;
+    }
+};
 module.exports = {
     firstDayOfWeek,
     getLastWeek,
     dateRange,
     getYesterdayAndTomorrow,
     getOneDayAgo,
+    getNumDaysAgo,
 };
