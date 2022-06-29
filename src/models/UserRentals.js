@@ -12,11 +12,12 @@ class UserRentals extends Model {
             type: 'object',
             required: [
                 'users_id',
-                'user_rental_listing_id',
+                //  'user_rental_listing_id',
                 'rented_at',
                 'next_rental_payment',
                 'last_rental_payment',
                 'price',
+                'card_uid',
                 'player_rented_to',
                 'rental_tx',
                 'sell_trx_id',
@@ -24,11 +25,12 @@ class UserRentals extends Model {
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
-                user_rental_listing_id: { type: 'string' },
+                //  user_rental_listing_id: { type: 'string' },
                 rented_at: { type: 'object', format: 'date-time' },
                 next_rental_payment: { type: 'object', format: 'date-time' },
                 last_rental_payment: { type: 'object', format: 'date-time' },
                 price: { type: 'number' },
+                card_uid: { type: 'string' },
                 player_rented_to: { type: 'string' },
                 rental_tx: { type: 'string' },
                 sell_trx_id: { type: 'string' },
@@ -46,14 +48,14 @@ class UserRentals extends Model {
                     to: 'users.id',
                 },
             },
-            user_user_rental_listings: {
-                relation: Model.BelongsToOneRelation,
-                modelClass: UserRentalListings,
-                join: {
-                    from: 'user_rentals.user_rental_listing_id',
-                    to: 'user_rental_listings.id',
-                },
-            },
+            // user_user_rental_listings: {
+            //     relation: Model.BelongsToOneRelation,
+            //     modelClass: UserRentalListings,
+            //     join: {
+            //         from: 'user_rentals.user_rental_listing_id',
+            //         to: 'user_rental_listings.id',
+            //     },
+            // },
         };
     }
 }

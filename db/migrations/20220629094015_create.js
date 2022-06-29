@@ -56,7 +56,6 @@ exports.up = function (knex) {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
             t.dateTime('sl_created_at').notNullable();
-            t.dateTime('cancelled_at').nullable();
             t.timestamps(true, true);
             t.integer('edition').notNullable();
             t.integer('card_detail_id').notNullable();
@@ -72,14 +71,15 @@ exports.up = function (knex) {
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            t.uuid('user_rental_listing_id')
-                .references('user_rental_listings.id')
-                .notNullable();
+            // t.uuid('user_rental_listing_id')
+            //     .references('user_rental_listings.id')
+            //     .notNullable();
             t.timestamps(true, true);
             t.dateTime('rented_at').notNullable();
             t.dateTime('next_rental_payment').notNullable();
             t.dateTime('last_rental_payment').notNullable();
             t.float('price').notNullable();
+            t.string('card_uid').notNullable();
             t.string('player_rented_to').notNullable();
             t.string('rental_tx').notNullable(); // this is collection.delegation_tx and activeRentals.rental_tx, when listing there is a collection placeholder @ sm_rental_payments`numbers4390245` + market_listing_status = parseInt(0) & market_listing_type === "RENT"
             t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED, is collection.market_id or activeRentals.sell_trx_id
@@ -88,7 +88,7 @@ exports.up = function (knex) {
                 'rental_tx',
                 'sell_trx_id',
                 'next_rental_payment',
-                'user_rental_listing_id', // TBD IF WE CAN DO THIS
+                //    'user_rental_listing_id', // TBD IF WE CAN DO THIS
                 //  'last_rental_payment',
             ]);
         })

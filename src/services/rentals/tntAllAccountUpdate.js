@@ -6,7 +6,7 @@ const logger = require('../../util/pinologger');
 const splinterlandsService = require('../../services/splinterlands');
 const utilDates = require('../../util/dates');
 
-const updateRentalsInDB = async ({ username, users_id, cardDetailsObj }) => {
+const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     try {
         logger.debug('/services/rentals/tntAllAccountUpdate/updateRentalsInDB');
 
@@ -28,14 +28,12 @@ const updateRentalsInDB = async ({ username, users_id, cardDetailsObj }) => {
 
         const dbRentalsByUid = searchableByUidDBRentals({
             rentals: dbActiveRentals,
-        }).catch((err) => {
-            logger.error(`searchableByUidDBRentals error: ${err.message}`);
-            throw err;
         });
 
         const { rentalsToInsert, rentalsAlreadyInserted } = filterIfInDB({
             newActiveRentals,
             dbRentalsByUid,
+            users_id,
         });
 
         logger.info(
@@ -66,12 +64,16 @@ const getActiveRentalsInDB = async ({ users_id }) => {
         const now = new Date();
         const { oneDayAgo } = utilDates.getOneDayAgo({ date: now });
 
+        // const dbActiveRentals = await UserRentals.query()
+        //     .join('user_rental_listings', {
+        //         'user_rentals.user_rental_listing_id':
+        //             'user_rental_listings.id',
+        //     })
+        //     .select('user_rentals.*', 'user_rental_listings.card_uid')
+        //     .where({ users_id })
+        //     .whereBetween('last_rental_payment', [oneDayAgo, now]);
+
         const dbActiveRentals = await UserRentals.query()
-            .join('user_rental_listings', {
-                'user_rentals.user_rental_listing_id':
-                    'user_rental_listings.id',
-            })
-            .select('user_rentals.*', 'user_rental_listings.card_uid')
             .where({ users_id })
             .whereBetween('last_rental_payment', [oneDayAgo, now]);
 
@@ -127,7 +129,7 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
     }
 };
 
-const filterIfInDB = ({ newActiveRentals, dbRentalsByUid }) => {
+const filterIfInDB = ({ newActiveRentals, dbRentalsByUid, users_id }) => {
     try {
         logger.debug('/services/rentals/tntAllAccountUpdate/filterIfInDB');
         const rentalsToInsert = [];
@@ -137,11 +139,6 @@ const filterIfInDB = ({ newActiveRentals, dbRentalsByUid }) => {
         newActiveRentals.forEach((rental) => {
             // APIRental.card_id = card.uid from collection API, both saved to card_uid column
             const card_uid = rental.card_id;
-            const cancelled_at =
-                rental.cancel_date != null
-                    ? new Date(rental.cancel_date)
-                    : null;
-
             const next_rental_payment = new Date(rental.next_rental_payment);
             const { oneDayAgo } = utilDates.getOneDayAgo({
                 date: next_rental_payment,
@@ -154,7 +151,6 @@ const filterIfInDB = ({ newActiveRentals, dbRentalsByUid }) => {
                 price: Number(rental.buy_price),
                 rented_at: new Date(rental.rental_date),
                 player_rented_to: rental.renter,
-                cancelled_at,
                 next_rental_payment,
                 card_uid,
                 last_rental_payment,
@@ -190,5 +186,5 @@ const filterIfInDB = ({ newActiveRentals, dbRentalsByUid }) => {
 };
 
 module.exports = {
-    updateRentalsInDB,
+    updateRentalsInDb,
 };

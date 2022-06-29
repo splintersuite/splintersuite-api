@@ -27,7 +27,6 @@ class UserRentalListings extends Model {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
                 sl_created_at: { type: 'object', format: 'date-time' },
-                cancelled_at: { type: ['object', 'null'], format: 'date-time' },
                 edition: { type: 'integer' },
                 card_detail_id: { type: 'integer' },
                 level: { type: 'integer' },
@@ -43,14 +42,14 @@ class UserRentalListings extends Model {
 
     static get relationMappings() {
         return {
-            user_user_rental_listings: {
-                relation: Model.BelongsToOneRelation,
-                modelClass: Users,
-                join: {
-                    from: 'user_rental_listings.users_id',
-                    to: 'users.id',
-                },
-            },
+            // user_user_rental_listings: {
+            //     relation: Model.BelongsToOneRelation,
+            //     modelClass: Users,
+            //     join: {
+            //         from: 'user_rental_listings.users_id',
+            //         to: 'users.id',
+            //     },
+            // },
             user_daily_earnings: {
                 relation: Model.HasManyRelation,
                 modelClass: UserRentals,
