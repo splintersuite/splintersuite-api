@@ -69,10 +69,12 @@ const getActiveRentals = async ({ username }) => {
                 `https://api2.splinterlands.com/market/active_rentals?owner=${username} returning something crazy`
             );
         }
-
+        logger.info(`/services/splinterlands/getActiveRentals done`);
         return activeRentals.data;
     } catch (err) {
-        logger.error(`getActiveRentals error: ${err.messagee}`);
+        logger.error(
+            `/services/splinterlands/getActiveRentals error: ${err.messagee}`
+        );
         throw err;
     }
 };
@@ -86,10 +88,12 @@ const getSettings = async () => {
         const res = await axiosInstance(url);
 
         const data = res.data;
-
+        logger.info(`/services/splinterlands/getSettings done`);
         return data;
     } catch (err) {
-        logger.error(`getSplinterlandsSettings error: ${err.message}`);
+        logger.error(
+            `/services/splinterlands/getSettings error: ${err.message}`
+        );
         throw err;
     }
 };

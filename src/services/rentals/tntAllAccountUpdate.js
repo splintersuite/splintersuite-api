@@ -4,7 +4,6 @@ const UserRentals = require('../../models/UserRentals');
 const logger = require('../../util/pinologger');
 const splinterlandsService = require('../../services/splinterlands');
 const utilDates = require('../../util/dates');
-const calculateCardLevel = require('../../util/calculateCardLevel');
 const findCardLevel = require('../../util/calculateCardLevel');
 
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
@@ -27,8 +26,6 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             }
         );
 
-        let rentalsNotInserted = [];
-        //     if (dbActiveRentals.length > 0) {
         const dbRentalsByUid = searchableByUidDBRentals({
             rentals: dbActiveRentals,
         });
@@ -39,18 +36,15 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             users_id,
             cardDetailsObj,
         });
-        logger.info(
+        logger.debug(
             `rentalsALreadyInserted: ${JSON.stringify(rentalsAlreadyInserted)}`
         );
-        logger.info(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
+        logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
 
         // we need to first look up if the listings exist for the rentalsToInsert, then we can move from there
         if (rentalsToInsert.length > 0) {
             await UserRentals.query().insert(rentalsToInsert);
         }
-        // } else {
-        //     logger.info('database is empty!');
-        // }
 
         logger.info(
             '/services/rentals/tntAllAccountUpdate/updateRentalsInDB done'
@@ -191,7 +185,6 @@ const filterIfInDB = ({
                     rental.card_detail_id
                 } is: ${JSON.stringify(card_details)}`
             );
-            // findCardLevel = ({ id, rarity, _xp, gold, edition, tier, alpha_xp }) => {
             const level = findCardLevel({
                 id: rental.card_detail_id,
                 rarity: card_details.rarity,
