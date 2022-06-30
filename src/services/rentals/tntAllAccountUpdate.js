@@ -46,10 +46,18 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
 
         // we need to first look up if the listings exist for the rentalsToInsert, then we can move from there
-        if (rentalsToInsert.length > 0) {
-            await UserRentals.query().insert(rentalsToInsert);
-        }
+        // if (rentalsToInsert.length > 0) {
+        //     await UserRentals.query().insert(rentalsToInsert);
+        // }
 
+        await insertActiveRentals({ rentals: rentalsToInsert }).catch((err) => {
+            logger.error(
+                `/services/rentals/tntAllAccountUpdate/updateRentalsInDb insertActiveRentals with rentals: ${JSON.stringify(
+                    rentalsToInsert
+                )} error: ${err.message}`
+            );
+            throw err;
+        });
         logger.info(
             '/services/rentals/tntAllAccountUpdate/updateRentalsInDB done'
         );
@@ -68,20 +76,23 @@ const insertActiveRentals = async ({ rentals }) => {
         logger.debug(
             '/services/rentals/tntAllAccountUpdate/insertActiveRentals'
         );
+
         if (rentals.length === 0) {
             logger.info(
                 `/services/rentals/tntAllAccountUpdate/insertActiveRentals no rentals to insert`
             );
             return;
         }
+
         await UserRentals.query()
             .insert(rentals)
             .catch((err) => {
                 logger.error(
-                    `/services/rentals/tntAllAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${rentals}`
+                    `/services/rentals/tntAllAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${rentals}, error: ${err.message}`
                 );
                 throw err;
             });
+
         logger.info(
             `/services/rentals/tntAllAccountUpdate/insertActiveRentals done`
         );
@@ -160,15 +171,12 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
             '/services/rentals/tntAllAccountUpdate/cleanAPIActiveRentals'
         );
         activeRentals.forEach((rental) => {
-            // rental.next_rental_payment_time = new Date(
-            //     rental.next_rental_payment
-            // ).getTime();
-            rental.buy_price = parseFloat(rental.buy_price);
             const { oneDayAgo, oneDayAgoInMS } = utilDates.getOneDayAgo({
                 date: rental.next_rental_payment,
             });
+
+            rental.buy_price = parseFloat(rental.buy_price);
             rental.last_rental_payment = oneDayAgo;
-            //rental.last_rental_payment_time = oneDayAgoInMS;
         });
 
         logger.info(
@@ -206,7 +214,7 @@ const filterIfInDB = ({
             });
             const last_rental_payment = oneDayAgo;
             const card_details = cardDetailsObj[rental.card_detail_id];
-            logger.info(
+            logger.debug(
                 `card_details output for card_detail_id: ${
                     rental.card_detail_id
                 } is: ${JSON.stringify(card_details)}`
@@ -245,10 +253,12 @@ const filterIfInDB = ({
                 ) {
                     rentalsAlreadyInserted.push(rentalToAdd);
                 } else {
-                    // seems like we should
+                    // might want to do more than warn here, this shouldn't really happen
                     logger.warn(
                         `matchedRental: ${JSON.stringify(
                             matchedRental
+                        )} from rental: ${JSON.stringify(
+                            rental
                         )} is in db but not same rental_tx and sell_trx_id`
                     );
                     rentalsThatMightCrossover.push(rentalToAdd);
