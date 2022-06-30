@@ -165,10 +165,10 @@ const searchableByUidDBRentals = ({ rentals }) => {
         rentals.forEach((rental) => {
             rentalsObj[rental.card_uid] = rental;
         });
+
         logger.info(
             '/services/rentals/tntAllAccountUpdate/searchableByUidDBRentals done'
         );
-
         return rentalsObj;
     } catch (err) {
         logger.error(
@@ -183,6 +183,7 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
         logger.debug(
             '/services/rentals/tntAllAccountUpdate/cleanAPIActiveRentals'
         );
+
         activeRentals.forEach((rental) => {
             const { oneDayAgo, oneDayAgoInMS } = utilDates.getOneDayAgo({
                 date: rental.next_rental_payment,
@@ -259,24 +260,14 @@ const filterIfInDB = ({
             };
             const matchedRental = dbRentalsByUid[card_uid];
 
-            if (card_uid === 'C7-370-03NOSSV4V4') {
-                logger.info(
-                    `card_uid is: ${card_uid}, dbRentalsByUid: ${JSON.stringify(
-                        dbRentalsByUid
-                    )}`
-                );
-
-                //  throw new Error('checking output');
-            }
-
             if (matchedRental != null) {
-                logger.info('matchedRental is not null');
+                logger.debug('matchedRental is not null');
                 // there was a match
                 if (
                     matchedRental.rental_tx === rental.rental_tx &&
                     matchedRental.sell_trx_id === rental.sell_trx_id
                 ) {
-                    logger.info(
+                    logger.debug(
                         'matchedRental rental_tx and sell_trx = rental.rental_tx and sell_trx_id'
                     );
                     const matchedNextRentPmnt = new Date(
@@ -285,44 +276,34 @@ const filterIfInDB = ({
                     const rentalNextRentPmnt = new Date(
                         rental.next_rental_payment
                     ).getTime();
+
                     if (matchedNextRentPmnt === rentalNextRentPmnt) {
-                        logger.info(
+                        logger.debug(
                             `matchedRental next_rental_payment (in ms): ${matchedNextRentPmnt} === rental.next_rental_payment: ${rentalNextRentPmnt} with same rental_tx and sell_trx_id`
                         );
                         rentalsAlreadyInserted.push(rentalToAdd);
                     } else {
-                        logger.info(`rental is: ${JSON.stringify(rental)}`);
-                        logger.info(
+                        logger.error(`rental is: ${JSON.stringify(rental)}`);
+                        logger.error(
                             ` matchedRental: ${JSON.stringify(matchedRental)}`
                         );
-                        logger.info(
+                        logger.error(
                             `matchedRental rental_tx and sell_trx are the same, but the next_rental_payment is different`
                         );
                         throw new Error(`this shouldnt happen`);
                     }
                 } else {
-                    // might want to do more than warn here, this shouldn't really happen
-                    logger.warn(
-                        `matchedRental: ${JSON.stringify(
-                            matchedRental
-                        )} from rental: ${JSON.stringify(
-                            rental
-                        )} is in db but not same rental_tx and sell_trx_id`
-                    );
-                    //rentalsThatMightCrossover.push(rentalToAdd);
+                    // this happens when there is a uid match but the rental_tx and sell_trx_id are different
                     rentalsToInsert.push(rentalToAdd);
                 }
             } else {
-                logger.info('matchedRental == null, and we need to insert it');
                 // there was no match, need to insert this into the db
                 rentalsToInsert.push(rentalToAdd);
             }
-            if (card_uid === 'C7-370-03NOSSV4V4') {
-                //    throw new Error('checking new output');
-            }
         });
+
+        logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
         logger.info('/services/rentals/tntAllAccountUpdate/filterIfInDB done');
-        logger.info(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,

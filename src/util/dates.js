@@ -1,4 +1,3 @@
-'use strict';
 const logger = require('./pinologger');
 const firstDayOfWeek = (dateObject, firstDayOfWeekIndex) => {
     const dayOfWeek = dateObject.getDay(),
@@ -40,6 +39,7 @@ const dateRange = (startDate, endDate, steps = 1) => {
 const getYesterdayAndTomorrow = () => {
     try {
         logger.debug('/util/dates/getYesterdayAndTomorrow');
+
         const todayMS = new Date().getTime(); // ms aka 1000 ms per s
         const msInADay = 1000 * 60 * 60 * 24; // 86400 * 1000
         const yesterdayInMs = todayMS - msInADay;
@@ -47,6 +47,8 @@ const getYesterdayAndTomorrow = () => {
 
         const yesterday = new Date(yesterdayInMs);
         const tomorrow = new Date(tomorrowInMs);
+
+        logger.debug('/util/dates/getYesterdayAndTomorrow done');
         return { yesterdayInMs, tomorrowInMs, yesterday, tomorrow };
     } catch (err) {
         console.error(`getYesterdayAndTomorrow error: ${err.message}`);
@@ -57,11 +59,12 @@ const getYesterdayAndTomorrow = () => {
 const getOneDayAgo = ({ date }) => {
     try {
         logger.debug('/util/dates/getOneDayAgo');
+
         const dateInMs = new Date(date).getTime();
         const msInADay = 1000 * 60 * 60 * 24;
         const oneDayAgoInMS = dateInMs - msInADay;
         const oneDayAgo = new Date(oneDayAgoInMS);
-
+        logger.debug(`/util/dates/getOneDayAgo done`);
         return { oneDayAgoInMS: parseInt(oneDayAgoInMS), oneDayAgo };
     } catch (err) {
         console.error(`getOneDayAgo error: ${err.message}`);
@@ -72,11 +75,13 @@ const getOneDayAgo = ({ date }) => {
 const getNumDaysAgo = ({ numberOfDaysAgo, date }) => {
     try {
         logger.debug('/util/dates/getNumDaysAgo');
+
         const nowMs = date.getTime();
         const msInADay = 1000 * 60 * 60 * 24;
         const numOfDaysAgoMs = msInADay * numberOfDaysAgo;
         const msDaysAgo = nowMs - parseInt(numOfDaysAgoMs);
         const daysAgo = new Date(msDaysAgo);
+
         logger.debug('/util/dates/getNumDaysAgo done');
         return { daysAgo, msDaysAgo: parseInt(msDaysAgo) };
     } catch (err) {
