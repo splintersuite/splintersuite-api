@@ -29,7 +29,7 @@ const calculateEarningsForUsers = async () => {
                 })
                 .catch((err) => {
                     logger.error(
-                        `updateRentalsInDb users_id: ${JSON.stringify(
+                        `/scripts/earnings/calculateEarningsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
                             user.id
                         )} error: ${err.message}`
                     );
