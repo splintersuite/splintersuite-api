@@ -121,11 +121,15 @@ const getActiveRentalsInDB = async ({ users_id }) => {
         );
 
         const now = new Date();
-        const { oneDayAgo } = utilDates.getOneDayAgo({ date: now });
+        // this is due to some lag on splinterlands api where an active_rental that expired doesn't get expired from the api immediately
+        const oneAndAHalf = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 1.5,
+            date: now,
+        });
 
         const dbActiveRentals = await UserRentals.query()
             .where({ users_id })
-            .whereBetween('last_rental_payment', [oneDayAgo, now])
+            .whereBetween('last_rental_payment', [oneAndAHalf.daysAgo, now])
             .catch((err) => {
                 logger.error(
                     `/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB UserRentals query with users_id: ${users_id}, now: ${now} and oneDayAgo: ${oneDayAgo} error: ${err.message}`
@@ -254,13 +258,48 @@ const filterIfInDB = ({
                 sell_trx_id: rental.sell_trx_id,
             };
             const matchedRental = dbRentalsByUid[card_uid];
+
+            if (card_uid === 'C7-370-03NOSSV4V4') {
+                logger.info(
+                    `card_uid is: ${card_uid}, dbRentalsByUid: ${JSON.stringify(
+                        dbRentalsByUid
+                    )}`
+                );
+
+                //  throw new Error('checking output');
+            }
+
             if (matchedRental != null) {
+                logger.info('matchedRental is not null');
                 // there was a match
                 if (
                     matchedRental.rental_tx === rental.rental_tx &&
                     matchedRental.sell_trx_id === rental.sell_trx_id
                 ) {
-                    rentalsAlreadyInserted.push(rentalToAdd);
+                    logger.info(
+                        'matchedRental rental_tx and sell_trx = rental.rental_tx and sell_trx_id'
+                    );
+                    const matchedNextRentPmnt = new Date(
+                        matchedRental.next_rental_payment
+                    ).getTime();
+                    const rentalNextRentPmnt = new Date(
+                        rental.next_rental_payment
+                    ).getTime();
+                    if (matchedNextRentPmnt === rentalNextRentPmnt) {
+                        logger.info(
+                            `matchedRental next_rental_payment (in ms): ${matchedNextRentPmnt} === rental.next_rental_payment: ${rentalNextRentPmnt} with same rental_tx and sell_trx_id`
+                        );
+                        rentalsAlreadyInserted.push(rentalToAdd);
+                    } else {
+                        logger.info(`rental is: ${JSON.stringify(rental)}`);
+                        logger.info(
+                            ` matchedRental: ${JSON.stringify(matchedRental)}`
+                        );
+                        logger.info(
+                            `matchedRental rental_tx and sell_trx are the same, but the next_rental_payment is different`
+                        );
+                        throw new Error(`this shouldnt happen`);
+                    }
                 } else {
                     // might want to do more than warn here, this shouldn't really happen
                     logger.warn(
@@ -270,15 +309,20 @@ const filterIfInDB = ({
                             rental
                         )} is in db but not same rental_tx and sell_trx_id`
                     );
-                    rentalsThatMightCrossover.push(rentalToAdd);
+                    //rentalsThatMightCrossover.push(rentalToAdd);
+                    rentalsToInsert.push(rentalToAdd);
                 }
             } else {
+                logger.info('matchedRental == null, and we need to insert it');
                 // there was no match, need to insert this into the db
                 rentalsToInsert.push(rentalToAdd);
             }
+            if (card_uid === 'C7-370-03NOSSV4V4') {
+                //    throw new Error('checking new output');
+            }
         });
         logger.info('/services/rentals/tntAllAccountUpdate/filterIfInDB done');
-
+        logger.info(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,

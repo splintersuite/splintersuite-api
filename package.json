@@ -8,7 +8,8 @@
         "start": "node index.js",
         "dev": "LEVEL=debug nodemon --experimental-specifier-resolution=node index.js --ignore tests",
         "earnings": "node  --trace-warnings ./src/scripts/earnings.js",
-        "brawls": "node --trace-warnings ./src/scripts/brawls.js"
+        "brawls": "node --trace-warnings ./src/scripts/brawls.js",
+        "tnttest": "node ./src/tests/util/dates.js"
     },
     "author": "",
     "license": "ISC",

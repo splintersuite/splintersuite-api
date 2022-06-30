@@ -123,7 +123,7 @@ const bcxToLevel = ({ bcx, rarity, gold, edition, id, tier }) => {
                 break;
             }
         }
-        logger.info(`bcxToLevel returning level: ${level}`);
+        logger.debug(`bcxToLevel returning level: ${level}`);
         return level;
     } catch (err) {
         logger.error(`bcxToLevel error: ${err.message}`);
