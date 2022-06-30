@@ -2,19 +2,19 @@
 const _ = require('lodash');
 const UserRentals = require('../../models/UserRentals');
 const logger = require('../../util/pinologger');
-const splinterlandsService = require('../../services/splinterlands');
+const splinterlandsService = require('../splinterlands');
 const utilDates = require('../../util/dates');
 const findCardLevel = require('../../util/calculateCardLevel');
 
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     try {
-        logger.debug('/services/rentals/tntAllAccountUpdate/updateRentalsInDB');
+        logger.debug('/services/rentals/allAccountUpdate/updateRentalsInDB');
 
         const activeRentals = await splinterlandsService
             .getActiveRentals({ username })
             .catch((err) => {
                 logger.error(
-                    `/services/rentals/tntAllAccountUpdate/updateRentalsInDB getActiveRentals with users_id: ${users_id} error: ${err.message}`
+                    `/services/rentals/allAccountUpdate/updateRentalsInDB getActiveRentals with users_id: ${users_id} error: ${err.message}`
                 );
                 throw err;
             });
@@ -24,7 +24,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         const dbActiveRentals = await getActiveRentalsInDB({ users_id }).catch(
             (err) => {
                 logger.error(
-                    `/services/rentals/tntAllAccountUpdate/updateRentalsInDB getActiveRentalsInDB with users_id: ${users_id} error: ${err.messsage}`
+                    `/services/rentals/allAccountUpdate/updateRentalsInDB getActiveRentalsInDB with users_id: ${users_id} error: ${err.messsage}`
                 );
                 throw err;
             }
@@ -48,20 +48,20 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
 
         await insertActiveRentals({ rentals: rentalsToInsert }).catch((err) => {
             logger.error(
-                `/services/rentals/tntAllAccountUpdate/updateRentalsInDb insertActiveRentals with rentals: ${JSON.stringify(
+                `/services/rentals/allAccountUpdate/updateRentalsInDb insertActiveRentals with rentals: ${JSON.stringify(
                     rentalsToInsert
                 )} error: ${err.message}`
             );
             throw err;
         });
         logger.info(
-            '/services/rentals/tntAllAccountUpdate/updateRentalsInDB done'
+            '/services/rentals/allAccountUpdate/updateRentalsInDB done'
         );
 
         return;
     } catch (err) {
         logger.error(
-            `/services/rentals/tntAllAccountUpdate/updateRentalsInDb error: ${err.message}`
+            `/services/rentals/allAccountUpdate/updateRentalsInDb error: ${err.message}`
         );
         throw err;
     }
@@ -69,13 +69,11 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
 
 const insertActiveRentals = async ({ rentals }) => {
     try {
-        logger.debug(
-            '/services/rentals/tntAllAccountUpdate/insertActiveRentals'
-        );
+        logger.debug('/services/rentals/allAccountUpdate/insertActiveRentals');
 
         if (rentals.length === 0) {
             logger.info(
-                `/services/rentals/tntAllAccountUpdate/insertActiveRentals no rentals to insert`
+                `/services/rentals/allAccountUpdate/insertActiveRentals no rentals to insert`
             );
             return;
         }
@@ -92,7 +90,7 @@ const insertActiveRentals = async ({ rentals }) => {
                 .insert(rentals)
                 .catch((err) => {
                     logger.error(
-                        `/services/rentals/tntAllAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${JSON.stringify(
+                        `/services/rentals/allAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${JSON.stringify(
                             rentals
                         )}, rentalChunk: ${JSON.stringify(
                             rentalChunk
@@ -103,12 +101,12 @@ const insertActiveRentals = async ({ rentals }) => {
         }
 
         logger.info(
-            `/services/rentals/tntAllAccountUpdate/insertActiveRentals done`
+            `/services/rentals/allAccountUpdate/insertActiveRentals done`
         );
         return;
     } catch (err) {
         logger.error(
-            `/services/rentals/tntAllAccountUpdate/insertActiveRentals error: ${err.message}`
+            `/services/rentals/allAccountUpdate/insertActiveRentals error: ${err.message}`
         );
         throw err;
     }
@@ -116,9 +114,7 @@ const insertActiveRentals = async ({ rentals }) => {
 
 const getActiveRentalsInDB = async ({ users_id }) => {
     try {
-        logger.debug(
-            '/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB'
-        );
+        logger.debug('/services/rentals/allAccountUpdate/getActiveRentalsInDB');
 
         const now = new Date();
         // this is due to some lag on splinterlands api where an active_rental that expired doesn't get expired from the api immediately
@@ -132,23 +128,23 @@ const getActiveRentalsInDB = async ({ users_id }) => {
             .whereBetween('last_rental_payment', [oneAndAHalf.daysAgo, now])
             .catch((err) => {
                 logger.error(
-                    `/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB UserRentals query with users_id: ${users_id}, now: ${now} and oneDayAgo: ${oneDayAgo} error: ${err.message}`
+                    `/services/rentals/allAccountUpdate/getActiveRentalsInDB UserRentals query with users_id: ${users_id}, now: ${now} and oneDayAgo: ${oneDayAgo} error: ${err.message}`
                 );
                 throw err;
             });
 
         logger.debug(
-            `/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB done, dbActiveRentals: ${JSON.stringify(
+            `/services/rentals/allAccountUpdate/getActiveRentalsInDB done, dbActiveRentals: ${JSON.stringify(
                 dbActiveRentals
             )} `
         );
         logger.info(
-            `/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB done`
+            `/services/rentals/allAccountUpdate/getActiveRentalsInDB done`
         );
         return dbActiveRentals;
     } catch (err) {
         logger.error(
-            `/services/rentals/tntAllAccountUpdate/getActiveRentalsInDB error: ${err.message}`
+            `/services/rentals/allAccountUpdate/getActiveRentalsInDB error: ${err.message}`
         );
         throw err;
     }
@@ -158,7 +154,7 @@ const getActiveRentalsInDB = async ({ users_id }) => {
 const searchableByUidDBRentals = ({ rentals }) => {
     try {
         logger.debug(
-            '/services/rentals/tntAllAccountUpdate/searchableByUidDBRentals'
+            '/services/rentals/allAccountUpdate/searchableByUidDBRentals'
         );
 
         const rentalsObj = {};
@@ -167,12 +163,12 @@ const searchableByUidDBRentals = ({ rentals }) => {
         });
 
         logger.info(
-            '/services/rentals/tntAllAccountUpdate/searchableByUidDBRentals done'
+            '/services/rentals/allAccountUpdate/searchableByUidDBRentals done'
         );
         return rentalsObj;
     } catch (err) {
         logger.error(
-            `/services/rentals/tntAllAccountUpdate/searchableByUidDBRentals error: ${err.message}`
+            `/services/rentals/allAccountUpdate/searchableByUidDBRentals error: ${err.message}`
         );
         throw err;
     }
@@ -181,7 +177,7 @@ const searchableByUidDBRentals = ({ rentals }) => {
 const cleanAPIActiveRentals = ({ activeRentals }) => {
     try {
         logger.debug(
-            '/services/rentals/tntAllAccountUpdate/cleanAPIActiveRentals'
+            '/services/rentals/allAccountUpdate/cleanAPIActiveRentals'
         );
 
         activeRentals.forEach((rental) => {
@@ -194,13 +190,13 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
         });
 
         logger.info(
-            '/services/rentals/tntAllAccountUpdate/cleanAPIActiveRentalsdone'
+            '/services/rentals/allAccountUpdate/cleanAPIActiveRentalsdone'
         );
 
         return activeRentals;
     } catch (err) {
         logger.error(
-            `/services/rentals/tntAllAccountUpdate/cleanAPIActiveRentalsdone error: ${err.message}`
+            `/services/rentals/allAccountUpdate/cleanAPIActiveRentalsdone error: ${err.message}`
         );
         throw err;
     }
@@ -213,7 +209,7 @@ const filterIfInDB = ({
     cardDetailsObj,
 }) => {
     try {
-        logger.debug('/services/rentals/tntAllAccountUpdate/filterIfInDB');
+        logger.debug('/services/rentals/allAccountUpdate/filterIfInDB');
 
         const rentalsToInsert = [];
         const rentalsAlreadyInserted = [];
@@ -303,7 +299,7 @@ const filterIfInDB = ({
         });
 
         logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
-        logger.info('/services/rentals/tntAllAccountUpdate/filterIfInDB done');
+        logger.info('/services/rentals/allAccountUpdate/filterIfInDB done');
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,
@@ -311,7 +307,7 @@ const filterIfInDB = ({
         };
     } catch (err) {
         logger.error(
-            `/services/rentals/tntAllAccountUpdate/filterIfInDB error: ${err.message}`
+            `/services/rentals/allAccountUpdate/filterIfInDB error: ${err.message}`
         );
         throw err;
     }
