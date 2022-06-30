@@ -77,8 +77,22 @@ DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2
 // end: '2022-06-18T07:00:00.000Z'
 // }
 
+
+{
+id: 89,
+name: "Ranked Rewards Season 2",
+ends: "2022-06-30T14:00:00.000Z",
+
 "id: 90, name: Brawl Cycle 90, start: 2022-06-18T07:00:00.000Z, end: 2022-06-23T08:00:00.000Z"}
 ```
+
+brawl_cycle: {
+id: 92,
+name: "Brawl Cycle 92",
+start: "2022-06-28T09:00:00.000Z",
+status: 1,
+reset_block_num: null,
+end: "2022-07-04T10:00:00.000Z"
 
 Production Scripts:
 
