@@ -20,7 +20,6 @@ class UserRentals extends Model {
                 'xp',
                 'price',
                 'is_gold',
-                'confirmed',
                 'card_uid',
                 'player_rented_to',
                 'rental_tx',

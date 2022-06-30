@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node index.js",
         "dev": "LEVEL=debug nodemon --experimental-specifier-resolution=node index.js --ignore tests",
-        "earnings": "node ./src/scripts/earnings.js"
+        "earnings": "node  --trace-warnings ./src/scripts/earnings.js"
     },
     "author": "",
     "license": "ISC",

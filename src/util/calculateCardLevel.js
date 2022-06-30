@@ -1,4 +1,5 @@
 'use strict';
+const logger = require('./pinologger');
 
 const XPProperty = {
     alpha_xp: [20, 100, 250, 1000],
@@ -51,9 +52,9 @@ const CombineRatesGold = [
 
 const findCardLevel = ({ id, rarity, _xp, gold, edition, tier, alpha_xp }) => {
     try {
-        // console.log(
-        //     `findCardLevel start with id: ${id}, rarity: ${rarity}, _xp: ${_xp}, gold: ${gold}, edition: ${edition}, tier: ${tier}, alpha_xp: ${alpha_xp}`
-        // );
+        logger.debug(
+            `findCardLevel start with id: ${id}, rarity: ${rarity}, _xp: ${_xp}, gold: ${gold}, edition: ${edition}, tier: ${tier}, alpha_xp: ${alpha_xp}`
+        );
         let _alpha_xp = 0;
         if (alpha_xp != null) {
             _alpha_xp = alpha_xp;
@@ -88,17 +89,17 @@ const findCardLevel = ({ id, rarity, _xp, gold, edition, tier, alpha_xp }) => {
         }
 
         const level = bcxToLevel({ bcx, rarity, gold, edition, id, tier });
-
+        logger.debug('findCardLevel done');
         return level;
     } catch (err) {
-        // console.error(`findCardLevel error: ${err.message}`);
+        logger.error(`findCardLevel error: ${err.message}`);
         throw err;
     }
 };
 
 const bcxToLevel = ({ bcx, rarity, gold, edition, id, tier }) => {
     try {
-        // console.log(`bcxToLevel start`);
+        logger.debug(`bcxToLevel start`);
 
         const combinationRates = getBcxLevelComboForEdition({
             rarity,
@@ -122,17 +123,17 @@ const bcxToLevel = ({ bcx, rarity, gold, edition, id, tier }) => {
                 break;
             }
         }
-        // console.log(`bcxToLevel returning level: ${level}`);
+        logger.info(`bcxToLevel returning level: ${level}`);
         return level;
     } catch (err) {
-        // console.error(`bcxToLevel error: ${err.message}`);
+        logger.error(`bcxToLevel error: ${err.message}`);
         throw err;
     }
 };
 
 const getBcxLevelComboForEdition = ({ rarity, gold, edition, id, tier }) => {
     try {
-        // console.log(`getBcxLevelComboForEdition start`);
+        logger.debug(`getBcxLevelComboForEdition start`);
         let combinationRates;
         if (edition === 4 || tier >= 4) {
             // if untamed or chaos legion, use the regular bcx caps for levels, also includes reward cards untamed and up
@@ -150,10 +151,10 @@ const getBcxLevelComboForEdition = ({ rarity, gold, edition, id, tier }) => {
                 ? goldBetaCombineRates[rarity - 1]
                 : betaCombineRates[rarity - 1];
         }
-
+        logger.debug(`getBcxLevelComboForEdition done`);
         return combinationRates;
     } catch (err) {
-        console.error(`getBcxLevelComboForEdition error: ${err.message}`);
+        logger.error(`getBcxLevelComboForEdition error: ${err.message}`);
         throw err;
     }
 };
