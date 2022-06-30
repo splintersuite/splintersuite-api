@@ -40,15 +40,11 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             users_id,
             cardDetailsObj,
         });
+
         logger.debug(
             `rentalsALreadyInserted: ${JSON.stringify(rentalsAlreadyInserted)}`
         );
         logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
-
-        // we need to first look up if the listings exist for the rentalsToInsert, then we can move from there
-        // if (rentalsToInsert.length > 0) {
-        //     await UserRentals.query().insert(rentalsToInsert);
-        // }
 
         await insertActiveRentals({ rentals: rentalsToInsert }).catch((err) => {
             logger.error(
@@ -83,15 +79,28 @@ const insertActiveRentals = async ({ rentals }) => {
             );
             return;
         }
+        let chunks = rentals;
+        if (rentals.length > 1000) {
+            chunks = _.chunk(rentals, 1000);
+        }
 
-        await UserRentals.query()
-            .insert(rentals)
-            .catch((err) => {
-                logger.error(
-                    `/services/rentals/tntAllAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${rentals}, error: ${err.message}`
-                );
-                throw err;
-            });
+        if (chunks.length === rentals.length) {
+            chunks = [chunks];
+        }
+        for (const rentalChunk of chunks) {
+            await UserRentals.query()
+                .insert(rentals)
+                .catch((err) => {
+                    logger.error(
+                        `/services/rentals/tntAllAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${JSON.stringify(
+                            rentals
+                        )}, rentalChunk: ${JSON.stringify(
+                            rentalChunk
+                        )} error: ${err.message}`
+                    );
+                    throw err;
+                });
+        }
 
         logger.info(
             `/services/rentals/tntAllAccountUpdate/insertActiveRentals done`
