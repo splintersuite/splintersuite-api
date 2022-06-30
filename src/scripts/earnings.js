@@ -4,7 +4,7 @@ const Users = require('../models/Users');
 const retryFncs = require('../util/axios_retry/general');
 const cardDetails = require('../util/cardDetails.json');
 const rentals = require('../services/rentals');
-const earningsService = require('../services/tntearnings');
+const earningsService = require('../services/earnings');
 
 // we should run this like
 const calculateEarningsForUsers = async () => {
