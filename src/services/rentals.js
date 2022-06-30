@@ -1,10 +1,10 @@
 'use strict';
 const _ = require('lodash');
-const UserRentals = require('../../models/UserRentals');
-const logger = require('../../util/pinologger');
-const splinterlandsService = require('../splinterlands');
-const utilDates = require('../../util/dates');
-const findCardLevel = require('../../util/calculateCardLevel');
+const UserRentals = require('../models/UserRentals');
+const logger = require('../util/pinologger');
+const splinterlandsService = require('./splinterlands');
+const utilDates = require('../util/dates');
+const findCardLevel = require('../util/calculateCardLevel');
 
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     try {
