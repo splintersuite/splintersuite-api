@@ -89,6 +89,24 @@ const getNumDaysAgo = ({ numberOfDaysAgo, date }) => {
         throw err;
     }
 };
+
+const getNumDaysFromNow = ({ numberOfDaysFromNow }) => {
+    try {
+        logger.debug(`/util/dates/getNumDaysFromNow`);
+
+        const nowMs = date.getTime();
+        const msInADay = 1000 * 60 * 60 * 24;
+        const numOfDaysMs = msInADay * numberOfDaysFromNow;
+        const msDaysFromNow = nowMS + parseInt(numOfDaysMs);
+        const daysFromNow = new Date(msDaysFromNow);
+
+        logger.debug(`/util/dates/getNumDaysFromNow done`);
+        return { daysFromNow, msDaysFromNow: parseInt(msDaysFromNow) };
+    } catch (err) {
+        logger.error(`/util/dates/getNumDaysFromNow error: ${err.message}`);
+        throw err;
+    }
+};
 module.exports = {
     firstDayOfWeek,
     getLastWeek,
@@ -96,4 +114,5 @@ module.exports = {
     getYesterdayAndTomorrow,
     getOneDayAgo,
     getNumDaysAgo,
+    getNumDaysFromNow,
 };

@@ -27,7 +27,8 @@ exports.up = function (knex) {
             t.string('price_currency').notNullable();
             t.string('aggregation_type').notNullable();
             t.unique([
-                'created_at',
+                'period_start_time',
+                'period_end_time',
                 'aggregation_type',
                 'card_detail_id',
                 'level',

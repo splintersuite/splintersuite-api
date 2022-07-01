@@ -1,5 +1,5 @@
 const logger = require('../util/pinologger');
-
+const _ = require('lodash');
 const Invoices = require('../models/Invoices');
 
 const Seasons = require('../models/Seasons');
@@ -38,6 +38,35 @@ const create = async ({ users_id, start_date, end_date }) => {
             start_date,
             end_date,
         });
+
+        const seven = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 7 });
+        const three = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 3 });
+
+        const ourcut = earnings * 0.1;
+        const amountDue = _.round(ourcut, 2);
+
+        const invoice = {
+            users_id,
+            discounted_due_at: three.daysFromNow,
+            due_at: seven.daysFromNow,
+            amount_due: parseFloat(amountDue),
+            start_date,
+            end_date,
+        };
+
+        await Invoices.query()
+            .insert(invoice)
+            .catch((err) => {
+                logger.error(
+                    `/services/invoices/create inserting invoice: ${invoice} error: ${err.message}`
+                );
+                throw err;
+            });
+
+        logger.info(
+            `/services/invoices/create done for users_id: ${users_id}, start_date: ${start_date}, end_date: ${end_date}`
+        );
+        return;
     } catch (err) {
         logger.error(`/services/invoices/create error: ${err.message}`);
         throw err;
