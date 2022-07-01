@@ -6,32 +6,44 @@ const create = async ({ seasonData }) => {
         logger.debug(`/services/seasons/create`);
         const { id, ends, name } = seasonData;
 
-        const dbSeason = await Seasons.query().findOne({
-            season_id: id,
-            season_name: name,
-        });
-
-        if (!dbSeason) {
-            const newSeason = await Seasons.query().insert({
+        const dbSeason = await Seasons.query()
+            .findOne({
                 season_id: id,
-                end_date: new Date(ends),
                 season_name: name,
+            })
+            .catch((err) => {
+                logger.error(
+                    `/services/seasons/create findOne season_id: ${id}, season_name: ${name} error: ${err.message}`
+                );
+                throw err;
             });
 
+        if (!dbSeason) {
+            const newSeason = await Seasons.query()
+                .insert({
+                    season_id: id,
+                    end_date: new Date(ends),
+                    season_name: name,
+                })
+                .catch((err) => {
+                    logger.error(
+                        `/services/seasons/create insert new season with season_id: ${id}, season_name: ${name}, end_date: ${new Date(
+                            ends
+                        )} error: ${err.message}`
+                    );
+                    throw err;
+                });
+
+            logger.info(`/services/seasons/create created new season`);
             return newSeason;
         }
+
+        logger.info('/services/seasons/create no new season');
         return null;
     } catch (err) {
-        console.error(`insertSeason error: ${err.message}`);
+        console.error(`/services/seasons/create error: ${err.message}`);
         throw err;
     }
 };
 
-const getLast = async () => {
-    // TNT IDEA; should we add a boolean to season being active/ended? Therefore we could search for most recent season that ended cuz otherwise it would get season in progress
-    logger.debug(`/services/seasons/getLast`);
-    const season = await Seasons.query().orderBy('end_date', 'desc');
-    return season[0];
-};
-
-module.exports = { create, getLast };
+module.exports = { create };
