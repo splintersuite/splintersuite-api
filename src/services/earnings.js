@@ -1,7 +1,6 @@
 'use strict';
 const logger = require('../util/pinologger');
 const UserRentals = require('../models/UserRentals');
-
 const utilDates = require('../util/dates');
 
 const get = async ({ users_id }) => {
@@ -51,10 +50,10 @@ const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
             date: now,
         });
 
-        const activeRentalsforDays = await getActiveRentalsFromDate({
+        const activeRentalsforDays = await getActiveRentalsForRange({
             users_id,
-            date: daysAgo,
-            now,
+            start_date: daysAgo,
+            end_date: now,
         });
 
         const daysEarnings = sumRentals({
@@ -88,19 +87,19 @@ const sumRentals = ({ activeRentals }) => {
     }
 };
 
-const getActiveRentalsFromDate = async ({ users_id, date, now }) => {
+const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
     try {
-        logger.debug(`/services/tntearnings/getActiveRentalsFromDate`);
+        logger.debug(`/services/tntearnings/getActiveRentalsForRange`);
 
         const activeRentals = await UserRentals.query()
             .where({ users_id })
-            .whereBetween('last_rental_payment', [date, now]);
-        logger.info('/services/tntearnings/getActiveRentalsFromDate done');
+            .whereBetween('last_rental_payment', [start_date, end_date]);
+        logger.info('/services/tntearnings/getActiveRentalsForRange done');
 
         return activeRentals;
     } catch (err) {
         logger.error(
-            `/services/tntearnings/getActiveRentalsFromDate error: ${err.message}`
+            `/services/tntearnings/getActiveRentalsForRange error: ${err.message}`
         );
         throw err;
     }
@@ -108,4 +107,5 @@ const getActiveRentalsFromDate = async ({ users_id, date, now }) => {
 
 module.exports = {
     get,
+    getEarningsForDaysAgo,
 };

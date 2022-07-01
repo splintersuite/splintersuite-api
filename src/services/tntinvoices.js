@@ -5,6 +5,8 @@ const Invoices = require('../models/Invoices');
 const Seasons = require('../models/Seasons');
 
 const Users = require('../models/Users');
+const utilDates = require('../util/dates');
+const earnings = require('./earnings');
 
 const get = async ({ users_id }) => {
     try {
@@ -30,7 +32,7 @@ const get = async ({ users_id }) => {
 // ---
 // Create invoices for the previous season
 // ------------------------------------
-const create = async ({ start_date, end_date }) => {
+const create = async ({ users_id, start_date, end_date }) => {
     try {
         logger.debug(`/services/invoices/create`);
     } catch (err) {
