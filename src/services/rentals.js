@@ -279,14 +279,10 @@ const filterIfInDB = ({
                         );
                         rentalsAlreadyInserted.push(rentalToAdd);
                     } else {
-                        logger.error(`rental is: ${JSON.stringify(rental)}`);
-                        logger.error(
-                            ` matchedRental: ${JSON.stringify(matchedRental)}`
+                        logger.debug(
+                            `we have a continuiation of an existing rental contract`
                         );
-                        logger.error(
-                            `matchedRental rental_tx and sell_trx are the same, but the next_rental_payment is different`
-                        );
-                        throw new Error(`this shouldnt happen`);
+                        rentalsToInsert.push(rentalToAdd);
                     }
                 } else {
                     // this happens when there is a uid match but the rental_tx and sell_trx_id are different
