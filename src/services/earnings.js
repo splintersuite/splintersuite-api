@@ -5,7 +5,7 @@ const utilDates = require('../util/dates');
 
 const get = async ({ users_id }) => {
     try {
-        logger.debug('/services/tntearnings/get');
+        logger.debug('/services/earnings/get');
 
         const oneDay = 1;
         const oneWeek = 7;
@@ -36,14 +36,87 @@ const get = async ({ users_id }) => {
 
         return;
     } catch (err) {
-        logger.error(`/services/tntearnings/get error: ${err.message}`);
+        logger.error(`/services/earnings/get error: ${err.message}`);
+        throw err;
+    }
+};
+
+const getTnt = async ({ users_id }) => {
+    try {
+        logger.debug('/services/earnings/get');
+
+        const now = new Date();
+        const one = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 1,
+            date: now,
+        });
+
+        const seven = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 7,
+            date: now,
+        });
+
+        const thirty = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 30,
+            date: now,
+        });
+
+        const dailyEarnings = await tntgetEarningsForRange({
+            users_id,
+            start_date: one.daysAgo,
+            end_date: now,
+        });
+
+        const weeklyEarnings = await tntgetEarningsForRange({
+            users_id,
+            start_date: seven.daysAgo,
+            end_date: now,
+        });
+
+        const monthlyEarnings = await tntgetEarningsForRange({
+            users_id,
+            start_date: thirty.daysAgo,
+            end_date: now,
+        });
+
+        logger.info(
+            `/services/earnings/get for users_id: ${users_id}, dailyEarnings: ${dailyEarnings}, weeklyEarnings: ${weeklyEarnings}, monthlyEarnings: ${monthlyEarnings}`
+        );
+
+        return { dailyEarnings, weeklyEarnings, monthlyEarnings };
+    } catch (err) {
+        logger.error(`/services/earnings/get error: ${err.message}`);
+        throw err;
+    }
+};
+
+const tntgetEarningsForRange = async ({ users_id, start_date, end_date }) => {
+    try {
+        logger.debug('/services/earnings/getEarningsForRange');
+
+        const activeRentals = await getActiveRentalsForRange({
+            users_id,
+            start_date,
+            end_date,
+        });
+
+        const totalEarnings = sumRentals({
+            activeRentals,
+        });
+
+        logger.info(`/services/earnings/getEarningsForRange done`);
+        return totalEarnings;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/getEarningsForRange error: ${err.message}`
+        );
         throw err;
     }
 };
 
 const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
     try {
-        logger.debug('/services/tntearnings/getEarningsForDaysAgo');
+        logger.debug('/services/earnings/getEarningsForDaysAgo');
 
         const { daysAgo } = utilDates.getNumDaysAgo({
             numberOfDaysAgo,
@@ -59,12 +132,12 @@ const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
         const daysEarnings = sumRentals({
             activeRentals: activeRentalsforDays,
         });
-        logger.info(`/services/tntearnings/getEarningsForDaysAgo done`);
+        logger.info(`/services/earnings/getEarningsForDaysAgo done`);
 
         return daysEarnings;
     } catch (err) {
         logger.error(
-            `/services/tntearnings/getEarningsForDaysAgo error: ${err.message}`
+            `/services/earnings/getEarningsForDaysAgo error: ${err.message}`
         );
         throw err;
     }
@@ -72,34 +145,34 @@ const getEarningsForDaysAgo = async ({ numberOfDaysAgo, now, users_id }) => {
 
 const sumRentals = ({ activeRentals }) => {
     try {
-        logger.debug('/services/tntearnings/sumRentals');
+        logger.debug('/services/earnings/sumRentals');
 
         let total = 0;
         activeRentals.forEach((rental) => {
             total = total + rental.price;
         });
-        logger.info(`/services/tntearnings/sumRentals`);
+        logger.info(`/services/earnings/sumRentals`);
 
         return total;
     } catch (err) {
-        logger.error(`/services/tntearnings/sumRentals error: ${err.message}`);
+        logger.error(`/services/earnings/sumRentals error: ${err.message}`);
         throw err;
     }
 };
 
 const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
     try {
-        logger.debug(`/services/tntearnings/getActiveRentalsForRange`);
+        logger.debug(`/services/earnings/getActiveRentalsForRange`);
 
         const activeRentals = await UserRentals.query()
             .where({ users_id })
             .whereBetween('last_rental_payment', [start_date, end_date]);
-        logger.info('/services/tntearnings/getActiveRentalsForRange done');
+        logger.info('/services/earnings/getActiveRentalsForRange done');
 
         return activeRentals;
     } catch (err) {
         logger.error(
-            `/services/tntearnings/getActiveRentalsForRange error: ${err.message}`
+            `/services/earnings/getActiveRentalsForRange error: ${err.message}`
         );
         throw err;
     }
@@ -108,4 +181,5 @@ const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
 module.exports = {
     get,
     getEarningsForDaysAgo,
+    getTnt,
 };
