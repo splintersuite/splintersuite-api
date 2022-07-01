@@ -6,7 +6,6 @@ const cardDetails = require('../util/cardDetails.json');
 const rentals = require('../services/rentals');
 const earningsService = require('../services/earnings');
 
-// we should run this like
 const calculateEarningsForUsers = async () => {
     try {
         logger.debug(`/scripts/earnings/calculateEarningsForUsers`);
@@ -43,12 +42,10 @@ const calculateEarningsForUsers = async () => {
             count++;
         }
 
-        // could split this in functions, w/e
-        // calculate and insert (or patch) earnings
         for (const user of users) {
             await earningsService.get({ users_id: user.id }).catch((err) => {
                 logger.error(
-                    `/services/tntearnings/get with users_id: ${JSON.stringify(
+                    `/scripts/earnings/calculateEarningsForUsers earnings.get with users_id: ${JSON.stringify(
                         user.id
                     )} error: ${err.message}`
                 );
