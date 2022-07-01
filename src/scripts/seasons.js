@@ -6,8 +6,11 @@ const splinterlandsService = require('../services/splinterlands');
 const extractSLSeasonData = (settings) => {
     try {
         logger.debug(`/scripts/seasons/extractSLSeasonData`);
+
         const { season } = settings;
         const { id, name, ends } = season;
+
+        logger.debug('/scripts/seasons/extractSLSeasonData done');
         return { id, name, ends };
     } catch (err) {
         logger.error(`extractSLSeasonData error: ${err.message}`);
@@ -15,11 +18,10 @@ const extractSLSeasonData = (settings) => {
     }
 };
 
-// TNT TODO: use a different scheduler so we hit like an hour after end of season coming up
-
 const getSLSeasonData = async () => {
     try {
         logger.debug(`/scripts/seasons/getSLSeasonData`);
+
         const data = await splinterlandsService.getSettings();
         const seasonData = extractSLSeasonData(data);
         const newSeason = await seasonService.create({
@@ -28,14 +30,29 @@ const getSLSeasonData = async () => {
 
         if (newSeason) {
             // create invoices for LAST season!
-            await invoiceService.create();
-            const userIdsToLock = await invoiceService.lockUsers();
-            await invoiceService.unlockUsers({ userIdsToLock });
+            await createInvoices();
         }
-        logger.info('getSLSeasonData done');
+
+        logger.info('/scripts/seasons/getSLSeasonDatadone');
         process.exit(0);
     } catch (err) {
-        logger.error(`getSLSeasonData error: ${err.message}`);
+        logger.error(`/scripts/seasons/getSLSeasonData error: ${err.message}`);
+        throw err;
+    }
+};
+
+const createInvoices = async () => {
+    try {
+        logger.debug(`/scripts/seasons/createInvoices`);
+
+        await invoiceService.create();
+        const userIdsToLock = await invoiceService.lockUsers();
+        await invoiceService.unlockUsers({ userIdsToLock });
+
+        logger.info(`/scripts/seasons/createInvoices done`);
+        return;
+    } catch (err) {
+        logger.error(`/scripts/seasons/createInvoices error: ${err.message}`);
         throw err;
     }
 };
