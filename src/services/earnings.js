@@ -110,4 +110,5 @@ const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
 
 module.exports = {
     get,
+    getEarningsForRange,
 };

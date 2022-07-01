@@ -105,14 +105,14 @@ exports.up = function (knex) {
         .createTable('invoices', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.uuid('users_id').references('users.id').notNullable();
-            t.uuid('season_id').references('seasons.id').notNullable();
             t.dateTime('discounted_due_at').notNullable();
             t.timestamps(true, true);
             t.dateTime('due_at').notNullable();
             t.dateTime('paid_at').nullable();
+            t.dateTime('start_date').notNullable();
+            t.dateTime('end_date').notNullable();
             t.float('amount_due').notNullable();
             t.string('tx_id').nullable();
-            t.string('season_name').nullable();
         })
         .then(() => knex.raw(knexfile.onUpdateTrigger('market_rental_prices')))
         .then(() => knex.raw(knexfile.onUpdateTrigger('users')))

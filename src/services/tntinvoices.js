@@ -29,12 +29,15 @@ const get = async ({ users_id }) => {
     }
 };
 
-// ---
-// Create invoices for the previous season
-// ------------------------------------
 const create = async ({ users_id, start_date, end_date }) => {
     try {
         logger.debug(`/services/invoices/create`);
+
+        const earnings = await earnings.getEarningsForRange({
+            users_id,
+            start_date,
+            end_date,
+        });
     } catch (err) {
         logger.error(`/services/invoices/create error: ${err.message}`);
         throw err;

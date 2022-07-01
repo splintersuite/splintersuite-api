@@ -1,5 +1,4 @@
 const Model = require('../../db/model');
-const Invoices = require('./Invoices');
 
 class Seasons extends Model {
     static get tableName() {
@@ -16,19 +15,6 @@ class Seasons extends Model {
                 end_date: { type: 'object', format: 'date-time' },
                 season_name: { type: 'string' },
                 season_id: { type: 'integer' },
-            },
-        };
-    }
-
-    static get relationMappings() {
-        return {
-            seasons_invoices: {
-                relation: Model.HasManyRelation,
-                modelClass: Invoices,
-                join: {
-                    from: 'seasons.id',
-                    to: 'invoices.seasons_id',
-                },
             },
         };
     }
