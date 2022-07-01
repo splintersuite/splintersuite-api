@@ -43,8 +43,7 @@ const calculateEarningsForUsers = async () => {
         }
 
         for (const user of users) {
-            // await earningsService.get({ users_id: user.id }).catch((err) => {
-            await earningsService.getTnt({ users_id: user.id }).catch((err) => {
+            await earningsService.get({ users_id: user.id }).catch((err) => {
                 logger.error(
                     `/scripts/earnings/calculateEarningsForUsers earnings.get with users_id: ${JSON.stringify(
                         user.id
