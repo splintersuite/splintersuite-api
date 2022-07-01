@@ -21,19 +21,19 @@ const get = async ({ users_id }) => {
             date: now,
         });
 
-        const dailyEarnings = await tntgetEarningsForRange({
+        const dailyEarnings = await getEarningsForRange({
             users_id,
             start_date: one.daysAgo,
             end_date: now,
         });
 
-        const weeklyEarnings = await tntgetEarningsForRange({
+        const weeklyEarnings = await getEarningsForRange({
             users_id,
             start_date: seven.daysAgo,
             end_date: now,
         });
 
-        const monthlyEarnings = await tntgetEarningsForRange({
+        const monthlyEarnings = await getEarningsForRange({
             users_id,
             start_date: thirty.daysAgo,
             end_date: now,
@@ -49,7 +49,7 @@ const get = async ({ users_id }) => {
     }
 };
 
-const tntgetEarningsForRange = async ({ users_id, start_date, end_date }) => {
+const getEarningsForRange = async ({ users_id, start_date, end_date }) => {
     try {
         logger.debug('/services/earnings/getEarningsForRange');
 
