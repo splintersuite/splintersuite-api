@@ -94,6 +94,11 @@ status: 1,
 reset_block_num: null,
 end: "2022-07-04T10:00:00.000Z"
 
+season": {
+"id": 90,
+"name": "Ranked Rewards Season 3",
+"ends": "2022-07-13T14:00:00.000Z",
+
 Production Scripts:
 
 ```

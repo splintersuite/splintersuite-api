@@ -8,7 +8,7 @@ const Users = require('../models/Users');
 const utilDates = require('../util/dates');
 const earnings = require('./earnings');
 
-const get = async ({ users_id }) => {
+const getForUser = async ({ users_id }) => {
     try {
         logger.debug(`/services/invoices/get`);
         // TNT Question: should we have this only gives us unpaid invoices?
@@ -71,4 +71,64 @@ const create = async ({ users_id, start_date, end_date }) => {
         logger.error(`/services/invoices/create error: ${err.message}`);
         throw err;
     }
+};
+
+const lockUsers = async () => {
+    try {
+        logger.debug(`/services/invoices/lockUsers`);
+        const nowTime = new Date().getTime();
+
+        const invoices = await Invoices.query().where({
+            paid_at: null,
+        });
+        const usersIdsToLock = [];
+
+        invoices.forEach((invoice) => {
+            if (nowTime > invoice.due_at.getTime()) {
+                usersIdsToLock.push(invoice.users_id);
+            }
+        });
+
+        let chunks = usersIdsToLock;
+
+        if (usersIdsToLock.length > 1000) {
+            chunks = _.chunk(usersIdsToLock, 1000);
+        }
+        if (chunks.length === usersIdsToLock.length) {
+            chunks = [chunks];
+        }
+
+        for (const idChunk of chunks) {
+            await Users.query().whereIn('id', idChunk).patch({ locked: true });
+        }
+
+        logger.info(`/services/invoices/lockUsers done`);
+        return usersIdsToLock;
+    } catch (err) {
+        logger.error(`/services/invoices/lockUsers error: ${err.message}`);
+        throw err;
+    }
+};
+
+const unlockUser = async ({ users_id }) => {
+    try {
+        logger.debug(`/services/invoices/unlockUser`);
+
+        await Users.query().where('id', users_id).patch({ locked: false });
+
+        logger.info(
+            `/services/invoices/unlockUser for users_id: ${users_id} done`
+        );
+        return;
+    } catch (err) {
+        logger.error(`/services/invoices/unlockUsers error: ${err.message}`);
+        throw err;
+    }
+};
+
+module.exports = {
+    getForUser,
+    unlockUser,
+    lockUsers,
+    create,
 };
