@@ -2,6 +2,7 @@
 
 const logger = require('../../util/pinologger');
 const seasonService = require('../../services/seasons');
+const tntSeason = require('../../services/tntseasons');
 
 const enterOldSeason = async ({ seasonData }) => {
     try {
@@ -29,7 +30,15 @@ const enterAllOldSeasons = async () => {
             ends: '2022-06-15T14:00:00.000Z',
         };
 
+        const season1Data = {
+            id: 89,
+            name: 'Ranked Rewards Season 2',
+            ends: '2022-06-30T14:00:00.000Z',
+        };
+
         await enterOldSeason({ seasonData: sesasonData });
+        await tntSeason.create({ seasonData: season1Data });
+
         logger.info('enterAllOldSeasons done');
         process.exit(0);
     } catch (err) {

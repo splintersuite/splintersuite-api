@@ -41,10 +41,9 @@ const create = async ({ seasonData }) => {
 
             logger.info(`/services/seasons/create created new season`);
             return newSeason;
+        } else {
+            throw new Error('missing season data');
         }
-
-        logger.info('/services/seasons/create no new season');
-        return null;
     } catch (err) {
         console.error(`/services/seasons/create error: ${err.message}`);
         throw err;
@@ -58,8 +57,10 @@ const getLastEnteredSeason = async ({ new_season_id }) => {
         const oldSeason = await Seasons.query().findOne({
             season_id: oldId,
         });
-
-        if (!oldSeason) {
+        logger.debug(
+            `oldSeason: ${JSON.stringify(oldSeason)}, oldId: ${oldId}`
+        );
+        if (oldSeason) {
             const nowTime = new Date().getTime();
             if (oldSeason.end_date.getTime() < nowTime) {
                 logger.debug(
