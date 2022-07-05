@@ -21,10 +21,31 @@ const get = async ({ users_id }) => {
             date: now,
         });
 
+        const two = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 2,
+            date: now,
+        });
+
+        const fourteen = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 14,
+            date: now,
+        });
+
+        const sixty = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 60,
+            date: now,
+        });
+
         const dailyEarnings = await getEarningsForRange({
             users_id,
             start_date: one.daysAgo,
             end_date: now,
+        });
+
+        const priorDailyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: two.daysAgo,
+            end_date: one.daysAgo,
         });
 
         const weeklyEarnings = await getEarningsForRange({
@@ -33,16 +54,43 @@ const get = async ({ users_id }) => {
             end_date: now,
         });
 
+        const priorWeeklyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: fourteen.daysAgo,
+            end_date: seven.daysAgo,
+        });
+
         const monthlyEarnings = await getEarningsForRange({
             users_id,
             start_date: thirty.daysAgo,
             end_date: now,
         });
 
+        const priorMonthlyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: sixty.daysAgo,
+            end_date: thirty.daysAgo,
+        });
+
         logger.info(
-            `/services/earnings/get for users_id: ${users_id}, dailyEarnings: ${dailyEarnings}, weeklyEarnings: ${weeklyEarnings}, monthlyEarnings: ${monthlyEarnings}`
+            `/services/earnings/get for users_id: ${users_id}, dailyEarnings: ${dailyEarnings}, priorDailyEarnings: ${priorDailyEarnings}, weeklyEarnings: ${weeklyEarnings}, priorWeeklyEarnings: ${priorWeeklyEarnings} monthlyEarnings: ${monthlyEarnings}, priorMonthlyEarnings: ${priorMonthlyEarnings}`
         );
-        return { dailyEarnings, weeklyEarnings, monthlyEarnings };
+        const daily = {
+            amount: dailyEarnings,
+            change: dailyEarnings / priorDailyEarnings - 1,
+        };
+        const wtd = {
+            amount: weeklyEarnings,
+            change: weeklyEarnings / priorWeeklyEarnings - 1,
+        };
+
+        const mtd = {
+            amount: monthlyEarnings,
+            change: monthlyEarnings / priorMonthlyEarnings - 1,
+        };
+
+        const total = { daily, wtd, mtd };
+        return { total };
     } catch (err) {
         logger.error(`/services/earnings/get error: ${err.message}`);
         throw err;
