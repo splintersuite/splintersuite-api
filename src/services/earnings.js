@@ -120,22 +120,19 @@ const get = async ({ users_id }) => {
             end_date: startOfToday,
         });
 
+        const weekly = pastWeekDailyEarnings.map(
+            ({ earnings_dec, earnings_date }) => ({
+                earnings: earnings_dec,
+                date: earnings_date,
+            })
+        );
         logger.info(
             `pastWeekDailyEarnings : ${JSON.stringify(
                 pastWeekDailyEarnings
-            )}, length: ${pastWeekDailyEarnings.length}`
+            )}, length: ${pastWeekDailyEarnings.length},
+            weekly: ${JSON.stringify(weekly)}`
         );
-
-        const uniqueDailyEarnings = _.uniq(pastWeekDailyEarnings);
-
-        logger.info(
-            `uniqueDailyEarnings : ${JSON.stringify(
-                uniqueDailyEarnings
-            )}, length: ${uniqueDailyEarnings.length}`
-        );
-        const uniqueObj = arrayToObj({ arr: pastWeekDailyEarnings });
-        logger.info(`uniqueObj: ${JSON.stringify(uniqueObj)}`);
-        const total = { daily, wtd, mtd };
+        const total = { daily, wtd, mtd, weekly };
         return { total };
     } catch (err) {
         logger.error(`/services/earnings/get error: ${err.message}`);
