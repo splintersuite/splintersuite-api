@@ -4,6 +4,7 @@ const UserRentals = require('../models/UserRentals');
 const utilDates = require('../util/dates');
 const DailyEarnings = require('../models/DailyEarnings');
 const { DateTime, Interval } = require('luxon');
+const _ = require('lodash');
 
 const get = async ({ users_id }) => {
     try {
@@ -194,30 +195,81 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
 
         let count = 0;
         let earnings_date = startOfDay;
+        const alreadyEnteredDailyEarnings = await getDailyEarningsForUser({
+            users_id,
+        });
 
+        const dailyEarningsDates = formatDbDailyEarnings({
+            dailyEarnings: alreadyEnteredDailyEarnings,
+        });
         while (count < intervalDays) {
-            await insertDayEarnings({ users_id, earnings_date });
+            const { year, month, day } = earnings_date;
+            const key = `${year},${month},${day}`;
+            const dbEntry = dailyEarningsDates[key];
+            logger.info(
+                `dbEntry is: ${JSON.stringify(
+                    dbEntry
+                )}, dailyEarningsDates: ${JSON.stringify(dailyEarningsDates)}`
+            );
+            if (!dbEntry) {
+                await insertDayEarnings({ users_id, earnings_date });
+            }
             earnings_date = earnings_date.plus({ days: 1 });
-
             count = count + 1;
         }
-        logger.info(
-            `startOfDay : ${JSON.stringify(startOfDay)}, now: ${JSON.stringify(
-                now
-            )}, startOfToday: ${JSON.stringify(
-                startOfToday
-            )}, yesterday: ${JSON.stringify(
-                yesterday
-            )}, intervalDays: ${intervalDays}`
-        );
 
-        //throw new Error('checking startOfDay');
         logger.info(`/services/earnings/insertAllDailyEarnings done`);
         return;
     } catch (err) {
         logger.error(
             `/services/earnings/insertAllDailyEarnings error: ${err.message}`
         );
+        throw err;
+    }
+};
+
+const formatDbDailyEarnings = ({ dailyEarnings }) => {
+    try {
+        logger.debug(`/services/earnings/formatDbDailyEarnings`);
+
+        const earningsDates = dailyEarnings.map((earnings) => {
+            return DateTime.fromJSDate(earnings.earnings_date); // needed to keep this in DateTime structure rather than just a date structure
+        });
+
+        const uniqueDates = _.uniq(earningsDates);
+
+        const uniqueObj = arrayToObj({ arr: uniqueDates });
+        logger.info(`/services/earnings/formatDbDailyEarnings done`);
+        logger.info(
+            `uniqueDates: ${JSON.stringify(
+                uniqueDates
+            )}, uniqueObj: ${JSON.stringify(uniqueObj)}`
+        );
+        return uniqueObj;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/formatDbDailyEarnings error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const arrayToObj = ({ arr }) => {
+    try {
+        logger.debug(`/services/earnings/arrayToObj`);
+
+        const obj = {};
+        arr.forEach((earnings_date) => {
+            const { year, month, day } = earnings_date;
+            logger.info(`earnings_date: ${JSON.stringify(earnings_date)}`);
+            const key = `${year},${month},${day}`;
+            obj[key] = earnings_date;
+        });
+
+        logger.debug(`/services/earnings/arrayToObj done`);
+        return obj;
+    } catch (err) {
+        logger.error(`/services/earnings/arrayToObj error: ${err.message}`);
         throw err;
     }
 };
@@ -271,9 +323,14 @@ const getDailyEarningsForDateRange = async ({ users_id, earningsDate }) => {
 const getDailyEarningsForUser = async ({ users_id }) => {
     try {
         logger.debug(`/services/earnings/getDailyEarningsForUser`);
+
         const earnings = await DailyEarnings.query().where({
             users_id,
         });
+
+        // when none returned, will be an empty array
+        logger.debug(`/services/earnings/getDailyEarningsForUser done`);
+        return earnings;
     } catch (err) {
         logger.error(
             `/services/earnings/getDailyEarningsForUser error: ${err.message}`
