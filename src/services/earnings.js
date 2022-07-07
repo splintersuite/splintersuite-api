@@ -110,6 +110,31 @@ const get = async ({ users_id }) => {
                 1,
         };
 
+        const rightNow = DateTime.utc();
+        const startOfToday = utilDates.getStartOfDay({ date: rightNow });
+        const pastSevenDays = startOfToday.minus({ days: 7 });
+
+        const pastWeekDailyEarnings = await getDailyEarningsForDateRange({
+            users_id,
+            start_date: pastSevenDays,
+            end_date: startOfToday,
+        });
+
+        logger.info(
+            `pastWeekDailyEarnings : ${JSON.stringify(
+                pastWeekDailyEarnings
+            )}, length: ${pastWeekDailyEarnings.length}`
+        );
+
+        const uniqueDailyEarnings = _.uniq(pastWeekDailyEarnings);
+
+        logger.info(
+            `uniqueDailyEarnings : ${JSON.stringify(
+                uniqueDailyEarnings
+            )}, length: ${uniqueDailyEarnings.length}`
+        );
+        const uniqueObj = arrayToObj({ arr: pastWeekDailyEarnings });
+        logger.info(`uniqueObj: ${JSON.stringify(uniqueObj)}`);
         const total = { daily, wtd, mtd };
         return { total };
     } catch (err) {
@@ -309,20 +334,25 @@ const insertDayEarnings = async ({ users_id, earnings_date }) => {
     }
 };
 
-const getDailyEarningsForDateRange = async ({ users_id, earningsDate }) => {
+const getDailyEarningsForDateRange = async ({
+    users_id,
+    start_date,
+    end_date,
+}) => {
     try {
-        logger.debug(`/services/earnings/getDailyEarningsForDate`);
+        logger.debug(`/services/earnings/getDailyEarningsForDateRange`);
 
-        const [earnings] = await DailyEarnings.query().where({
-            users_id,
-            earnings_date: earningsDate,
-        });
+        const earnings = await DailyEarnings.query()
+            .where({
+                users_id,
+            })
+            .whereBetween('earnings_date', [start_date, end_date]);
 
-        logger.debug(`/services/earnings/getDailyEarningsForDate done`);
+        logger.debug(`/services/earnings/getDailyEarningsForDateRange done`);
         return earnings;
     } catch (err) {
         logger.error(
-            `/services/earnings/getDailyEarningsForDate error: ${err.message}`
+            `/services/earnings/getDailyEarningsForDateRange error: ${err.message}`
         );
         throw err;
     }
@@ -350,4 +380,5 @@ module.exports = {
     get,
     getEarningsForRange,
     insertAllDailyEarnings,
+    getDailyEarningsForDateRange,
 };

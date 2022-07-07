@@ -140,6 +140,7 @@ const getStartOfDay = ({ date }) => {
         throw err;
     }
 };
+
 module.exports = {
     firstDayOfWeek,
     getLastWeek,
