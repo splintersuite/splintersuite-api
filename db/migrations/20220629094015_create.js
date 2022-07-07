@@ -52,7 +52,7 @@ exports.up = function (knex) {
             t.float('bot_earnings_dec').notNullable();
             t.integer('num_rentals').notNullable();
             t.integer('bot_num_rentals').notNullable();
-            t.unique(['earnings_date, users_id']); // TNT TODO: integrate this!
+            t.unique(['earnings_date', 'users_id']); // TNT TODO: integrate this!
         })
         .createTable('user_rentals', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
