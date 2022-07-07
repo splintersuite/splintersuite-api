@@ -42,7 +42,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         });
 
         logger.debug(
-            `rentalsALreadyInserted: ${JSON.stringify(rentalsAlreadyInserted)}`
+            `rentalsAlreadyInserted: ${JSON.stringify(rentalsAlreadyInserted)}`
         );
         logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
 

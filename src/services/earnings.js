@@ -154,7 +154,7 @@ const getEarningsForRange = async ({ users_id, start_date, end_date }) => {
             activeRentals,
         });
 
-        logger.info(`/services/earnings/getEarningsForRange done`);
+        logger.debug(`/services/earnings/getEarningsForRange done`);
         return { totalEarnings, numOfRentals };
     } catch (err) {
         logger.error(
@@ -173,7 +173,7 @@ const sumRentals = ({ activeRentals }) => {
             total = total + rental.price;
         });
 
-        logger.info(`/services/earnings/sumRentals`);
+        // logger.debug(`/services/earnings/sumRentals`);
         return total;
     } catch (err) {
         logger.error(`/services/earnings/sumRentals error: ${err.message}`);
@@ -189,7 +189,7 @@ const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
             .where({ users_id })
             .whereBetween('last_rental_payment', [start_date, end_date]);
 
-        logger.info('/services/earnings/getActiveRentalsForRange done');
+        logger.debug('/services/earnings/getActiveRentalsForRange done');
         return activeRentals;
     } catch (err) {
         logger.error(
@@ -205,12 +205,12 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
 
         const createdAt = DateTime.fromJSDate(created_at);
         const startOfDay = utilDates.getStartOfDay({ date: createdAt });
-        logger.info(`startOfDay is: ${JSON.stringify(startOfDay)}`);
+
         const now = DateTime.utc();
         const startOfToday = utilDates.getStartOfDay({ date: now });
-        logger.info(`startOfToday is: ${JSON.stringify(startOfToday)}`);
+
         const yesterday = startOfToday.minus({ days: 1 });
-        logger.info(`yesterday is: ${JSON.stringify(yesterday)}`);
+
         const interval = Interval.fromDateTimes(startOfDay, yesterday);
 
         const intervalDays = interval.length('days');
@@ -229,13 +229,7 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
             const { year, month, day } = earnings_date;
             const key = `${year},${month},${day}`;
             const dbEntry = dailyEarningsDates[key];
-            logger.info(
-                `dbEntry is: ${JSON.stringify(
-                    dbEntry
-                )}, dailyEarningsDates: ${JSON.stringify(dailyEarningsDates)},
-                earnings_date: ${JSON.stringify(earnings_date)},
-                year: ${year}, month: ${month}, day: ${day}`
-            );
+
             if (!dbEntry) {
                 await insertDayEarnings({ users_id, earnings_date });
             }
@@ -269,12 +263,8 @@ const formatDbDailyEarnings = ({ dailyEarnings }) => {
         const uniqueDates = _.uniq(earningsDates);
 
         const uniqueObj = arrayToObj({ arr: uniqueDates });
+
         logger.info(`/services/earnings/formatDbDailyEarnings done`);
-        logger.info(
-            `uniqueDates: ${JSON.stringify(
-                uniqueDates
-            )}, uniqueObj: ${JSON.stringify(uniqueObj)}`
-        );
         return uniqueObj;
     } catch (err) {
         logger.error(
@@ -291,7 +281,6 @@ const arrayToObj = ({ arr }) => {
         const obj = {};
         arr.forEach((earnings_date) => {
             const { year, month, day } = earnings_date;
-            logger.info(`earnings_date: ${JSON.stringify(earnings_date)}`);
             const key = `${year},${month},${day}`;
             obj[key] = earnings_date;
         });
@@ -323,7 +312,7 @@ const insertDayEarnings = async ({ users_id, earnings_date }) => {
             bot_num_rentals: dailyEarnings.numOfRentals,
         });
 
-        logger.info(`/services/earnings/insertDailyEarnings done`);
+        logger.debug(`/services/earnings/insertDailyEarnings done`);
         return dailyEarnings;
     } catch (err) {
         logger.error(`/services/earnings/ error: ${err.message}`);
