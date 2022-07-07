@@ -183,11 +183,12 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
 
         const createdAt = DateTime.fromJSDate(created_at);
         const startOfDay = utilDates.getStartOfDay({ date: createdAt });
-
+        logger.info(`startOfDay is: ${JSON.stringify(startOfDay)}`);
         const now = DateTime.utc();
         const startOfToday = utilDates.getStartOfDay({ date: now });
+        logger.info(`startOfToday is: ${JSON.stringify(startOfToday)}`);
         const yesterday = startOfToday.minus({ days: 1 });
-
+        logger.info(`yesterday is: ${JSON.stringify(yesterday)}`);
         const interval = Interval.fromDateTimes(startOfDay, yesterday);
 
         const intervalDays = interval.length('days');
@@ -209,7 +210,9 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
             logger.info(
                 `dbEntry is: ${JSON.stringify(
                     dbEntry
-                )}, dailyEarningsDates: ${JSON.stringify(dailyEarningsDates)}`
+                )}, dailyEarningsDates: ${JSON.stringify(dailyEarningsDates)},
+                earnings_date: ${JSON.stringify(earnings_date)},
+                year: ${year}, month: ${month}, day: ${day}`
             );
             if (!dbEntry) {
                 await insertDayEarnings({ users_id, earnings_date });
@@ -233,9 +236,14 @@ const formatDbDailyEarnings = ({ dailyEarnings }) => {
         logger.debug(`/services/earnings/formatDbDailyEarnings`);
 
         const earningsDates = dailyEarnings.map((earnings) => {
-            return DateTime.fromJSDate(earnings.earnings_date); // needed to keep this in DateTime structure rather than just a date structure
+            const date = DateTime.fromJSDate(earnings.earnings_date);
+            return date.toUTC(); // needed to keep this in DateTime structure rather than just a date structure
         });
-
+        logger.info(
+            `/services/earnings/formatDbDailyEarnings earningsDates: ${JSON.stringify(
+                earningsDates
+            )}, dailyEarnings: ${JSON.stringify(dailyEarnings)}`
+        );
         const uniqueDates = _.uniq(earningsDates);
 
         const uniqueObj = arrayToObj({ arr: uniqueDates });
