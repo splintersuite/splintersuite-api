@@ -1,281 +1,370 @@
-const _ = require('lodash');
+'use strict';
 const logger = require('../util/pinologger');
-const DailyEarnings = require('../models/DailyEarnings');
 const UserRentals = require('../models/UserRentals');
-const { SPLINTERSUITE_BOT } = require('./rentals/types');
-const { firstDayOfWeek, getLastWeek } = require('../util/dates');
-const { orderBy } = require('lodash');
+const utilDates = require('../util/dates');
+const DailyEarnings = require('../models/DailyEarnings');
+const { DateTime, Interval } = require('luxon');
+const _ = require('lodash');
 
-// ---
-// Calculate aggregated earnings
-// --------------------
 const get = async ({ users_id }) => {
-    logger.debug('/services/earnings/get');
-    const now = new Date();
-    const firstOfTheWeek = firstDayOfWeek(now, 0);
-    const firstOfTheMonth = new Date(
-        `${now.getFullYear()}-${now.getMonth() + 1}-01`
-    );
-
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    let todaysEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [yesterday, now])
-        .orderBy('created_at', 'desc');
-    const wtdEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [firstOfTheWeek, now]);
-    const mtdEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [firstOfTheMonth, now]);
-    // get rid of yesterday if it's there
-    if (Array.isArray(todaysEarnings) && todaysEarnings.length > 1) {
-        todaysEarnings = [todaysEarnings[0]];
-    }
-
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-
-    const firstOfLastWeek = firstDayOfWeek(getLastWeek(), 0);
-    const sameDayLastWeek = new Date(firstOfLastWeek);
-    sameDayLastWeek.setDate(sameDayLastWeek.getDate() + now.getDay());
-
-    const firstOfLastMonth = new Date();
-    firstOfLastMonth.setDate(1);
-    firstOfLastMonth.setMonth(firstOfLastMonth.getMonth() - 1);
-    firstOfLastMonth.setHours(0, 0, 0, 0);
-    const sameDayLastMonth = new Date(firstOfLastMonth);
-    sameDayLastMonth.setDate(sameDayLastMonth.getDate() + now.getDate());
-
-    const lastYdayEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [twoDaysAgo, yesterday]);
-    const lastWtdEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [firstOfLastWeek, sameDayLastWeek]);
-    const lastMtdEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [firstOfLastMonth, sameDayLastMonth]);
-
-    const weeklyEarnings = await DailyEarnings.query()
-        .where({ users_id })
-        .whereBetween('earnings_date', [sameDayLastMonth, now]);
-
-    const totalEarned = await DailyEarnings.query().where({ users_id });
-
-    return {
-        bot: {
-            daily: {
-                amount: _.sum(
-                    todaysEarnings.map(
-                        ({ bot_earnings_dec }) => bot_earnings_dec
-                    )
-                ),
-                // dec_today / dec_yday - 1
-                change:
-                    _.sum(
-                        todaysEarnings.map(
-                            ({ bot_earnings_dec }) => bot_earnings_dec
-                        )
-                    ) /
-                        _.sum(
-                            lastYdayEarnings.map(
-                                ({ bot_earnings_dec }) => bot_earnings_dec
-                            )
-                        ) -
-                    1,
-            },
-            wtd: {
-                amount: _.sum(
-                    wtdEarnings.map(({ bot_earnings_dec }) => bot_earnings_dec)
-                ),
-                // dec_today / dec_yday - 1
-                change:
-                    _.sum(
-                        wtdEarnings.map(
-                            ({ bot_earnings_dec }) => bot_earnings_dec
-                        )
-                    ) /
-                        _.sum(
-                            lastWtdEarnings.map(
-                                ({ bot_earnings_dec }) => bot_earnings_dec
-                            )
-                        ) -
-                    1,
-            },
-            mtd: {
-                amount: _.sum(
-                    mtdEarnings.map(({ bot_earnings_dec }) => bot_earnings_dec)
-                ),
-                // dec_today / dec_yday - 1
-                change:
-                    _.sum(
-                        mtdEarnings.map(
-                            ({ bot_earnings_dec }) => bot_earnings_dec
-                        )
-                    ) /
-                        _.sum(
-                            lastMtdEarnings.map(
-                                ({ bot_earnings_dec }) => bot_earnings_dec
-                            )
-                        ) -
-                    1,
-            },
-            weekly: weeklyEarnings.map(
-                ({ bot_earnings_dec, earnings_date }) => ({
-                    earnings: bot_earnings_dec,
-                    date: earnings_date,
-                })
-            ),
-            totalEarned: totalEarned.map(
-                ({ bot_earnings_dec }) => bot_earnings_dec
-            ),
-        },
-        total: {
-            daily: {
-                amount: _.sum(
-                    todaysEarnings.map(({ earnings_dec }) => earnings_dec)
-                ),
-                // dec_today / dec_yday - 1
-                change:
-                    _.sum(
-                        todaysEarnings.map(({ earnings_dec }) => earnings_dec)
-                    ) /
-                        _.sum(
-                            lastYdayEarnings.map(
-                                ({ earnings_dec }) => earnings_dec
-                            )
-                        ) -
-                    1,
-            },
-            wtd: {
-                amount: _.sum(
-                    wtdEarnings.map(({ earnings_dec }) => earnings_dec)
-                ),
-                // dec_today / dec_yday - 1
-                change:
-                    _.sum(wtdEarnings.map(({ earnings_dec }) => earnings_dec)) /
-                        _.sum(
-                            lastWtdEarnings.map(
-                                ({ earnings_dec }) => earnings_dec
-                            )
-                        ) -
-                    1,
-            },
-            mtd: {
-                amount: _.sum(
-                    mtdEarnings.map(({ earnings_dec }) => earnings_dec)
-                ),
-                // dec_today / dec_yday - 1
-                change:
-                    _.sum(mtdEarnings.map(({ earnings_dec }) => earnings_dec)) /
-                        _.sum(
-                            lastMtdEarnings.map(
-                                ({ earnings_dec }) => earnings_dec
-                            )
-                        ) -
-                    1,
-            },
-            weekly: weeklyEarnings.map(({ earnings_dec, earnings_date }) => ({
-                earnings: earnings_dec,
-                date: earnings_date,
-            })),
-            totalEarned: totalEarned.map(({ earnings_dec }) => earnings_dec),
-        },
-    };
-};
-
-const calcDailyEarnings = async ({ users_id }) => {
     try {
-        logger.debug(`/services/earnings/calcDailyEarnings`);
-        // const rentals = await UserRentals.query().where({
-        //     users_id,
-        //     is_rental_active: true,
-        // });
+        logger.debug('/services/earnings/get');
 
-        const rentals = await UserRentals.query()
-            .where('user_rentals.users_id', users_id)
-            .where('user_rentals.is_rental_active', true)
-            .join(
-                'user_rental_listings',
-                'user_rentals.user_rental_listing_id',
-                'user_rental_listings.id'
-            )
-            .select('user_rentals.*', 'user_rental_listings.source');
-
-        const botRentals = rentals.filter(
-            ({ source }) => source === SPLINTERSUITE_BOT
-        );
-        logger.info('calcDailyEarnings done');
-        return {
-            bot_num_rentals: botRentals.length,
-            bot_earnings_dec: _.sum(botRentals.map(({ price }) => price)),
-            num_rentals: rentals.length,
-            earnings_dec: _.sum(rentals.map(({ price }) => price)),
-        };
-    } catch (err) {
-        logger.error(`calcDailyEarnings error: ${err.message}`);
-        throw err;
-    }
-};
-
-// NEEDS TO BE RUN ON A DAILY BASIS
-const insertDailyEarnings = async ({ users_id, earnings_date }) => {
-    try {
-        logger.debug(`/services/earnings/insertDailyEarnings`);
-        const earningsData = await calcDailyEarnings({ users_id });
-
-        const earningsDate = new Date(earnings_date);
-        const [record] = await DailyEarnings.query().where({
-            users_id,
-            earnings_date: earningsDate,
+        const now = new Date();
+        const one = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 1,
+            date: now,
+        });
+        const seven = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 7,
+            date: now,
+        });
+        const thirty = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 30,
+            date: now,
         });
 
-        if (!record) {
-            await DailyEarnings.query().insert({
-                users_id,
-                earnings_date: earningsDate,
-                earnings_dec: earningsData.earnings_dec,
-                num_rentals: earningsData.num_rentals,
-                bot_earnings_dec: earningsData.bot_earnings_dec,
-                bot_num_rentals: earningsData.bot_num_rentals,
-            });
-        } else {
-            await DailyEarnings.query().where({ id: record.id }).patch({
-                earnings_dec: earningsData.earnings_dec,
-                num_rentals: earningsData.num_rentals,
-                bot_earnings_dec: earningsData.bot_earnings_dec,
-                bot_num_rentals: earningsData.bot_num_rentals,
-            });
-        }
+        const two = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 2,
+            date: now,
+        });
 
-        logger.info('insertDailyEarnings done');
-        return;
+        const fourteen = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 14,
+            date: now,
+        });
+
+        const sixty = utilDates.getNumDaysAgo({
+            numberOfDaysAgo: 60,
+            date: now,
+        });
+
+        const dailyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: one.daysAgo,
+            end_date: now,
+        });
+
+        const priorDailyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: two.daysAgo,
+            end_date: one.daysAgo,
+        });
+
+        const weeklyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: seven.daysAgo,
+            end_date: now,
+        });
+
+        const priorWeeklyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: fourteen.daysAgo,
+            end_date: seven.daysAgo,
+        });
+
+        const monthlyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: thirty.daysAgo,
+            end_date: now,
+        });
+
+        const priorMonthlyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: sixty.daysAgo,
+            end_date: thirty.daysAgo,
+        });
+
+        logger.info(
+            `/services/earnings/get for users_id: ${users_id}, dailyEarnings: ${JSON.stringify(
+                dailyEarnings
+            )}, priorDailyEarnings: ${JSON.stringify(
+                priorDailyEarnings
+            )}, weeklyEarnings: ${JSON.stringify(
+                weeklyEarnings
+            )}, priorWeeklyEarnings: ${JSON.stringify(
+                priorWeeklyEarnings
+            )} monthlyEarnings: ${JSON.stringify(
+                monthlyEarnings
+            )}, priorMonthlyEarnings: ${JSON.stringify(priorMonthlyEarnings)}`
+        );
+        const daily = {
+            amount: dailyEarnings.totalEarnings,
+            change:
+                dailyEarnings.totalEarnings / priorDailyEarnings.totalEarnings -
+                1,
+        };
+        const wtd = {
+            amount: weeklyEarnings.totalEarnings,
+            change:
+                weeklyEarnings.totalEarnings /
+                    priorWeeklyEarnings.totalEarnings -
+                1,
+        };
+
+        const mtd = {
+            amount: monthlyEarnings.totalEarnings,
+            change:
+                monthlyEarnings.totalEarnings /
+                    priorMonthlyEarnings.totalEarnings -
+                1,
+        };
+
+        const rightNow = DateTime.utc();
+        const startOfToday = utilDates.getStartOfDay({ date: rightNow });
+        const pastSevenDays = startOfToday.minus({ days: 7 });
+
+        const pastWeekDailyEarnings = await getDailyEarningsForDateRange({
+            users_id,
+            start_date: pastSevenDays,
+            end_date: startOfToday,
+        });
+
+        const weekly = pastWeekDailyEarnings.map(
+            ({ earnings_dec, earnings_date }) => ({
+                earnings: earnings_dec,
+                date: earnings_date,
+            })
+        );
+        logger.info(
+            `pastWeekDailyEarnings : ${JSON.stringify(
+                pastWeekDailyEarnings
+            )}, length: ${pastWeekDailyEarnings.length},
+            weekly: ${JSON.stringify(weekly)}`
+        );
+        const total = { daily, wtd, mtd, weekly };
+        return { total };
     } catch (err) {
-        logger.error(`insertDailyEarnings error: ${err.message}`);
+        logger.error(`/services/earnings/get error: ${err.message}`);
         throw err;
     }
 };
 
-module.exports = { get, calcDailyEarnings, insertDailyEarnings };
+const getEarningsForRange = async ({ users_id, start_date, end_date }) => {
+    try {
+        logger.debug('/services/earnings/getEarningsForRange');
 
-// user.stats = {
-//     daily: {
-//         amount: 324,
-//         change: -0.0345,
-//     },
-//     weekly: {
-//         amount: 3124,
-//         change: 0.1045,
-//     },
-//     monthly: {
-//         amount: 30124,
-//         change: 0.1245,
-//     },
-// };
+        const activeRentals = await getActiveRentalsForRange({
+            users_id,
+            start_date,
+            end_date,
+        });
+        const numOfRentals = activeRentals.length;
+        const totalEarnings = sumRentals({
+            activeRentals,
+        });
 
-// weekly: [10, 31, 22, 35, 10, 2, 45];
+        logger.debug(`/services/earnings/getEarningsForRange done`);
+        return { totalEarnings, numOfRentals };
+    } catch (err) {
+        logger.error(
+            `/services/earnings/getEarningsForRange error: ${err.message}`
+        );
+        throw err;
+    }
+};
 
-// totalEarned: 6969;
+const sumRentals = ({ activeRentals }) => {
+    try {
+        logger.debug('/services/earnings/sumRentals');
+
+        let total = 0;
+        activeRentals.forEach((rental) => {
+            total = total + rental.price;
+        });
+
+        // logger.debug(`/services/earnings/sumRentals`);
+        return total;
+    } catch (err) {
+        logger.error(`/services/earnings/sumRentals error: ${err.message}`);
+        throw err;
+    }
+};
+
+const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
+    try {
+        logger.debug(`/services/earnings/getActiveRentalsForRange`);
+
+        const activeRentals = await UserRentals.query()
+            .where({ users_id })
+            .whereBetween('last_rental_payment', [start_date, end_date]);
+
+        logger.debug('/services/earnings/getActiveRentalsForRange done');
+        return activeRentals;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/getActiveRentalsForRange error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const insertAllDailyEarnings = async ({ users_id, created_at }) => {
+    try {
+        logger.debug(`/services/earnings/insertAllDailyEarnings`);
+
+        const createdAt = DateTime.fromJSDate(created_at);
+        const startOfDay = utilDates.getStartOfDay({ date: createdAt });
+
+        const now = DateTime.utc();
+        const startOfToday = utilDates.getStartOfDay({ date: now });
+
+        const yesterday = startOfToday.minus({ days: 1 });
+
+        const interval = Interval.fromDateTimes(startOfDay, yesterday);
+
+        const intervalDays = interval.length('days');
+        // go through the days, starting wiht startOfDay through yesterday, and insert into dailyEarnings table a row for each
+
+        let count = 0;
+        let earnings_date = startOfDay;
+        const alreadyEnteredDailyEarnings = await getDailyEarningsForUser({
+            users_id,
+        });
+
+        const dailyEarningsDates = formatDbDailyEarnings({
+            dailyEarnings: alreadyEnteredDailyEarnings,
+        });
+        while (count < intervalDays) {
+            const { year, month, day } = earnings_date;
+            const key = `${year},${month},${day}`;
+            const dbEntry = dailyEarningsDates[key];
+
+            if (!dbEntry) {
+                await insertDayEarnings({ users_id, earnings_date });
+            }
+            earnings_date = earnings_date.plus({ days: 1 });
+            count = count + 1;
+        }
+
+        logger.info(`/services/earnings/insertAllDailyEarnings done`);
+        return;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/insertAllDailyEarnings error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const formatDbDailyEarnings = ({ dailyEarnings }) => {
+    try {
+        logger.debug(`/services/earnings/formatDbDailyEarnings`);
+
+        const earningsDates = dailyEarnings.map((earnings) => {
+            const date = DateTime.fromJSDate(earnings.earnings_date);
+            return date.toUTC(); // needed to keep this in DateTime structure rather than just a date structure
+        });
+        logger.info(
+            `/services/earnings/formatDbDailyEarnings earningsDates: ${JSON.stringify(
+                earningsDates
+            )}, dailyEarnings: ${JSON.stringify(dailyEarnings)}`
+        );
+        const uniqueDates = _.uniq(earningsDates);
+
+        const uniqueObj = arrayToObj({ arr: uniqueDates });
+
+        logger.info(`/services/earnings/formatDbDailyEarnings done`);
+        return uniqueObj;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/formatDbDailyEarnings error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const arrayToObj = ({ arr }) => {
+    try {
+        logger.debug(`/services/earnings/arrayToObj`);
+
+        const obj = {};
+        arr.forEach((earnings_date) => {
+            const { year, month, day } = earnings_date;
+            const key = `${year},${month},${day}`;
+            obj[key] = earnings_date;
+        });
+
+        logger.debug(`/services/earnings/arrayToObj done`);
+        return obj;
+    } catch (err) {
+        logger.error(`/services/earnings/arrayToObj error: ${err.message}`);
+        throw err;
+    }
+};
+
+const insertDayEarnings = async ({ users_id, earnings_date }) => {
+    try {
+        logger.debug(`/services/earnings/insertDailyEarnings`);
+
+        const dailyEarnings = await getEarningsForRange({
+            users_id,
+            start_date: earnings_date, // this will get the data for the entire 24 hour period in the day
+            end_date: earnings_date.plus({ days: 1 }),
+        });
+
+        await DailyEarnings.query().insert({
+            users_id,
+            earnings_date,
+            earnings_dec: dailyEarnings.totalEarnings,
+            num_rentals: dailyEarnings.numOfRentals,
+            bot_earnings_dec: dailyEarnings.totalEarnings,
+            bot_num_rentals: dailyEarnings.numOfRentals,
+        });
+
+        logger.debug(`/services/earnings/insertDailyEarnings done`);
+        return dailyEarnings;
+    } catch (err) {
+        logger.error(`/services/earnings/ error: ${err.message}`);
+        throw err;
+    }
+};
+
+const getDailyEarningsForDateRange = async ({
+    users_id,
+    start_date,
+    end_date,
+}) => {
+    try {
+        logger.debug(`/services/earnings/getDailyEarningsForDateRange`);
+
+        const earnings = await DailyEarnings.query()
+            .where({
+                users_id,
+            })
+            .whereBetween('earnings_date', [start_date, end_date]);
+
+        logger.debug(`/services/earnings/getDailyEarningsForDateRange done`);
+        return earnings;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/getDailyEarningsForDateRange error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const getDailyEarningsForUser = async ({ users_id }) => {
+    try {
+        logger.debug(`/services/earnings/getDailyEarningsForUser`);
+
+        const earnings = await DailyEarnings.query().where({
+            users_id,
+        });
+
+        // when none returned, will be an empty array
+        logger.debug(`/services/earnings/getDailyEarningsForUser done`);
+        return earnings;
+    } catch (err) {
+        logger.error(
+            `/services/earnings/getDailyEarningsForUser error: ${err.message}`
+        );
+        throw err;
+    }
+};
+module.exports = {
+    get,
+    getEarningsForRange,
+    insertAllDailyEarnings,
+    getDailyEarningsForDateRange,
+};

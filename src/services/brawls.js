@@ -1,7 +1,7 @@
+'use strict';
 const logger = require('../util/pinologger');
 const Brawls = require('../models/Brawls');
 
-// const insertBrawl = async ({ brawlData }) => {
 const create = async ({ brawlData }) => {
     try {
         logger.debug(`/services/brawls/create`);
@@ -15,14 +15,14 @@ const create = async ({ brawlData }) => {
             end_date,
             name,
         });
+        logger.info(`/services/brawls/create done`);
         return;
     } catch (err) {
-        logger.error(`insertBrawl error: ${err.message}`);
+        logger.error(`/services/brawls/create error: ${err.message}`);
         throw err;
     }
 };
 
-// const getBrawl = async ({ brawlData }) => {
 const get = async ({ brawlData }) => {
     try {
         logger.debug(`/services/brawls/get`);
@@ -34,10 +34,17 @@ const get = async ({ brawlData }) => {
             .where({
                 start_date,
             })
-            .orWhere({ end_date });
+            .orWhere({ end_date })
+            .catch((err) => {
+                logger.error(
+                    `/services/brawls/get table query error: ${err.message}`
+                );
+                throw err;
+            });
+        logger.info(`/services/brawls/get done`);
         return brawl;
     } catch (err) {
-        logger.error(`getBrawl error: ${err.message}`);
+        logger.error(`/services/brawls/get error: ${err.message}`);
         throw err;
     }
 };

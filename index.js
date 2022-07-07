@@ -13,7 +13,6 @@ const checkSignature = require('./src/middlewares/checkSignature');
 const users = require('./src/routes/users');
 const invoices = require('./src/routes/invoices');
 const market = require('./src/routes/market');
-const rentalListings = require('./src/routes/rentalListings');
 
 const app = express();
 const PORT = 6900;
@@ -26,7 +25,6 @@ app.use(pino({ logger })); // this makes it so the http logger uses same setting
 
 app.use('/api/users', users);
 app.use('/api/invoices', invoices);
-app.use('/api/rentallistings', rentalListings);
 app.use('/api/market', market);
 
 app.use(util.logErrors);

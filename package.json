@@ -6,7 +6,10 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node index.js",
-        "dev": "LEVEL=debug nodemon --experimental-specifier-resolution=node index.js --ignore tests"
+        "dev": "LEVEL=debug nodemon --experimental-specifier-resolution=node index.js --ignore tests",
+        "earnings": "node  --trace-warnings ./src/scripts/earnings.js",
+        "brawls": "node --trace-warnings ./src/scripts/brawls.js",
+        "oldSeasons": "node ./src/scripts/tests/oldSeason.js"
     },
     "author": "",
     "license": "ISC",
@@ -23,6 +26,7 @@
         "helmet": "^5.1.0",
         "knex": "^2.1.0",
         "lodash": "^4.17.21",
+        "luxon": "^2.4.0",
         "morgan": "^1.10.0",
         "nodemon": "^2.0.16",
         "objection": "^3.0.1",

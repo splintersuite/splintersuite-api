@@ -1,16 +1,15 @@
+'use strict';
 const logger = require('../util/pinologger');
 const Users = require('../models/Users');
 const retryFncs = require('../util/axios_retry/general');
 const cardDetails = require('../util/cardDetails.json');
-const rentalFncs = require('../services/rentals/allAccountUpdate');
+const rentals = require('../services/rentals');
 const earningsService = require('../services/earnings');
 
-// we should run this like
 const calculateEarningsForUsers = async () => {
     try {
         logger.debug(`/scripts/earnings/calculateEarningsForUsers`);
-        // runs at 0:00 EST and 12:00 PM EST
-        const todaysDate = new Date(new Date().toISOString().split('T')[0]);
+
         const cardDetailsObj = {};
         cardDetails.forEach((card) => {
             cardDetailsObj[card.id] = card;
@@ -21,11 +20,21 @@ const calculateEarningsForUsers = async () => {
         const fiveMinutesInMS = 1000 * 60 * 5;
         for (const user of users) {
             // 100 users in a batch, then wait 5 minutes
-            await rentalFncs.updateRentalsInDb({
-                username: user.username,
-                users_id: user.id,
-                cardDetailsObj,
-            });
+            await rentals
+                .updateRentalsInDb({
+                    username: user.username,
+                    users_id: user.id,
+                    cardDetailsObj,
+                })
+                .catch((err) => {
+                    logger.error(
+                        `/scripts/earnings/calculateEarningsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
+                            user.id
+                        )} error: ${err.message}`
+                    );
+                    throw err;
+                });
+
             if (count !== 0 && count % 100 === 0) {
                 await retryFncs.sleep(fiveMinutesInMS);
             }
@@ -33,18 +42,18 @@ const calculateEarningsForUsers = async () => {
             count++;
         }
 
-        // could split this in functions, w/e
-        // calculate and insert (or patch) earnings
         for (const user of users) {
-            await earningsService.insertDailyEarnings({
+            await earningsService.insertAllDailyEarnings({
                 users_id: user.id,
-                earnings_date: todaysDate,
+                created_at: user.created_at,
             });
         }
-        logger.info('calculateEarningsForUsers done');
+        logger.info('/scripts/earnings/calculateEarningsForUsers done');
         process.exit(0);
     } catch (err) {
-        logger.error(`calculateEarningsForUsers error: ${err.message}`);
+        logger.error(
+            `/scripts/earnings/calculateEarningsForUsers error: ${err.message}`
+        );
         throw err;
     }
 };

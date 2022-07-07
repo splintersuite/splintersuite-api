@@ -1,5 +1,4 @@
 const Model = require('../../db/model');
-const UserRentalListings = require('./UserRentalListings');
 const DailyEarnings = require('./DailyEarnings');
 const Invoices = require('./Invoices');
 const UserRentals = require('./UserRentals');
@@ -24,14 +23,6 @@ class Users extends Model {
     // https://dev.to/aspittel/objection--knex--painless-postgresql-in-your-node-app--6n6
     static get relationMappings() {
         return {
-            user_rentals: {
-                relation: Model.HasManyRelation,
-                modelClass: UserRentalListings,
-                join: {
-                    from: 'users.id',
-                    to: 'user_rental_listings.users_id',
-                },
-            },
             user_daily_earnings: {
                 relation: Model.HasManyRelation,
                 modelClass: DailyEarnings,

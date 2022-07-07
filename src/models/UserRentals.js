@@ -1,6 +1,5 @@
 const Model = require('../../db/model');
 const Users = require('./Users');
-const UserRentalListings = require('./UserRentalListings');
 
 class UserRentals extends Model {
     static get tableName() {
@@ -12,26 +11,37 @@ class UserRentals extends Model {
             type: 'object',
             required: [
                 'users_id',
-                'user_rental_listing_id',
                 'rented_at',
+                'next_rental_payment',
+                'last_rental_payment',
+                'edition',
+                'card_detail_id',
+                'level',
+                'xp',
+                'price',
+                'is_gold',
+                'card_uid',
                 'player_rented_to',
                 'rental_tx',
                 'sell_trx_id',
-                'price',
             ],
             properties: {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
-                user_rental_listing_id: { type: 'string' },
-                created_at: { type: 'object', format: 'date-time' },
-                updated_at: { type: 'object', format: 'date-time' },
                 rented_at: { type: 'object', format: 'date-time' },
-                cancelled_at: { type: ['object', 'null'], format: 'date-time' },
+                next_rental_payment: { type: 'object', format: 'date-time' },
+                last_rental_payment: { type: 'object', format: 'date-time' },
+                edition: { type: 'number' },
+                card_detail_id: { type: 'number' },
+                level: { type: 'number' },
+                xp: { type: 'number' },
+                price: { type: 'number' },
+                is_gold: { type: 'boolean' },
+                confirmed: { type: 'boolean' },
+                card_uid: { type: 'string' },
                 player_rented_to: { type: 'string' },
-                is_rental_active: { type: 'boolean' },
                 rental_tx: { type: 'string' },
                 sell_trx_id: { type: 'string' },
-                price: { type: 'number' },
             },
         };
     }
@@ -44,14 +54,6 @@ class UserRentals extends Model {
                 join: {
                     from: 'user_rentals.users_id',
                     to: 'users.id',
-                },
-            },
-            user_user_rental_listings: {
-                relation: Model.BelongsToOneRelation,
-                modelClass: UserRentalListings,
-                join: {
-                    from: 'user_rentals.user_rental_listing_id',
-                    to: 'user_rental_listings.id',
                 },
             },
         };

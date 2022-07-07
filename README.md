@@ -77,8 +77,27 @@ DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2
 // end: '2022-06-18T07:00:00.000Z'
 // }
 
+
+{
+id: 89,
+name: "Ranked Rewards Season 2",
+ends: "2022-06-30T14:00:00.000Z",
+
 "id: 90, name: Brawl Cycle 90, start: 2022-06-18T07:00:00.000Z, end: 2022-06-23T08:00:00.000Z"}
 ```
+
+brawl_cycle: {
+id: 92,
+name: "Brawl Cycle 92",
+start: "2022-06-28T09:00:00.000Z",
+status: 1,
+reset_block_num: null,
+end: "2022-07-04T10:00:00.000Z"
+
+season": {
+"id": 90,
+"name": "Ranked Rewards Season 3",
+"ends": "2022-07-13T14:00:00.000Z",
 
 Production Scripts:
 
@@ -110,3 +129,60 @@ DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2
 30 */12 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/market.js >> /home/ubuntu/Market.log 2>&1
 
 ```
+
+# API Notes:
+
+collection = https://api2.splinterlands.com/cards/collection/xdww
+collection.market_created_date is when the listing is made.
+activeRentals.rental_date is different than this date, and is when the listing is actually rented.
+
+# Extracting data from old db for earnings:
+
+select ur._, url._ from user_rentals ur join user_rental_listings url on ur.user_rental_listing_id=url.id where ur.users_id='fd12e394-22ae-4062-9207-9da94958fb8e' ;
+(users_id is for xdww users account)
+
+pg_dump command:
+
+# https://www.digitalocean.com/community/questions/how-to-download-database-backup
+
+PGPASSWORD=DBPassword pg_dump -h splintersuite-do-user-2517044-0.b.db.ondigitalocean.com -U doadmin -p 25060 -Fc splintersuite-production > dbdump.pgsql
+
+pg_restore -d 'use_your_connnectionURI' --jobs 4 use_your_dump_file
+
+removing old postgresql downloads:
+
+https://askubuntu.com/questions/32730/how-to-remove-postgres-from-my-installation#:~:text=One%20command%20to%20completely%20remove,postgresql%20and%20all%20it's%20compenents.
+
+first run:
+
+dpkg -l | grep postgres
+
+this run sudo apt-get --purge remove postgresql postgresql-additional-Packages
+
+-   these additional packages come from the output of the above dpkg -l | grep postgres command
+
+sudo deluser postgres
+
+-   deletes the postgres user
+
+then to download postgres 14:
+
+https://www.postgresql.org/download/linux/ubuntu/
+
+# Create the file repository configuration:
+
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+
+# Import the repository signing key:
+
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+# Update the package lists:
+
+sudo apt-get update
+
+# Install the latest version of PostgreSQL.
+
+# If you want a specific version, use 'postgresql-12' or similar instead of 'postgresql':
+
+sudo apt-get -y install postgresql-14
