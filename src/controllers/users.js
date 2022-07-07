@@ -9,9 +9,6 @@ const get = async (req, res, next) => {
         user = await userService.create({ username });
     }
     const earningsObj = await earnings.get({ users_id: user.id });
-    // const earningsObj = await userService.getEarnings({
-    //     users_id: user.id,
-    // });
     user.stats = earningsObj;
 
     res.send(user);

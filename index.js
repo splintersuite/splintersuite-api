@@ -18,7 +18,7 @@ const app = express();
 const PORT = 6900;
 
 app.use(helmet());
-//app.use(checkSignature);
+app.use(checkSignature);
 app.use(bodyParser.json());
 app.use('*', cors());
 app.use(pino({ logger })); // this makes it so the http logger uses same settings as our app logger
