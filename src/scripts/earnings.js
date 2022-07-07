@@ -43,14 +43,18 @@ const calculateEarningsForUsers = async () => {
         }
 
         for (const user of users) {
-            await earningsService.get({ users_id: user.id }).catch((err) => {
-                logger.error(
-                    `/scripts/earnings/calculateEarningsForUsers earnings.get with users_id: ${JSON.stringify(
-                        user.id
-                    )} error: ${err.message}`
-                );
-                throw err;
+            await earningsService.insertAllDailyEarnings({
+                users_id: user.id,
+                created_at: user.created_at,
             });
+            // await earningsService.get({ users_id: user.id }).catch((err) => {
+            //     logger.error(
+            //         `/scripts/earnings/calculateEarningsForUsers earnings.get with users_id: ${JSON.stringify(
+            //             user.id
+            //         )} error: ${err.message}`
+            //     );
+            //     throw err;
+            // });
         }
         logger.info('/scripts/earnings/calculateEarningsForUsers done');
         process.exit(0);

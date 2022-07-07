@@ -1,4 +1,7 @@
 const logger = require('./pinologger');
+
+const { DateTime } = require('luxon');
+
 const firstDayOfWeek = (dateObject, firstDayOfWeekIndex) => {
     const dayOfWeek = dateObject.getDay(),
         firstDayOfWeek = new Date(dateObject),
@@ -94,7 +97,7 @@ const getNumDaysFromNow = ({ numberOfDaysFromNow }) => {
     try {
         logger.debug(`/util/dates/getNumDaysFromNow`);
 
-        const nowMs = date.getTime();
+        const nowMs = new Date.getTime();
         const msInADay = 1000 * 60 * 60 * 24;
         const numOfDaysMs = msInADay * numberOfDaysFromNow;
         const msDaysFromNow = nowMS + parseInt(numOfDaysMs);
