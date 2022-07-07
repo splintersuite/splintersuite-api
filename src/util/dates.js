@@ -110,6 +110,36 @@ const getNumDaysFromNow = ({ numberOfDaysFromNow }) => {
         throw err;
     }
 };
+
+const getStartOfDay = ({ date }) => {
+    try {
+        logger.debug(`/util/dates/getStartOfDay`);
+
+        // utc(year: number?, month: number, day: number, hour: number, minute: number, second: number, millisecond: number,
+        const startOfDay = DateTime.utc(
+            date.year,
+            date.month,
+            date.day,
+            0,
+            0,
+            0,
+            0
+        );
+
+        //         dt = DateTime.now();
+        // dt.year     //=> 2017
+        // dt.month    //=> 9
+        // dt.day      //=> 14
+        // dt.second   //=> 47
+        // dt.weekday  //=> 4
+
+        logger.debug(`/util/dates/getStartOfDay done`);
+        return startOfDay;
+    } catch (err) {
+        logger.error(`/util/dates/getStartOfDay error: ${err.message}`);
+        throw err;
+    }
+};
 module.exports = {
     firstDayOfWeek,
     getLastWeek,
@@ -118,4 +148,5 @@ module.exports = {
     getOneDayAgo,
     getNumDaysAgo,
     getNumDaysFromNow,
+    getStartOfDay,
 };

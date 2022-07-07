@@ -3,7 +3,7 @@ const logger = require('../util/pinologger');
 const UserRentals = require('../models/UserRentals');
 const utilDates = require('../util/dates');
 const DailyEarnings = require('../models/DailyEarnings');
-const { DateTime } = require('luxon');
+const { DateTime, Interval } = require('luxon');
 
 const get = async ({ users_id }) => {
     try {
@@ -181,41 +181,39 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
         logger.debug(`/services/earnings/insertAllDailyEarnings`);
 
         const createdAt = DateTime.fromJSDate(created_at);
-        // utc(year: number?, month: number, day: number, hour: number, minute: number, second: number, millisecond: number,
-        const startOfDay = DateTime.utc(
-            createdAt.year,
-            createdAt.month,
-            createdAt.day,
-            0,
-            0,
-            0,
-            0
-        );
-        const now = DateTime.utc();
+        const startOfDay = utilDates.getStartOfDay({ date: createdAt });
 
-        const startOfToday = DateTime.utc(
-            now.year,
-            now.month,
-            now.day,
-            0,
-            0,
-            0,
-            0
-        );
+        const now = DateTime.utc();
+        const startOfToday = utilDates.getStartOfDay({ date: now });
+        const yesterday = startOfToday.minus({ days: 1 });
+
+        const interval = Interval.fromDateTimes(startOfDay, yesterday);
+
+        const intervalDays = interval.length('days');
+        // go through the days, starting wiht startOfDay through yesterday, and insert into dailyEarnings table a row for each
+
+        let count = 0;
+        let earnings_date = startOfDay;
+
+        while (count < intervalDays) {
+            await insertDayEarnings({ users_id, earnings_date });
+            earnings_date = earnings_date.plus({ days: 1 });
+
+            count = count + 1;
+        }
         logger.info(
             `startOfDay : ${JSON.stringify(startOfDay)}, now: ${JSON.stringify(
                 now
-            )}, startOfToday: ${JSON.stringify(startOfToday)}`
+            )}, startOfToday: ${JSON.stringify(
+                startOfToday
+            )}, yesterday: ${JSON.stringify(
+                yesterday
+            )}, intervalDays: ${intervalDays}`
         );
 
-        throw new Error('checking startOfDay');
-
-        //         dt = DateTime.now();
-        // dt.year     //=> 2017
-        // dt.month    //=> 9
-        // dt.day      //=> 14
-        // dt.second   //=> 47
-        // dt.weekday  //=> 4
+        //throw new Error('checking startOfDay');
+        logger.info(`/services/earnings/insertAllDailyEarnings done`);
+        return;
     } catch (err) {
         logger.error(
             `/services/earnings/insertAllDailyEarnings error: ${err.message}`
@@ -228,25 +226,21 @@ const insertDayEarnings = async ({ users_id, earnings_date }) => {
     try {
         logger.debug(`/services/earnings/insertDailyEarnings`);
 
-        const one = utilDates.getNumDaysAgo({
-            numberOfDaysAgo: 1,
-            date: earnings_date,
-        });
-        // return { totalEarnings, numOfRentals };
         const dailyEarnings = await getEarningsForRange({
             users_id,
-            start_date: one.daysAgo,
-            end_date: earnings_date,
+            start_date: earnings_date, // this will get the data for the entire 24 hour period in the day
+            end_date: earnings_date.plus({ days: 1 }),
         });
 
-        await insertDailyEarnings({
+        await DailyEarnings.query().insert({
             users_id,
-            earnings_date: one.daysAgo,
+            earnings_date,
             earnings_dec: dailyEarnings.totalEarnings,
             num_rentals: dailyEarnings.numOfRentals,
             bot_earnings_dec: dailyEarnings.totalEarnings,
             bot_num_rentals: dailyEarnings.numOfRentals,
         });
+
         logger.info(`/services/earnings/insertDailyEarnings done`);
         return dailyEarnings;
     } catch (err) {
@@ -255,24 +249,34 @@ const insertDayEarnings = async ({ users_id, earnings_date }) => {
     }
 };
 
-const insertDailyEarnings = async ({ users_id, earningsDate }) => {
+const getDailyEarningsForDateRange = async ({ users_id, earningsDate }) => {
     try {
-        logger.debug(`/services/earnings/insertDailyEarnings`);
+        logger.debug(`/services/earnings/getDailyEarningsForDate`);
 
-        await DailyEarnings.query().insert({
+        const [earnings] = await DailyEarnings.query().where({
             users_id,
             earnings_date: earningsDate,
-            earnings_dec,
-            num_rentals,
-            but_earnings_dec,
-            bot_num_rentals,
         });
 
-        logger.debug(`/services/earnings/insertDailyEarnings done`);
-        return;
+        logger.debug(`/services/earnings/getDailyEarningsForDate done`);
+        return earnings;
     } catch (err) {
         logger.error(
-            `/services/earnings/insertDailyEarnings error: ${err.message}`
+            `/services/earnings/getDailyEarningsForDate error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const getDailyEarningsForUser = async ({ users_id }) => {
+    try {
+        logger.debug(`/services/earnings/getDailyEarningsForUser`);
+        const earnings = await DailyEarnings.query().where({
+            users_id,
+        });
+    } catch (err) {
+        logger.error(
+            `/services/earnings/getDailyEarningsForUser error: ${err.message}`
         );
         throw err;
     }
