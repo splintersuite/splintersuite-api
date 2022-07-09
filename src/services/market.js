@@ -7,6 +7,7 @@ const { dateRange } = require('../util/dates');
 const axiosInstance = require('../util/axiosInstance');
 const findCardLevel = require('../util/calculateCardLevel');
 const mathFncs = require('../util/math');
+const { getCachedCurrentPrices, cacheCurrentPrices } = require('./cacher');
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
@@ -104,15 +105,17 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
 };
 
 const getCurrentPrices = async () => {
-    // CACHE TODO
-    // CACHE THIS OBJECT...
+    const currentPrices = await getCachedCurrentPrices();
+    if (currentPrices !== null) {
+        return currentPrices;
+    }
 
-    const twentyFiveHoursAgo = new Date(
-        new Date().getTime() - 1000 * 60 * 60 * 25 * 14
+    const twentySixHoursAgo = new Date(
+        new Date().getTime() - 1000 * 60 * 60 * 26
     );
 
     const prices = await MarketRentalPrices.query()
-        .whereBetween('period_start_time', [twentyFiveHoursAgo, new Date()])
+        .whereBetween('period_start_time', [twentySixHoursAgo, new Date()])
         .orderBy('period_start_time', 'desc');
 
     const pricesObj = {};
@@ -133,6 +136,7 @@ const getCurrentPrices = async () => {
         }
     });
 
+    await cacheCurrentPrices({ currentPrices: pricesObj });
     return pricesObj;
 };
 
