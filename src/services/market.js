@@ -108,7 +108,7 @@ const getCurrentPrices = async () => {
     // CACHE THIS OBJECT...
 
     const twentyFiveHoursAgo = new Date(
-        new Date().getTime() - 1000 * 60 * 60 * 25
+        new Date().getTime() - 1000 * 60 * 60 * 25 * 14
     );
 
     const prices = await MarketRentalPrices.query()
@@ -128,6 +128,7 @@ const getCurrentPrices = async () => {
                 high: price.high,
                 stdDev: price.std_dev,
                 median: price.median,
+                volume: price.volume,
             };
         }
     });
@@ -318,6 +319,7 @@ const collectData = async ({
                 paymentCurrency: trade.payment_currency,
                 rentalDate: trade.rental_date,
                 rentalDays: trade.rental_days,
+                xp: trade.xp,
             });
         });
 
@@ -357,6 +359,7 @@ const collectData = async ({
                     volume: Number.isFinite(allArr.length)
                         ? allArr.length
                         : NaN,
+                    xp: 0,
                     avg: Number.isFinite(meanAll) ? meanAll : NaN,
                     low: Number.isFinite(lowAll) ? lowAll : NaN,
                     high: Number.isFinite(highAll) ? highAll : NaN,
@@ -376,6 +379,7 @@ const collectData = async ({
                     volume: Number.isFinite(twelveHoursArr.length)
                         ? twelveHoursArr.length
                         : NaN,
+                    xp: 0,
                     avg: Number.isFinite(meanTwelve) ? meanTwelve : NaN,
                     low: Number.isFinite(lowTwelve) ? lowTwelve : NaN,
                     high: Number.isFinite(highTwelve) ? highTwelve : NaN,
