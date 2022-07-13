@@ -7,7 +7,7 @@ const cacheCurrentPrices = async ({ currentPrices }) => {
     logger.debug('cacheCurrentPrices');
     await client.set(
         CURRENT_PRICES,
-        JSON.stringify({ timeCached: new Date(), currentPrices })
+        JSON.stringify({ timeCached: new Date().getTime(), currentPrices })
     );
     // expire in 12 hours
     await client.expire(CURRENT_PRICES, 60 * 60 * 12);
@@ -21,11 +21,7 @@ const getCachedCurrentPrices = async () => {
     const twelveHoursAgo = new Date(
         new Date().getTime() - 1000 * 60 * 60 * 12
     ).getTime();
-    if (
-        data?.timeCached &&
-        new Date(data.timeCached).getTime() > twelveHoursAgo &&
-        data?.currentPrices
-    ) {
+    if (data?.timeCached > twelveHoursAgo && data?.currentPrices) {
         return data.currentPrices;
     }
     return null;
