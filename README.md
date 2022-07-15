@@ -186,3 +186,7 @@ sudo apt-get update
 # If you want a specific version, use 'postgresql-12' or similar instead of 'postgresql':
 
 sudo apt-get -y install postgresql-14
+
+# STARTING;
+
+pm2 start ecosystem.config.js --env production
