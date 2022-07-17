@@ -104,36 +104,26 @@ Production Scripts:
 ```
 
 
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production
-
 ONE TIME SETUP CALL:
 
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=debug /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/tests/oldSeason.js
+DB_CONNECTION=dbCredentaislForProd NODE_ENV=production PINO_LOG_LEVEL=debug /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/tests/oldSeason.js
 
 # Cron Scripts
 
 -- brawl script:
-
-30 6 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=info DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/brawls.js >> /home/ubuntu/Brawl.log 2>&1
-
--- new brawl script:
 
 30 6 * * * /home/ubuntu/splintersuite-api/cron/brawls.sh >> /home/ubuntu/cronLogs/Brawl.log 2>&1
 
 
 -- earnings script:
 
-0 */4 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/earnings.js >> /home/ubuntu/Earnings.log 2>&1
+0 */4 * * * /home/ubuntu/splintersuite-api/cron/earnings.sh >> /home/ubuntu/cronLogs/Earnings.log 2>&1
 
 -- newSeason script:
 
-0 7 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/seasons.js >> /home/ubuntu/Seasons.log 2>&1
+0 7 * * * /home/ubuntu/splintersuite-api/cron/seasons.sh >> /home/ubuntu/cronLogs/seasons.log 2>&1
 
--- ON 2ND DEDICATED SERVER, Market Data Script:
 
-30 */12 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/market.js >> /home/ubuntu/Market.log 2>&1
-
-```
 
 # API Notes:
 
@@ -195,3 +185,4 @@ sudo apt-get -y install postgresql-14
 # STARTING;
 
 pm2 start ecosystem.config.js --env production
+```
