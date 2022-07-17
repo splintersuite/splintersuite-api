@@ -2,7 +2,7 @@
 
 
 LOG_FILE="/home/ubuntu/cronLogs"
-NOW=$(date + %m-%d-%Y)
+NOW=$(date +%m-%d-%Y)
 S3_PATH="s3://terraform-splintersuite-api-logs-staging/cronLogs/$NOW"
 
 export AWS_PROFILE=splintersuite-api-staging
