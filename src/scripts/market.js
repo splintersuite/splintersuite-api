@@ -16,19 +16,17 @@ const getHistoricalData = async () => {
         const fiveMinutesInMS = 1000 * 60 * 5;
         let count = 0;
         for (const card of cardsDetails) {
-            if (card.id > 369) {
-                await marketService.collectData({
-                    card,
-                    now,
-                    twelveHoursAgo,
-                    twelveHoursAgoTime,
-                });
-                if (count !== 0 && count % 100 === 0) {
-                    logger.debug('sleeping 5 mins');
-                    await retryFncs.sleep(fiveMinutesInMS);
-                }
-                count++;
+            await marketService.collectData({
+                card,
+                now,
+                twelveHoursAgo,
+                twelveHoursAgoTime,
+            });
+            if (count !== 0 && count % 100 === 0) {
+                logger.debug('sleeping 5 mins');
+                await retryFncs.sleep(fiveMinutesInMS);
             }
+            count++;
         }
         logger.debug('getHistoricalData done');
         process.exit(0);
