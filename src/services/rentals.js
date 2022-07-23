@@ -87,7 +87,7 @@ const insertActiveRentals = async ({ rentals }) => {
         }
         for (const rentalChunk of chunks) {
             await UserRentals.query()
-                .insert(rentals)
+                .insert(rentalChunk)
                 .catch((err) => {
                     logger.error(
                         `/services/rentals/allAccountUpdate/insertActiveRentals UserRentals table insert fail on rentals: ${JSON.stringify(
