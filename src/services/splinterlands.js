@@ -119,11 +119,9 @@ const getSettings = async () => {
 };
 
 module.exports = {
-    getCardDetail,
     getCollection,
     getCollectionListings,
     getActiveRentals,
     getSettings,
     updateCardDetail,
-    getCardDetail,
 };
