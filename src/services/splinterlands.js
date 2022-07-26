@@ -1,5 +1,7 @@
 const logger = require('../util/pinologger');
 const axiosInstance = require('../util/axiosInstance');
+const path = require('path');
+const jsonfile = require('jsonfile');
 
 const getCardDetail = async () => {
     logger.debug(`/services/splinterlands/getCardDetail`);
@@ -7,6 +9,24 @@ const getCardDetail = async () => {
         'https://api2.splinterlands.com/cards/get_details'
     );
     return cards.data;
+};
+
+const updateCardDetail = async () => {
+    try {
+        logger.debug(`/services/splinterlands/updateCardDetail`);
+
+        const filePath = path.join(__dirname, '..', 'util', 'cardDetails.json');
+        const details = await getCardDetail();
+        jsonfile.writeFileSync(filePath, details);
+
+        logger.info(`/services/splinterlands/updateCardDetail done`);
+        return;
+    } catch (err) {
+        logger.error(
+            `/services/splinterlands/updateCardDetail error: ${err.message}`
+        );
+        throw err;
+    }
 };
 
 // could add cache functionality here to limit api calls
@@ -104,4 +124,6 @@ module.exports = {
     getCollectionListings,
     getActiveRentals,
     getSettings,
+    updateCardDetail,
+    getCardDetail,
 };

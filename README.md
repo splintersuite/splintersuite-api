@@ -10,6 +10,12 @@ npm start
 
 `https://cloud.digitalocean.com/databases/splintersuite?i=c68d38`
 
+# Redis on mac (note this is for M1, instructions for non M1 mac also in the below link)
+
+https://redis.io/docs/stack/get-started/install/mac-os/
+
+redis-stack-server
+
 # setup db on local
 
 $ psql
