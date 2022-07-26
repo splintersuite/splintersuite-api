@@ -17,6 +17,7 @@ const getHiveTransaction = async ({ transactionId }) => {
             data.operations[0].length > 1 &&
             data.operations[0][1]['json'] !== undefined
         ) {
+            console.log(JSON.parse(data.operations[0][1].json));
             return JSON.parse(data.operations[0][1].json);
         }
         return null;
@@ -29,8 +30,8 @@ const getHiveTransaction = async ({ transactionId }) => {
 };
 
 // getHiveTransaction({
-//     transactionId: 'ddaaa1aae91334f8001383b5ab6f3a1593c7f37d',
+//     transactionId: 'e5a8dc0d5f94ea1d3baa5584468775031564dd2c',
 // });
-module.exprts = {
+module.exports = {
     getHiveTransaction,
 };

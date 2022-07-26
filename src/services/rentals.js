@@ -3,6 +3,7 @@ const _ = require('lodash');
 const UserRentals = require('../models/UserRentals');
 const logger = require('../util/pinologger');
 const splinterlandsService = require('./splinterlands');
+const hiveService = require('./hive');
 const utilDates = require('../util/dates');
 const findCardLevel = require('../util/calculateCardLevel');
 
@@ -309,6 +310,29 @@ const filterIfInDB = ({
     }
 };
 
+const patchRentalsBySplintersuite = async ({ users_id }) => {
+    const now = new Date();
+    const sixHoursAgo = new Date(new Date().getTime() - 1000 * 60 * 60 * 6);
+    const rentals = await UserRentals.query()
+        .where({ users_id })
+        .whereBetween('next_rental_payment', [sixHoursAgo, now]);
+    const transactionIds = _.uniq(
+        rentals.map(({ sell_trx_id }) => sell_trx_id.split('-')[0])
+    );
+    for (const transactionId of transactionIds) {
+        const transaction = await hiveService.getHiveTransaction({
+            transactionId,
+        });
+        if (transaction?.agent === 'splintersuite') {
+            await UserRentals.query()
+                .where({ users_id })
+                .where('sell_trx_id', 'like', `${transactionId}%`)
+                .patch({ confirmed: true });
+        }
+    }
+};
+
 module.exports = {
     updateRentalsInDb,
+    patchRentalsBySplintersuite,
 };
