@@ -106,7 +106,7 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
 
 const getCurrentPrices = async () => {
     const currentPrices = await getCachedCurrentPrices();
-    if (currentPrices !== null) {
+    if (currentPrices != null && Object.keys(currentPrices).length > 0) {
         return currentPrices;
     }
 
@@ -136,6 +136,13 @@ const getCurrentPrices = async () => {
         }
     });
 
+    if (Object.keys(pricesObj).length === 0) {
+        logger.error(
+            `The market prices in our db for the time period: ${new Date(
+                twentySixHoursAgo
+            )} to now: ${new Date()} aren't populated!`
+        );
+    }
     await cacheCurrentPrices({ currentPrices: pricesObj });
     return pricesObj;
 };

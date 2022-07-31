@@ -4,14 +4,19 @@ const { CURRENT_PRICES } = require('./types');
 const { client } = require('./client');
 
 const cacheCurrentPrices = async ({ currentPrices }) => {
-    logger.debug('cacheCurrentPrices');
+    logger.debug(
+        '/services/cacher/currentPricesCacher/cacheCurrentPrices done'
+    );
     await client.set(
         CURRENT_PRICES,
         JSON.stringify({ timeCached: new Date().getTime(), currentPrices })
     );
     // expire in 12 hours
     await client.expire(CURRENT_PRICES, 60 * 60 * 12);
-    logger.debug('cached currentPrices');
+    logger.debug(
+        '/services/cacher/currentPricesCacher/cacheCurrentPrices done'
+    );
+    return;
 };
 
 const getCachedCurrentPrices = async () => {
