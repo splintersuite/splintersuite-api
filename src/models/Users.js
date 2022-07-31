@@ -16,6 +16,7 @@ class Users extends Model {
                 id: { type: 'string' },
                 username: { type: 'string' },
                 locked: { type: 'boolean' },
+                bot_loops: { type: 'number' },
             },
         };
     }

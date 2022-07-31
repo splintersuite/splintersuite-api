@@ -16,6 +16,9 @@ exports.up = function (knex) {
             t.string('sell_trx_hive_id').notNullable().defaultTo('N');
             t.boolean('confirmed').nullable().defaultTo(null);
         })
+        .table('users', (t) => {
+            t.integer('bot_loops').notNullable().defaultTo(0);
+        })
         .createTable('market_price_runs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.timestamps(true, true);
@@ -40,6 +43,9 @@ exports.down = function (knex) {
         .table('user_rentals', (t) => {
             t.dropColumn('confirmed');
             t.dropColumn('sell_trx_hive_id');
+        })
+        .table('users', (t) => {
+            t.dropColumn('bot_loops');
         })
         .table('market_rental_prices', (t) => {
             t.integer('xp').nullable();
