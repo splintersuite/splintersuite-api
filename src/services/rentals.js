@@ -331,6 +331,8 @@ const patchRentalsBySplintersuite = async ({ users_id }) => {
                     .patch({ confirmed: true });
             }
         }
+
+        return;
     } catch (err) {
         logger.error(
             `/services/rentals/patchRentalsBySplintersuite error: ${err.message}`

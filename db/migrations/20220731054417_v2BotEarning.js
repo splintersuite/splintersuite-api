@@ -13,6 +13,7 @@ exports.up = function (knex) {
             t.dropColumn('xp');
         })
         .table('user_rentals', (t) => {
+            t.string('sell_trx_hive_id').notNullable().defaultTo('N');
             t.boolean('confirmed').nullable().defaultTo(null);
         })
         .createTable('market_price_runs', (t) => {
@@ -38,6 +39,7 @@ exports.down = function (knex) {
     return knex.schema
         .table('user_rentals', (t) => {
             t.dropColumn('confirmed');
+            t.dropColumn('sell_trx_hive_id');
         })
         .table('market_rental_prices', (t) => {
             t.integer('xp').nullable();

@@ -1,4 +1,5 @@
 const { Client } = require('@hiveio/dhive');
+const logger = require('../util/pinologger');
 
 const client = new Client([
     'https://api.hive.blog',
@@ -9,6 +10,7 @@ const client = new Client([
 
 const getHiveTransaction = async ({ transactionId }) => {
     try {
+        logger.debug(`/services/hive/getHiveTransaction`);
         const data = await client.database.getTransaction(transactionId);
         if (
             Array.isArray(data?.operations) &&
@@ -17,11 +19,19 @@ const getHiveTransaction = async ({ transactionId }) => {
             data.operations[0].length > 1 &&
             data.operations[0][1]['json'] !== undefined
         ) {
+            logger.debug(`/services/hive/getHiveTransaction done with data`);
+            logger.info(
+                `getHiveTransaction data: ${JSON.stringify(
+                    data.operations[0][1].json
+                )}`
+            );
             return JSON.parse(data.operations[0][1].json);
         }
+        logger.debug(`/services/hive/getHiveTransaction done with null`);
         return null;
     } catch (err) {
-        if (err.jse_info.code === 10) {
+        logger.error(`/services/hive/getHiveTransaction error: ${err.message}`);
+        if (err?.jse_info?.code === 10) {
             return null;
         }
         throw err;
