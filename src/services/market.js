@@ -409,9 +409,9 @@ const collectData = async ({
         if (uploadArr.length > 0) {
             await MarketRentalPrices.query().insert(uploadArr);
         }
-        logger.info('collectData done');
+        logger.info('/services/market/collectData done');
     } catch (err) {
-        logger.error(`collectData error: ${err.message}`);
+        logger.error(`/services/market/collectData error: ${err.message}`);
         throw err;
     }
 };

@@ -31,10 +31,18 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             }
         );
 
-        const dbRentalsByUid = searchableByUidDBRentals({
+        const dbRentalsByUid = searchableDBRentals({
             rentals: dbActiveRentals,
         });
-
+        logger.info(
+            `dbActiveRentals.length: ${JSON.stringify(dbActiveRentals.length)}`
+        );
+        logger.info(
+            `Object.keys(dbRentalsByUid).length: ${JSON.stringify(
+                Object.keys(dbRentalsByUid).length
+            )}`
+        );
+        // throw new Error(`checking the lengths`);
         const { rentalsToInsert, rentalsAlreadyInserted } = filterIfInDB({
             newActiveRentals,
             dbRentalsByUid,
@@ -152,24 +160,32 @@ const getActiveRentalsInDB = async ({ users_id }) => {
 };
 
 // converts an array of active_rentals into an object that you can search for a rental by the card_uid of the card rented out
-const searchableByUidDBRentals = ({ rentals }) => {
+const searchableDBRentals = ({ rentals }) => {
     try {
-        logger.debug(
-            '/services/rentals/allAccountUpdate/searchableByUidDBRentals'
-        );
-
+        logger.debug('/services/rentals/allAccountUpdate/searchableDBRentals');
+        // const createdAt = DateTime.fromJSDate(created_at);
+        // const startOfDay = utilDates.getStartOfDay({ date: createdAt });
         const rentalsObj = {};
+        if (rentals.length === 0) {
+            return rentalsObj;
+        }
         rentals.forEach((rental) => {
-            rentalsObj[rental.card_uid] = rental;
+            // TNT MAYBE: we should maybe have this only have the startOfDay so its less info to ultimately query?
+            const { card_uid, sell_trx_id, next_rental_payment } = rental;
+            const next_rental_payment_time = new Date(
+                next_rental_payment
+            ).getTime();
+            const rentalKey = `${card_uid}${next_rental_payment_time}`; // we shouldn't have any duplicates of this imo.
+            rentalsObj[rentalKey] = rental;
         });
 
         logger.info(
-            '/services/rentals/allAccountUpdate/searchableByUidDBRentals done'
+            '/services/rentals/allAccountUpdate/searchableDBRentals done'
         );
         return rentalsObj;
     } catch (err) {
         logger.error(
-            `/services/rentals/allAccountUpdate/searchableByUidDBRentals error: ${err.message}`
+            `/services/rentals/allAccountUpdate/searchableDBRentals error: ${err.message}`
         );
         throw err;
     }
@@ -181,6 +197,7 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
             '/services/rentals/allAccountUpdate/cleanAPIActiveRentals'
         );
 
+        const cleanedActiveRentals = [];
         activeRentals.forEach((rental) => {
             const { oneDayAgo, oneDayAgoInMS } = utilDates.getOneDayAgo({
                 date: rental.next_rental_payment,
@@ -188,13 +205,26 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
 
             rental.buy_price = parseFloat(rental.buy_price);
             rental.last_rental_payment = oneDayAgo;
+            cleanedActiveRentals.push(rental);
         });
+
+        logger.info(
+            `activeRentals.length at end: ${JSON.stringify(
+                activeRentals.length
+            )}`
+        );
+        logger.info(
+            `cleanedActiveRentals.length at end: ${JSON.stringify(
+                cleanedActiveRentals.length
+            )}`
+        );
 
         logger.info(
             '/services/rentals/allAccountUpdate/cleanAPIActiveRentalsdone'
         );
 
-        return activeRentals;
+        //     return activeRentals;
+        return cleanedActiveRentals;
     } catch (err) {
         logger.error(
             `/services/rentals/allAccountUpdate/cleanAPIActiveRentalsdone error: ${err.message}`
@@ -214,7 +244,6 @@ const filterIfInDB = ({
 
         const rentalsToInsert = [];
         const rentalsAlreadyInserted = [];
-        const rentalsThatMightCrossover = [];
 
         newActiveRentals.forEach((rental) => {
             // APIRental.card_id = card.uid from collection API, both saved to card_uid column
@@ -255,7 +284,12 @@ const filterIfInDB = ({
                 rental_tx: rental.rental_tx,
                 sell_trx_id: rental.sell_trx_id,
             };
-            const matchedRental = dbRentalsByUid[card_uid];
+
+            const next_rental_payment_time = new Date(
+                next_rental_payment
+            ).getTime();
+            const rentalKey = `${card_uid}${next_rental_payment_time}`;
+            const matchedRental = dbRentalsByUid[rentalKey];
 
             if (matchedRental != null) {
                 logger.debug('matchedRental is not null');
@@ -267,24 +301,11 @@ const filterIfInDB = ({
                     logger.debug(
                         'matchedRental rental_tx and sell_trx = rental.rental_tx and sell_trx_id'
                     );
-                    const matchedNextRentPmnt = new Date(
-                        matchedRental.next_rental_payment
-                    ).getTime();
-                    const rentalNextRentPmnt = new Date(
-                        rental.next_rental_payment
-                    ).getTime();
 
-                    if (matchedNextRentPmnt === rentalNextRentPmnt) {
-                        logger.debug(
-                            `matchedRental next_rental_payment (in ms): ${matchedNextRentPmnt} === rental.next_rental_payment: ${rentalNextRentPmnt} with same rental_tx and sell_trx_id`
-                        );
-                        rentalsAlreadyInserted.push(rentalToAdd);
-                    } else {
-                        logger.debug(
-                            `we have a continuiation of an existing rental contract`
-                        );
-                        rentalsToInsert.push(rentalToAdd);
-                    }
+                    logger.debug(
+                        `rentalKey matched, so next_rental_payment is equal, and rental_tx and sell_trx are same with matchedRental`
+                    );
+                    rentalsAlreadyInserted.push(rentalToAdd);
                 } else {
                     // this happens when there is a uid match but the rental_tx and sell_trx_id are different
                     rentalsToInsert.push(rentalToAdd);
@@ -300,7 +321,6 @@ const filterIfInDB = ({
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,
-            rentalsThatMightCrossover,
         };
     } catch (err) {
         logger.error(
