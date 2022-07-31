@@ -25,6 +25,7 @@ $ \q
 $ node_modules/.bin/knex migrate:latest --esm
 or if you have knex installed
 $ knex migrate:latest
+https://stackoverflow.com/questions/40427903/knex-rollback-specific-migration
 
 # running node index.js
 

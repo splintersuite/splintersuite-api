@@ -15,18 +15,19 @@ exports.up = function (knex) {
         .table('user_rentals', (t) => {
             t.boolean('confirmed').nullable().defaultTo(null);
         })
-        .createTable('market_price_run', (t) => {
+        .createTable('market_price_runs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
             t.timestamps(true, true);
             t.dateTime('started_at').nullable();
             t.dateTime('finished_at').nullable();
             t.boolean('completed').nullable().defaultTo(null);
-            t.unique('id');
         })
         .table('market_rental_prices', (t) => {
-            t.uuid('price_run_id').references('market_price_run.id').nullable(); // ideally would be fine but, we don't want to do this imo, can always use current method as a backup
+            t.uuid('price_run_id')
+                .references('market_price_runs.id')
+                .nullable(); // ideally would be fine but, we don't want to do this imo, can always use current method as a backup
         })
-        .then(() => knex.raw(knexfile.onUpdateTrigger('market_price_run')));
+        .then(() => knex.raw(knexfile.onUpdateTrigger('market_price_runs')));
 };
 
 /**
@@ -47,5 +48,5 @@ exports.down = function (knex) {
         .table('market_rental_prices', (t) => {
             t.dropColumn('price_run_id');
         })
-        .dropTableIfExists('market_price_run');
+        .dropTableIfExists('market_price_runs');
 };

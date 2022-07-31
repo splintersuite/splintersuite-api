@@ -1,4 +1,5 @@
 const Model = require('../../db/model');
+const MarketPriceRuns = require('./MarketPriceRuns');
 
 class MarketRentalPrices extends Model {
     static get tableName() {
@@ -35,6 +36,20 @@ class MarketRentalPrices extends Model {
                 high: { type: 'number' },
                 median: { type: 'number' },
                 std_dev: { type: 'number' },
+                price_run_id: { type: 'string' },
+            },
+        };
+    }
+
+    static get relationMappings() {
+        return {
+            market_price_run: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: MarketPriceRuns,
+                join: {
+                    from: 'market_rental_prices.price_run_id',
+                    to: 'market_price_runs.id',
+                },
             },
         };
     }
