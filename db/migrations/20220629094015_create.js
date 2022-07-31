@@ -70,8 +70,8 @@ exports.up = function (knex) {
             t.boolean('confirmed').notNullable().defaultTo(false); // this would be for the future confirming if it was our bot that did this
             t.string('card_uid').notNullable();
             t.string('player_rented_to').notNullable();
-            t.string('rental_tx').notNullable(); // this is collection.delegation_tx and activeRentals.rental_tx, when listing there is a collection placeholder @ sm_rental_payments`numbers4390245` + market_listing_status = parseInt(0) & market_listing_type === "RENT"
-            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED, is collection.market_id or activeRentals.sell_trx_id
+            t.string('rental_tx').notNullable(); // this is collection.delegation_tx and activeRentals.rental_tx (hive transaction from perspective of the renter who is renting the card), when listing there is a collection placeholder @ sm_rental_payments`numbers4390245` + market_listing_status = parseInt(0) & market_listing_type === "RENT"
+            t.string('sell_trx_id').notNullable(); // assigned by splinterlands WHEN LISTED (THIS IS HIVE TRANSACTION ID WITH A -NumInNumOfCards in the transaction), is collection.market_id or activeRentals.sell_trx_id
             t.unique([
                 'users_id',
                 'rental_tx',
