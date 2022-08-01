@@ -259,6 +259,11 @@ const filterIfInDB = ({
                     rental.card_detail_id
                 } is: ${JSON.stringify(card_details)}`
             );
+            let sell_trx_hive_id = '';
+            const splits = rental.sell_trx_id.split('-');
+            if (Array.isArray(splits) && splits.length > 1) {
+                sell_trx_hive_id = splits[0];
+            }
             const level = findCardLevel({
                 id: rental.card_detail_id,
                 rarity: card_details.rarity,
@@ -283,6 +288,7 @@ const filterIfInDB = ({
                 player_rented_to: rental.renter,
                 rental_tx: rental.rental_tx,
                 sell_trx_id: rental.sell_trx_id,
+                sell_trx_hive_id,
             };
 
             const next_rental_payment_time = new Date(
@@ -332,23 +338,25 @@ const filterIfInDB = ({
 
 const patchRentalsBySplintersuite = async ({ users_id }) => {
     try {
-        const now = new Date();
-        const sixHoursAgo = new Date(new Date().getTime() - 1000 * 60 * 60 * 6);
-        const rentals = await UserRentals.query()
-            .where({ users_id })
-            .whereBetween('next_rental_payment', [sixHoursAgo, now]);
-        const transactionIds = _.uniq(
-            rentals.map(({ sell_trx_id }) => sell_trx_id.split('-')[0])
+        const rentalsToCheck = await UserRentals.query().where({
+            users_id,
+            confirmed: null,
+        });
+        const hiveTransactionIds = _.uniq(
+            rentalsToCheck.map(({ sell_trx_hive_id }) => sell_trx_hive_id)
         );
-        for (const transactionId of transactionIds) {
+        for (const hiveTransactionId of hiveTransactionIds) {
             const transaction = await hiveService.getHiveTransaction({
-                transactionId,
+                transactionId: hiveTransactionId,
             });
             if (transaction?.agent === 'splintersuite') {
                 await UserRentals.query()
-                    .where({ users_id })
-                    .where('sell_trx_id', 'like', `${transactionId}%`)
+                    .where({ users_id, sell_trx_hive_id: hiveTransactionId })
                     .patch({ confirmed: true });
+            } else {
+                await UserRentals.query()
+                    .where({ users_id, sell_trx_hive_id: hiveTransactionId })
+                    .patch({ confirmed: false });
             }
         }
 
