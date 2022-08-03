@@ -345,19 +345,54 @@ const patchRentalsBySplintersuite = async ({ users_id }) => {
         const hiveTransactionIds = _.uniq(
             rentalsToCheck.map(({ sell_trx_hive_id }) => sell_trx_hive_id)
         );
+        const splintersuiteRentalIds = [];
+        const userRentalIds = [];
+
+        // figure out if we made the transaction
         for (const hiveTransactionId of hiveTransactionIds) {
             const transaction = await hiveService.getHiveTransaction({
                 transactionId: hiveTransactionId,
             });
             if (transaction?.agent === 'splintersuite') {
-                await UserRentals.query()
-                    .where({ users_id, sell_trx_hive_id: hiveTransactionId })
-                    .patch({ confirmed: true });
+                splintersuiteRentalIds.push(hiveTransactionId);
             } else {
-                await UserRentals.query()
-                    .where({ users_id, sell_trx_hive_id: hiveTransactionId })
-                    .patch({ confirmed: false });
+                userRentalIds.push(hiveTransactionId);
             }
+        }
+
+        // update the database
+        let chunks = splintersuiteRentalIds;
+
+        if (splintersuiteRentalIds.length > 998) {
+            chunks = _.chunk(splintersuiteRentalIds, 998);
+        }
+
+        if (chunks.length === splintersuiteRentalIds.length) {
+            chunks = [chunks];
+        }
+
+        for (const idChunk of chunks) {
+            await UserRentals.query()
+                .where({ users_id })
+                .whereIn('sell_trx_hive_id', idChunk)
+                .patch({ confirmed: true });
+        }
+
+        chunks = userRentalIds;
+
+        if (userRentalIds.length > 998) {
+            chunks = _.chunk(userRentalIds, 998);
+        }
+
+        if (chunks.length === userRentalIds.length) {
+            chunks = [chunks];
+        }
+
+        for (const idChunk of chunks) {
+            await UserRentals.query()
+                .where({ users_id })
+                .whereIn('sell_trx_hive_id', idChunk)
+                .patch({ confirmed: false });
         }
 
         return;
