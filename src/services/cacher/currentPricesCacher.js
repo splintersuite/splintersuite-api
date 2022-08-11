@@ -3,13 +3,17 @@ const logger = require('../../util/pinologger');
 const { CURRENT_PRICES } = require('./types');
 const { client } = require('./client');
 
-const cacheCurrentPrices = async ({ currentPrices }) => {
+const cacheCurrentPrices = async ({ currentPrices, timeOfLastFetch }) => {
     logger.debug(
         '/services/cacher/currentPricesCacher/cacheCurrentPrices done'
     );
     await client.set(
         CURRENT_PRICES,
-        JSON.stringify({ timeCached: new Date().getTime(), currentPrices })
+        JSON.stringify({
+            timeCached: new Date().getTime(),
+            currentPrices,
+            timeOfLastFetch,
+        })
     );
     // expire in 12 hours
     await client.expire(CURRENT_PRICES, 60 * 60 * 12);
@@ -26,10 +30,26 @@ const getCachedCurrentPrices = async () => {
     const twelveHoursAgo = new Date(
         new Date().getTime() - 1000 * 60 * 60 * 12
     ).getTime();
-    if (data?.timeCached > twelveHoursAgo && data?.currentPrices) {
-        return data.currentPrices;
+    if (
+        data?.timeCached > twelveHoursAgo &&
+        data?.currentPrices &&
+        data?.timeOfLastFetch &&
+        Number.isFinite(data?.timeOfLastFetch)
+    ) {
+        logger.debug(
+            `/services/cacher/currentPricesCacher/getCachedCurrentPrices done with currentPrices.length: ${
+                Object.keys(data?.currentPrices)?.length
+            }`
+        );
+        return {
+            currentPrices: data.currentPrices,
+            timeOfLastFetch: data.timeOfLastFetch,
+        };
     }
-    return null;
+    logger.info(
+        `/services/cacher/currentPricesCacher/getCachedCurrentPrices done with no viable cache`
+    );
+    return { currentPrices: null };
 };
 
 module.exports = {

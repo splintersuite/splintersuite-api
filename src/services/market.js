@@ -106,15 +106,25 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
 
 const getCurrentPrices = async () => {
     logger.debug(`/services/market/getCurrentPrices`);
-    const currentPrices = await getCachedCurrentPrices();
-    if (currentPrices != null && Object.keys(currentPrices).length > 0) {
-        logger.info(
-            `/services/market/getCurrentPrices done with cached Object.keys(currentPrices).length: ${
-                Object.keys(currentPrices)?.length
-            }`
-        );
-        return currentPrices;
+    // const currentPrices = await getCachedCurrentPrices();
+    const cachedPriceData = await getCachedCurrentPrices();
+    if (
+        cachedPriceData?.currentPrices !== null &&
+        Number.isFinite(cachedPriceData?.timeOfLastFetch)
+    ) {
+        return {
+            currentPrices: cachedPriceData.currentPrices,
+            timeOfLastFetch: cachedPriceData.timeOfLastFetch,
+        };
     }
+    // if (currentPrices != null && Object.keys(currentPrices).length > 0) {
+    //     logger.info(
+    //         `/services/market/getCurrentPrices done with cached Object.keys(currentPrices).length: ${
+    //             Object.keys(currentPrices)?.length
+    //         }`
+    //     );
+    //     return currentPrices;
+    // }
 
     const twentySixHoursAgo = new Date(
         new Date().getTime() - 1000 * 60 * 60 * 26
@@ -125,6 +135,9 @@ const getCurrentPrices = async () => {
         .orderBy('period_start_time', 'desc');
 
     const pricesObj = {};
+    const timeOfLastFetch = new Date(
+        _.max(prices.map(({ period_end_time }) => period_end_time))
+    ).getTime();
     prices.forEach((price) => {
         const keyString = `${price.card_detail_id}-${price.level}-${price.is_gold}-${price.edition}`;
         if (!(keyString in pricesObj)) {
@@ -149,13 +162,13 @@ const getCurrentPrices = async () => {
             )} to now: ${new Date()} aren't populated!`
         );
     }
-    await cacheCurrentPrices({ currentPrices: pricesObj });
+    await cacheCurrentPrices({ currentPrices: pricesObj, timeOfLastFetch });
     logger.info(
         `/services/market/getCurrentPrices done with pricesObj.length: ${
             Object.keys(pricesObj)?.length
         }`
     );
-    return pricesObj;
+    return { currentPrices: pricesObj, timeOfLastFetch };
 };
 
 const performanceVsMarket = async ({ users_id }) => {
