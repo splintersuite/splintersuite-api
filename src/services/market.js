@@ -105,8 +105,14 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
 };
 
 const getCurrentPrices = async () => {
+    logger.debug(`/services/market/getCurrentPrices`);
     const currentPrices = await getCachedCurrentPrices();
     if (currentPrices != null && Object.keys(currentPrices).length > 0) {
+        logger.info(
+            `/services/market/getCurrentPrices done with cached Object.keys(currentPrices).length: ${
+                Object.keys(currentPrices)?.length
+            }`
+        );
         return currentPrices;
     }
 
@@ -144,6 +150,11 @@ const getCurrentPrices = async () => {
         );
     }
     await cacheCurrentPrices({ currentPrices: pricesObj });
+    logger.info(
+        `/services/market/getCurrentPrices done with pricesObj.length: ${
+            Object.keys(pricesObj)?.length
+        }`
+    );
     return pricesObj;
 };
 
