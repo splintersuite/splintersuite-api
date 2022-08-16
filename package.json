@@ -11,7 +11,8 @@
         "brawls": "node --trace-warnings ./src/scripts/brawls.js",
         "oldSeasons": "node ./src/scripts/tests/oldSeason.js",
         "market": "node ./src/scripts/market.js",
-        "season": "node ./src/scripts/seasons.js"
+        "season": "node ./src/scripts/seasons.js",
+        "catchup": "node ./src/services/catchup.js"
     },
     "author": "",
     "license": "ISC",
