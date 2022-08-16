@@ -407,4 +407,5 @@ const patchRentalsBySplintersuite = async ({ users_id }) => {
 module.exports = {
     updateRentalsInDb,
     patchRentalsBySplintersuite,
+    cleanAPIActiveRentals,
 };

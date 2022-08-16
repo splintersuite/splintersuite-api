@@ -1,7 +1,7 @@
 'use strict';
 const logger = require('../util/pinologger');
 const splinterlandsService = require('./splinterlands');
-
+const rentalService = require('./rentals');
 const retryFncs = require('../util/axios_retry/general');
 
 const getAllActiveRentals = async ({ username, last_rental_in_db }) => {

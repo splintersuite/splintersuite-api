@@ -112,7 +112,7 @@ const getActiveRentalsRange = async ({ username, offset }) => {
         logger.debug(`getActiveRentalsRange with offset: ${offset}`);
 
         const limit = 200;
-        // const url = `https://api2.splinterlands.com/market/active_rentals?owner=${username}`;
+
         const url = `https://api2.splinterlands.com/market/rental_history`;
         const activeRentals = await axiosInstance.get(url, {
             params: {
@@ -124,10 +124,10 @@ const getActiveRentalsRange = async ({ username, offset }) => {
 
         if (!Array.isArray(activeRentals.data)) {
             logger.error(
-                `/services/splinterlands/getActiveRentalsRange active_rentals response.data is not an array`
+                `/services/splinterlands/getActiveRentalsRange rental_history response.data is not an array`
             );
             throw new Error(
-                `https://api2.splinterlands.com/market/active_rentals?owner=${username}, offset: ${offset} not returning an array`
+                `https://api2.splinterlands.com/market/rental_history, username: ${username}, offset: ${offset} not returning an array`
             );
         }
         logger.info(
