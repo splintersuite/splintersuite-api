@@ -13,6 +13,9 @@ axiosRetry.axiosRetry(axiosInstance, {
         logger.error(`retryCount: ${retryCount}`);
         logger.error(`retryDelay called with error: ${JSON.stringify(error)}`);
         logger.error(`error message is: ${error.message}`);
+        if (error.response.status === 502) {
+            return 5000;
+        }
         return 500000;
     },
     retryCondition: (error) => {
