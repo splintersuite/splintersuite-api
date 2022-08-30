@@ -29,42 +29,6 @@ or if you have knex installed
 $ knex migrate:latest
 https://stackoverflow.com/questions/40427903/knex-rollback-specific-migration
 
-# running node index.js
-
-node --experimental-specifier-resolution=node index.js
-to handle for "type": "module", in package.json
-
-# Cron Scripts
-
-when you run something in the scripts page (ie like in a cron process)
-
-you need to explicitly pass the environment variables
-
--- brawl script:
-
-```
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev NODE_ENV=development PINO_LOG_LEVEL=debug node brawls.js
-
-30 6 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/brawls.js >> /home/ubuntu/Brawl.log 2>&1
-
--- calculate earnings script:
-
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev NODE_ENV=development PINO_LOG_LEVEL=debug node earnings.js
-
-0 */4 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/earnings.js >> /home/ubuntu/Earnings.log 2>&1
-
--- newSeasonData script:
-
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev NODE_ENV=development PINO_LOG_LEVEL=debug node seasons.js
-
-0 7 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/seasons.js >> /home/ubuntu/Seasons.log 2>&1
-
--- Rentals/Historical Script:
-
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-dev NODE_ENV=development PINO_LOG_LEVEL=debug node market.js
-
-30 */12 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-staging NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/market.js >> /home/ubuntu/Market.log 2>&1
-
 # previous season information from API :
 
 -- oneTime/oldSeason.js script:
@@ -86,13 +50,13 @@ DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2
 // end: '2022-06-18T07:00:00.000Z'
 // }
 
-
 {
 id: 89,
 name: "Ranked Rewards Season 2",
 ends: "2022-06-30T14:00:00.000Z",
 
 "id: 90, name: Brawl Cycle 90, start: 2022-06-18T07:00:00.000Z, end: 2022-06-23T08:00:00.000Z"}
+
 ```
 
 brawl_cycle: {
@@ -112,33 +76,35 @@ Production Scripts:
 
 ```
 
-
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production
-
 ONE TIME SETUP CALL:
 
-DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=debug /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/tests/oldSeason.js
+splintersuite-api/cron/oneTime/oldSeason.sh
 
 # Cron Scripts
 
 -- brawl script:
 
-30 6 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=info DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/brawls.js >> /home/ubuntu/Brawl.log 2>&1
+30 6 \* \* \* /home/ubuntu/splintersuite-api/cron/brawls.sh >> /home/ubuntu/cronLogs/Brawl.log 2>&1
 
 -- earnings script:
 
-0 */4 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/earnings.js >> /home/ubuntu/Earnings.log 2>&1
+0 _/4 _ \* \* /home/ubuntu/splintersuite-api/cron/earnings.sh >> /home/ubuntu/cronLogs/Earnings.log 2>&1
 
 -- newSeason script:
 
-0 7 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production NODE_ENV=production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/seasons.js >> /home/ubuntu/Seasons.log 2>&1
+0 7 \* \* \* /home/ubuntu/splintersuite-api/cron/seasons.sh >> /home/ubuntu/cronLogs/Seasons.log 2>&1
 
 -- ON 2ND DEDICATED SERVER, Market Data Script:
 
-30 */12 * * * DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/splintersuite-production PINO_LOG_LEVEL=debug DEBUG=false /home/ubuntu/.nvm/versions/node/v16.14.2/bin/node /home/ubuntu/splintersuite-api/src/scripts/market.js >> /home/ubuntu/Market.log 2>&1
+30 _/12 _ \* \* /home/ubuntu/splintersuite-api/cron/market.js >> /home/ubuntu/cronLogs/Market.log 2>&1
 
 ```
+STARTING:
 
+pm2 start ecosystem.config.js --env production
+
+https://stackoverflow.com/questions/44883269/what-is-the-difference-between-pm2-restart-and-pm2-reload
+-   we should always use pm2 reload <app name> rather than restart, as detailed here
 # API Notes:
 
 collection = https://api2.splinterlands.com/cards/collection/xdww
@@ -195,3 +161,4 @@ sudo apt-get update
 # If you want a specific version, use 'postgresql-12' or similar instead of 'postgresql':
 
 sudo apt-get -y install postgresql-14
+```
