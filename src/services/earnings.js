@@ -132,6 +132,11 @@ const get = async ({ users_id }) => {
             )}, length: ${pastWeekDailyEarnings.length},
             weekly: ${JSON.stringify(weekly)}`
         );
+        logger.info(
+            `daily: ${JSON.stringify(daily)}, wtd: ${JSON.stringify(
+                wtd
+            )}, mtd: ${JSON.stringify(mtd)}`
+        );
         const total = { daily, wtd, mtd, weekly };
         return { total };
     } catch (err) {

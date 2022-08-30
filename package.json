@@ -12,7 +12,7 @@
         "oldSeasons": "node ./src/scripts/tests/oldSeason.js",
         "market": "node ./src/scripts/market.js",
         "season": "node ./src/scripts/seasons.js",
-        "catchup": "node ./src/services/catchup.js"
+        "catchup": "node ./src/scripts/catchup.js"
     },
     "author": "",
     "license": "ISC",

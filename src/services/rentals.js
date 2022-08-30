@@ -408,4 +408,7 @@ module.exports = {
     updateRentalsInDb,
     patchRentalsBySplintersuite,
     cleanAPIActiveRentals,
+    searchableDBRentals,
+    filterIfInDB,
+    insertActiveRentals,
 };
