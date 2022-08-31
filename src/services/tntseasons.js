@@ -39,7 +39,7 @@ const create = async ({ seasonData }) => {
                     throw err;
                 });
 
-            logger.info(`/services/seasons/create created new season`);
+            logger.info(`/services/seasons/create`);
             return newSeason;
         } else {
             throw new Error('missing season data');

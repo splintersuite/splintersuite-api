@@ -64,7 +64,7 @@ const create = async ({ users_id, start_date, end_date }) => {
             });
 
         logger.info(
-            `/services/invoices/create done for users_id: ${users_id}, start_date: ${start_date}, end_date: ${end_date}`
+            `/services/invoices/create User ID: ${users_id}, start_date: ${start_date}, end_date: ${end_date}`
         );
         return;
     } catch (err) {
@@ -102,7 +102,7 @@ const lockUsers = async () => {
             await Users.query().whereIn('id', idChunk).patch({ locked: true });
         }
 
-        logger.info(`/services/invoices/lockUsers done`);
+        logger.info(`/services/invoices/lockUsers`);
         return usersIdsToLock;
     } catch (err) {
         logger.error(`/services/invoices/lockUsers error: ${err.message}`);
@@ -116,9 +116,7 @@ const unlockUser = async ({ users_id }) => {
 
         await Users.query().where('id', users_id).patch({ locked: false });
 
-        logger.info(
-            `/services/invoices/unlockUser for users_id: ${users_id} done`
-        );
+        logger.info(`/services/invoices/unlockUser User ID: ${users_id}`);
         return;
     } catch (err) {
         logger.error(`/services/invoices/unlockUsers error: ${err.message}`);

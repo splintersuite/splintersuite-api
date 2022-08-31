@@ -30,7 +30,7 @@ const getSLSeasonData = async () => {
 
         if (newSeason) {
             // create invoices for LAST season!
-            await createInvoices();
+            // await createInvoices();
         }
 
         logger.info('/scripts/seasons/getSLSeasonDatadone');
@@ -49,7 +49,7 @@ const createInvoices = async () => {
         const userIdsToLock = await invoiceService.lockUsers();
         await invoiceService.unlockUsers({ userIdsToLock });
 
-        logger.info(`/scripts/seasons/createInvoices done`);
+        logger.info(`/scripts/seasons/createInvoices`);
         return;
     } catch (err) {
         logger.error(`/scripts/seasons/createInvoices error: ${err.message}`);

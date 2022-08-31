@@ -43,7 +43,7 @@ const updateCardDetail = async () => {
         const details = await getCardDetail();
         jsonfile.writeFileSync(filePath, details);
 
-        logger.info(`/services/splinterlands/updateCardDetail done`);
+        logger.info(`/services/splinterlands/updateCardDetail`);
         return;
     } catch (err) {
         logger.error(
@@ -119,7 +119,7 @@ const getActiveRentals = async ({ username }) => {
         }
 
         logger.info(
-            `/services/splinterlands/getActiveRentals for user: ${username} done`
+            `/services/splinterlands/getActiveRentals User: ${username} Rentals: ${activeRentals?.data?.length}`
         );
         return activeRentals.data;
     } catch (err) {
@@ -154,7 +154,7 @@ const getActiveRentalsRange = async ({ username, offset }) => {
             );
         }
         logger.info(
-            `/services/splinterlands/getActiveRentalsRange for user: ${username} done, data is length: ${activeRentals.data.length}`
+            `/services/splinterlands/getActiveRentalsRange User: ${username} Rentals: ${activeRentals?.data?.length}`
         );
 
         return activeRentals.data;
@@ -175,7 +175,7 @@ const getSettings = async () => {
         const res = await axiosInstance(url);
 
         const data = res.data;
-        logger.info(`/services/splinterlands/getSettings done`);
+        logger.info(`/services/splinterlands/getSettings`);
         return data;
     } catch (err) {
         logger.error(

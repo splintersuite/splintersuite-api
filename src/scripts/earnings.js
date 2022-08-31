@@ -58,7 +58,7 @@ const calculateEarningsForUsers = async () => {
                 created_at: user.created_at,
             });
         }
-        logger.info('/scripts/earnings/calculateEarningsForUsers done');
+        logger.info('/scripts/earnings/calculateEarningsForUsers');
         process.exit(0);
     } catch (err) {
         logger.error(

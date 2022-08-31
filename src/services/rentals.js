@@ -35,10 +35,9 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             rentals: dbActiveRentals,
         });
         logger.info(
-            `dbActiveRentals.length: ${JSON.stringify(dbActiveRentals.length)}`
-        );
-        logger.info(
-            `Object.keys(dbRentalsByUid).length: ${JSON.stringify(
+            `dbActiveRentals: ${JSON.stringify(
+                dbActiveRentals.length
+            )}, dbRentalsByUid: ${JSON.stringify(
                 Object.keys(dbRentalsByUid).length
             )}`
         );
@@ -63,9 +62,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             );
             throw err;
         });
-        logger.info(
-            '/services/rentals/allAccountUpdate/updateRentalsInDB done'
-        );
+        logger.info('/services/rentals/allAccountUpdate/updateRentalsInDB');
 
         return;
     } catch (err) {
@@ -80,9 +77,11 @@ const insertActiveRentals = async ({ rentals }) => {
     try {
         logger.debug('/services/rentals/allAccountUpdate/insertActiveRentals');
 
-        if (rentals.length === 0) {
+        if (rentals?.length === 0 || !rentals) {
             logger.info(
-                `/services/rentals/allAccountUpdate/insertActiveRentals no rentals to insert`
+                `/services/rentals/allAccountUpdate/insertActiveRentals no rentals, rentals: ${JSON.stringify(
+                    rentals
+                )}`
             );
             return;
         }
@@ -109,9 +108,7 @@ const insertActiveRentals = async ({ rentals }) => {
                 });
         }
 
-        logger.info(
-            `/services/rentals/allAccountUpdate/insertActiveRentals done`
-        );
+        logger.info(`/services/rentals/allAccountUpdate/insertActiveRentals`);
         return;
     } catch (err) {
         logger.error(
@@ -147,9 +144,7 @@ const getActiveRentalsInDB = async ({ users_id }) => {
                 dbActiveRentals
             )} `
         );
-        logger.info(
-            `/services/rentals/allAccountUpdate/getActiveRentalsInDB done`
-        );
+        logger.info(`/services/rentals/allAccountUpdate/getActiveRentalsInDB`);
         return dbActiveRentals;
     } catch (err) {
         logger.error(
@@ -179,9 +174,7 @@ const searchableDBRentals = ({ rentals }) => {
             rentalsObj[rentalKey] = rental;
         });
 
-        logger.info(
-            '/services/rentals/allAccountUpdate/searchableDBRentals done'
-        );
+        logger.info('/services/rentals/allAccountUpdate/searchableDBRentals');
         return rentalsObj;
     } catch (err) {
         logger.error(
@@ -209,18 +202,11 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
         });
 
         logger.info(
-            `activeRentals.length at end: ${JSON.stringify(
+            `/services/rentals/allAccountUpdate/cleanAPIActiveRentals activeRentals: ${JSON.stringify(
                 activeRentals.length
-            )}`
-        );
-        logger.info(
-            `cleanedActiveRentals.length at end: ${JSON.stringify(
+            )}, cleanedActiveRentals ${JSON.stringify(
                 cleanedActiveRentals.length
             )}`
-        );
-
-        logger.info(
-            '/services/rentals/allAccountUpdate/cleanAPIActiveRentalsdone'
         );
 
         //     return activeRentals;
@@ -323,7 +309,7 @@ const filterIfInDB = ({
         });
 
         logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
-        logger.info('/services/rentals/allAccountUpdate/filterIfInDB done');
+        logger.info('/services/rentals/allAccountUpdate/filterIfInDB');
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,

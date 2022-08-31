@@ -36,7 +36,9 @@ const getAllActiveRentals = async ({ username, last_DB_rental_date }) => {
             offset = offset + 200;
 
             if (offset % 1000 === 0) {
-                logger.info(`sleeping for 5 mins to avoid rate limit`);
+                logger.info(
+                    `/services/catchup/getAllActiveRentals sleep 5 mins`
+                );
                 await retryFncs.sleep(fiveMinutesInMS);
             }
         }

@@ -17,7 +17,11 @@ const calculateAllEarningsForUsers = async () => {
         let count = 0;
         const fiveMinutesInMS = 1000 * 60 * 5;
         for (const user of users) {
-            logger.info(`user is: ${JSON.stringify(user)}`);
+            logger.info(
+                `/scripts/catchup/calculateAllEarningsForUsers User: ${JSON.stringify(
+                    user
+                )}`
+            );
 
             // 5 users in a bitch, then wait a minute
             await catchupService.updateAllRentalsInDb({
@@ -33,7 +37,7 @@ const calculateAllEarningsForUsers = async () => {
             count++;
         }
 
-        logger.info(`/scripts/catchup/calculateAllEarningsForUsers done`);
+        logger.info(`/scripts/catchup/calculateAllEarningsForUsers`);
         process.exit(0);
     } catch (err) {
         logger.error(

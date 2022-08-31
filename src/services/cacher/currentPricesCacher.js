@@ -47,7 +47,7 @@ const getCachedCurrentPrices = async () => {
         };
     }
     logger.info(
-        `/services/cacher/currentPricesCacher/getCachedCurrentPrices done with no viable cache`
+        `/services/cacher/currentPricesCacher/getCachedCurrentPrices No Viable Cache`
     );
     return { currentPrices: null };
 };
