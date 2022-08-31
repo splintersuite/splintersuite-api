@@ -62,7 +62,9 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
             );
             throw err;
         });
-        logger.info('/services/rentals/allAccountUpdate/updateRentalsInDB');
+        logger.info(
+            `/services/rentals/allAccountUpdate/updateRentalsInDB User: ${username}`
+        );
 
         return;
     } catch (err) {
@@ -309,7 +311,9 @@ const filterIfInDB = ({
         });
 
         logger.debug(`rentalsToInsert: ${JSON.stringify(rentalsToInsert)}`);
-        logger.info('/services/rentals/allAccountUpdate/filterIfInDB');
+        logger.info(
+            `/services/rentals/allAccountUpdate/filterIfInDB Already Inserted: ${rentalsAlreadyInserted?.length}, To Insert: ${rentalsToInsert?.length}`
+        );
         return {
             rentalsToInsert,
             rentalsAlreadyInserted,

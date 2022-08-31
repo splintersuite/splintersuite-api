@@ -242,7 +242,9 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
             count = count + 1;
         }
 
-        logger.info(`/services/earnings/insertAllDailyEarnings`);
+        logger.info(
+            `/services/earnings/insertAllDailyEarnings User ID: ${users_id}`
+        );
         return;
     } catch (err) {
         logger.error(
@@ -269,7 +271,7 @@ const formatDbDailyEarnings = ({ dailyEarnings }) => {
 
         const uniqueObj = arrayToObj({ arr: uniqueDates });
 
-        logger.info(`/services/earnings/formatDbDailyEarnings`);
+        logger.debug(`/services/earnings/formatDbDailyEarnings`);
         return uniqueObj;
     } catch (err) {
         logger.error(
