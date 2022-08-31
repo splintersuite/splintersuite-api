@@ -19,7 +19,9 @@ const calculateEarningsForUsers = async () => {
         let count = 0;
         const fiveMinutesInMS = 1000 * 60 * 5;
         for (const user of users) {
-            logger.info(`user is: ${JSON.stringify(user)}`);
+            logger.info(
+                `/scripts/earnings/calculateEarningsForUsers User: ${user?.username}`
+            );
             // 100 users in a batch, then wait 5 minutes
             await rentals
                 .updateRentalsInDb({

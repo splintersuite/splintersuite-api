@@ -17,9 +17,18 @@ const create = async ({ seasonData }) => {
                 end_date: new Date(ends),
                 season_name: name,
             });
-
+            logger.info(
+                `/services/seasons/create New Season: ${JSON.stringify(
+                    newSeason
+                )}`
+            );
             return newSeason;
         }
+        logger.info(
+            `/services/seasons/create Season Exists: ${JSON.stringify(
+                dbSeason
+            )}`
+        );
         return null;
     } catch (err) {
         console.error(`insertSeason error: ${err.message}`);

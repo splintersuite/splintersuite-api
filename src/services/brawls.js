@@ -15,7 +15,10 @@ const create = async ({ brawlData }) => {
             end_date,
             name,
         });
-        logger.info(`/services/brawls/create`);
+
+        logger.info(
+            `/services/brawls/create ID: ${id}, Start: ${start}, End: ${end}, name: ${name}`
+        );
         return;
     } catch (err) {
         logger.error(`/services/brawls/create error: ${err.message}`);
@@ -41,7 +44,12 @@ const get = async ({ brawlData }) => {
                 );
                 throw err;
             });
-        logger.info(`/services/brawls/get`);
+
+        logger.info(
+            `/services/brawls/get Start Date: ${start_date}, End Date: ${end_date}, DB Result: ${JSON.stringify(
+                brawl
+            )}`
+        );
         return brawl;
     } catch (err) {
         logger.error(`/services/brawls/get error: ${err.message}`);

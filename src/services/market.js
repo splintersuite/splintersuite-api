@@ -421,8 +421,16 @@ const collectData = async ({
         // rate limit this somehow
         if (uploadArr.length > 0) {
             await MarketRentalPrices.query().insert(uploadArr);
+        } else {
+            logger.error(
+                `/services/market/collectData uploadArr has a length less than 0, uploadArr: ${JSON.stringify(
+                    uploadArr
+                )}`
+            );
         }
-        logger.debug('/services/market/collectData done');
+        logger.info(
+            `/services/market/collectData ID: ${card?.id}, Name: ${card?.name}`
+        );
         return;
     } catch (err) {
         logger.error(`/services/market/collectData error: ${err.message}`);
