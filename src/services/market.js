@@ -8,6 +8,7 @@ const axiosInstance = require('../util/axiosInstance');
 const findCardLevel = require('../util/calculateCardLevel');
 const mathFncs = require('../util/math');
 const { getCachedCurrentPrices, cacheCurrentPrices } = require('./cacher');
+const splinterlandsService = require('./splinterlands');
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
@@ -106,25 +107,23 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
 
 const getCurrentPrices = async () => {
     logger.debug(`/services/market/getCurrentPrices`);
-    // const currentPrices = await getCachedCurrentPrices();
     const cachedPriceData = await getCachedCurrentPrices();
+
     if (
-        cachedPriceData?.currentPrices !== null &&
+        cachedPriceData?.currentPrices != null &&
+        Object.keys(cachedPriceData?.currentPrices)?.length > 100 &&
         Number.isFinite(cachedPriceData?.timeOfLastFetch)
     ) {
+        logger.info(
+            `/services/market/getCurrentPrices cached price points: ${
+                Object.keys(cachedPriceData?.currentPrices)?.length
+            }`
+        );
         return {
             currentPrices: cachedPriceData.currentPrices,
             timeOfLastFetch: cachedPriceData.timeOfLastFetch,
         };
     }
-    // if (currentPrices != null && Object.keys(currentPrices).length > 0) {
-    //     logger.info(
-    //         `/services/market/getCurrentPrices done with cached Object.keys(currentPrices).length: ${
-    //             Object.keys(currentPrices)?.length
-    //         }`
-    //     );
-    //     return currentPrices;
-    // }
 
     const twentySixHoursAgo = new Date(
         new Date().getTime() - 1000 * 60 * 60 * 26
@@ -164,7 +163,7 @@ const getCurrentPrices = async () => {
     }
     await cacheCurrentPrices({ currentPrices: pricesObj, timeOfLastFetch });
     logger.info(
-        `/services/market/getCurrentPrices done with pricesObj.length: ${
+        `/services/market/getCurrentPrices db price points: ${
             Object.keys(pricesObj)?.length
         }`
     );
@@ -310,19 +309,12 @@ const collectData = async ({
     try {
         logger.debug(`/services/market/collectData`);
 
-        // these api calls should live in services/splinterlands.js
-        const activeTrades = await axiosInstance.get(
-            `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}`
-        );
-
-        if (!Array.isArray(activeTrades.data)) {
-            throw new Error(
-                `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}
-              not returning array`
-            );
-        }
+        let activeTrades = await splinterlandsService.getMarketInfoForCard({
+            card_detail_id: card.id,
+        });
         const trades = {};
-        activeTrades.data.forEach((trade) => {
+
+        activeTrades.forEach((trade) => {
             const level = findCardLevel({
                 id: card.id,
                 rarity: card.rarity,
@@ -356,7 +348,7 @@ const collectData = async ({
                 rentalDays: trade.rental_days,
             });
         });
-
+        activeTrades = [];
         // do math
         const uploadArr = [];
         for (const levelEditionKey of Object.keys(trades)) {
@@ -430,7 +422,8 @@ const collectData = async ({
         if (uploadArr.length > 0) {
             await MarketRentalPrices.query().insert(uploadArr);
         }
-        logger.info('/services/market/collectData done');
+        logger.debug('/services/market/collectData done');
+        return;
     } catch (err) {
         logger.error(`/services/market/collectData error: ${err.message}`);
         throw err;

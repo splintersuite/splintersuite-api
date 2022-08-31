@@ -21,7 +21,7 @@ const getHiveTransaction = async ({ transactionId }) => {
         ) {
             logger.debug(`/services/hive/getHiveTransaction done with data`);
             logger.info(
-                `getHiveTransaction data: ${JSON.stringify(
+                `/services/hive/getHiveTransaction data: ${JSON.stringify(
                     data.operations[0][1].json
                 )}`
             );

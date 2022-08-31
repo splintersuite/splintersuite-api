@@ -2,7 +2,6 @@ const logger = require('../util/pinologger');
 const axiosInstance = require('../util/axiosInstance');
 const path = require('path');
 const jsonfile = require('jsonfile');
-const { default: axios } = require('axios');
 
 const getCardDetail = async () => {
     logger.debug(`/services/splinterlands/getCardDetail`);
@@ -10,6 +9,30 @@ const getCardDetail = async () => {
         'https://api2.splinterlands.com/cards/get_details'
     );
     return cards.data;
+};
+
+const getMarketInfoForCard = async ({ card_detail_id }) => {
+    try {
+        const url = `https://api2.splinterlands.com/market/active_rentals`;
+        const res = await axiosInstance.get(url, {
+            params: {
+                card_detail_id,
+            },
+        });
+        if (!Array.isArray(res.data)) {
+            throw new Error(`https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card_detail_id} not returning an array, returned : ${JSON.stringify(
+                res.data
+            )}
+            `);
+        }
+
+        return res.data;
+    } catch (err) {
+        logger.error(
+            `/src/services/splinterlands/getMarketInfoForCard error: ${err.message}`
+        );
+        throw err;
+    }
 };
 
 const updateCardDetail = async () => {
@@ -169,4 +192,5 @@ module.exports = {
     getSettings,
     updateCardDetail,
     getActiveRentalsRange,
+    getMarketInfoForCard,
 };
