@@ -10,7 +10,9 @@ const extractSLSeasonData = (settings) => {
         const { season } = settings;
         const { id, name, ends } = season;
 
-        logger.debug('/scripts/seasons/extractSLSeasonData done');
+        logger.info(
+            `/scripts/seasons/extractSLSeasonData ID: ${id}, Name: ${name}, ends: ${ends}`
+        );
         return { id, name, ends };
     } catch (err) {
         logger.error(`extractSLSeasonData error: ${err.message}`);
@@ -30,10 +32,10 @@ const getSLSeasonData = async () => {
 
         if (newSeason) {
             // create invoices for LAST season!
-            await createInvoices();
+            // await createInvoices();
         }
 
-        logger.info('/scripts/seasons/getSLSeasonDatadone');
+        logger.info('/scripts/seasons/getSLSeasonData');
         process.exit(0);
     } catch (err) {
         logger.error(`/scripts/seasons/getSLSeasonData error: ${err.message}`);
@@ -49,7 +51,7 @@ const createInvoices = async () => {
         const userIdsToLock = await invoiceService.lockUsers();
         await invoiceService.unlockUsers({ userIdsToLock });
 
-        logger.info(`/scripts/seasons/createInvoices done`);
+        logger.info(`/scripts/seasons/createInvoices`);
         return;
     } catch (err) {
         logger.error(`/scripts/seasons/createInvoices error: ${err.message}`);

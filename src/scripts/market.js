@@ -6,7 +6,7 @@ const marketService = require('../services/market');
 // TNT TODO: actually insert the data into our db
 const getHistoricalData = async () => {
     try {
-        logger.debug(`/scripts/rentals/getHistoricalData`);
+        logger.info(`/scripts/rentals/getHistoricalData start`);
         // runs at 05:00 EST
         // runs at 17:00 EST
         const now = new Date();
@@ -23,12 +23,12 @@ const getHistoricalData = async () => {
                 twelveHoursAgoTime,
             });
             if (count !== 0 && count % 100 === 0) {
-                logger.debug('sleeping 5 mins');
+                logger.info('/scripts/rentals/getHistoricalData sleep 5 mins');
                 await retryFncs.sleep(fiveMinutesInMS);
             }
             count++;
         }
-        logger.debug('getHistoricalData done');
+        logger.info('/scripts/rentals/getHistoricalData');
         process.exit(0);
     } catch (err) {
         logger.error(`getHistoricalData error: ${err.message}`);

@@ -19,6 +19,9 @@ const calculateEarningsForUsers = async () => {
         let count = 0;
         const fiveMinutesInMS = 1000 * 60 * 5;
         for (const user of users) {
+            logger.info(
+                `/scripts/earnings/calculateEarningsForUsers User: ${user?.username}`
+            );
             // 100 users in a batch, then wait 5 minutes
             await rentals
                 .updateRentalsInDb({
@@ -34,7 +37,16 @@ const calculateEarningsForUsers = async () => {
                     );
                     throw err;
                 });
-
+            await rentals
+                .patchRentalsBySplintersuite({ users_id: user.id })
+                .catch((err) => {
+                    logger.error(
+                        `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
+                            user.id
+                        )} error: ${err.message}`
+                    );
+                    throw err;
+                });
             if (count !== 0 && count % 100 === 0) {
                 await retryFncs.sleep(fiveMinutesInMS);
             }
@@ -48,7 +60,7 @@ const calculateEarningsForUsers = async () => {
                 created_at: user.created_at,
             });
         }
-        logger.info('/scripts/earnings/calculateEarningsForUsers done');
+        logger.info('/scripts/earnings/calculateEarningsForUsers');
         process.exit(0);
     } catch (err) {
         logger.error(

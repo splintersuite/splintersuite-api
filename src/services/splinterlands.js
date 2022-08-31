@@ -1,5 +1,7 @@
 const logger = require('../util/pinologger');
 const axiosInstance = require('../util/axiosInstance');
+const path = require('path');
+const jsonfile = require('jsonfile');
 
 const getCardDetail = async () => {
     logger.debug(`/services/splinterlands/getCardDetail`);
@@ -7,6 +9,48 @@ const getCardDetail = async () => {
         'https://api2.splinterlands.com/cards/get_details'
     );
     return cards.data;
+};
+
+const getMarketInfoForCard = async ({ card_detail_id }) => {
+    try {
+        const url = `https://api2.splinterlands.com/market/active_rentals`;
+        const res = await axiosInstance.get(url, {
+            params: {
+                card_detail_id,
+            },
+        });
+        if (!Array.isArray(res.data)) {
+            throw new Error(`https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card_detail_id} not returning an array, returned : ${JSON.stringify(
+                res.data
+            )}
+            `);
+        }
+
+        return res.data;
+    } catch (err) {
+        logger.error(
+            `/src/services/splinterlands/getMarketInfoForCard error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const updateCardDetail = async () => {
+    try {
+        logger.debug(`/services/splinterlands/updateCardDetail`);
+
+        const filePath = path.join(__dirname, '..', 'util', 'cardDetails.json');
+        const details = await getCardDetail();
+        jsonfile.writeFileSync(filePath, details);
+
+        logger.info(`/services/splinterlands/updateCardDetail`);
+        return;
+    } catch (err) {
+        logger.error(
+            `/services/splinterlands/updateCardDetail error: ${err.message}`
+        );
+        throw err;
+    }
 };
 
 // could add cache functionality here to limit api calls
@@ -60,20 +104,63 @@ const getCollectionListings = async ({ username }) => {
 const getActiveRentals = async ({ username }) => {
     try {
         logger.debug(`/services/splinterlands/getActiveRentals`);
+
         const activeRentals = await axiosInstance.get(
             `https://api2.splinterlands.com/market/active_rentals?owner=${username}`
         );
 
         if (!Array.isArray(activeRentals.data)) {
+            logger.error(
+                `/services/splinterlands/getActiveRentals active_rentals response.data is not an array`
+            );
             throw new Error(
-                `https://api2.splinterlands.com/market/active_rentals?owner=${username} returning something crazy`
+                `https://api2.splinterlands.com/market/active_rentals?owner=${username} not returning an array`
             );
         }
-        logger.info(`/services/splinterlands/getActiveRentals done`);
+
+        logger.info(
+            `/services/splinterlands/getActiveRentals User: ${username} Rentals: ${activeRentals?.data?.length}`
+        );
         return activeRentals.data;
     } catch (err) {
         logger.error(
             `/services/splinterlands/getActiveRentals error: ${err.messagee}`
+        );
+        throw err;
+    }
+};
+
+const getActiveRentalsRange = async ({ username, offset }) => {
+    try {
+        logger.debug(`getActiveRentalsRange with offset: ${offset}`);
+
+        const limit = 200;
+
+        const url = `https://api2.splinterlands.com/market/rental_history`;
+        const activeRentals = await axiosInstance.get(url, {
+            params: {
+                player: username,
+                offset,
+                limit,
+            },
+        });
+
+        if (!Array.isArray(activeRentals.data)) {
+            logger.error(
+                `/services/splinterlands/getActiveRentalsRange rental_history response.data is not an array`
+            );
+            throw new Error(
+                `https://api2.splinterlands.com/market/rental_history, username: ${username}, offset: ${offset} not returning an array`
+            );
+        }
+        logger.info(
+            `/services/splinterlands/getActiveRentalsRange User: ${username} Rentals: ${activeRentals?.data?.length}`
+        );
+
+        return activeRentals.data;
+    } catch (err) {
+        logger.error(
+            `/services/splinterlands/getActiveRentalsRange error: ${err.message}`
         );
         throw err;
     }
@@ -88,7 +175,7 @@ const getSettings = async () => {
         const res = await axiosInstance(url);
 
         const data = res.data;
-        logger.info(`/services/splinterlands/getSettings done`);
+        logger.info(`/services/splinterlands/getSettings`);
         return data;
     } catch (err) {
         logger.error(
@@ -99,9 +186,11 @@ const getSettings = async () => {
 };
 
 module.exports = {
-    getCardDetail,
     getCollection,
     getCollectionListings,
     getActiveRentals,
     getSettings,
+    updateCardDetail,
+    getActiveRentalsRange,
+    getMarketInfoForCard,
 };

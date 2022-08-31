@@ -1,8 +1,11 @@
 const marketService = require('../services/market');
+const logger = require('../util/pinologger');
 
 const handleGetCurrentPrices = async (req, res, next) => {
-    const currentPrices = await marketService.getCurrentPrices();
-    res.send(currentPrices);
+    logger.debug(`controllers/handleCurrentPrices`);
+    const { currentPrices, timeOfLastFetch } =
+        await marketService.getCurrentPrices();
+    res.send({ currentPrices, timeOfLastFetch });
 };
 
 module.exports = {

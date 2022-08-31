@@ -7,6 +7,8 @@ const { dateRange } = require('../util/dates');
 const axiosInstance = require('../util/axiosInstance');
 const findCardLevel = require('../util/calculateCardLevel');
 const mathFncs = require('../util/math');
+const { getCachedCurrentPrices, cacheCurrentPrices } = require('./cacher');
+const splinterlandsService = require('./splinterlands');
 
 const ALL_OPEN_TRADES = 'ALL_OPEN_TRADES';
 const TRADES_DURING_PERIOD = 'TRADES_DURING_PERIOD';
@@ -104,18 +106,37 @@ const getMarketRatesAndUserRentals = async ({ users_id }) => {
 };
 
 const getCurrentPrices = async () => {
-    // CACHE TODO
-    // CACHE THIS OBJECT...
+    logger.debug(`/services/market/getCurrentPrices`);
+    const cachedPriceData = await getCachedCurrentPrices();
 
-    const twentyFiveHoursAgo = new Date(
-        new Date().getTime() - 1000 * 60 * 60 * 25
+    if (
+        cachedPriceData?.currentPrices != null &&
+        Object.keys(cachedPriceData?.currentPrices)?.length > 100 &&
+        Number.isFinite(cachedPriceData?.timeOfLastFetch)
+    ) {
+        logger.info(
+            `/services/market/getCurrentPrices cached price points: ${
+                Object.keys(cachedPriceData?.currentPrices)?.length
+            }`
+        );
+        return {
+            currentPrices: cachedPriceData.currentPrices,
+            timeOfLastFetch: cachedPriceData.timeOfLastFetch,
+        };
+    }
+
+    const twentySixHoursAgo = new Date(
+        new Date().getTime() - 1000 * 60 * 60 * 26
     );
 
     const prices = await MarketRentalPrices.query()
-        .whereBetween('period_start_time', [twentyFiveHoursAgo, new Date()])
+        .whereBetween('period_start_time', [twentySixHoursAgo, new Date()])
         .orderBy('period_start_time', 'desc');
 
     const pricesObj = {};
+    const timeOfLastFetch = new Date(
+        _.max(prices.map(({ period_end_time }) => period_end_time))
+    ).getTime();
     prices.forEach((price) => {
         const keyString = `${price.card_detail_id}-${price.level}-${price.is_gold}-${price.edition}`;
         if (!(keyString in pricesObj)) {
@@ -128,11 +149,25 @@ const getCurrentPrices = async () => {
                 high: price.high,
                 stdDev: price.std_dev,
                 median: price.median,
+                volume: price.volume,
             };
         }
     });
 
-    return pricesObj;
+    if (Object.keys(pricesObj).length === 0) {
+        logger.error(
+            `The market prices in our db for the time period: ${new Date(
+                twentySixHoursAgo
+            )} to now: ${new Date()} aren't populated!`
+        );
+    }
+    await cacheCurrentPrices({ currentPrices: pricesObj, timeOfLastFetch });
+    logger.info(
+        `/services/market/getCurrentPrices db price points: ${
+            Object.keys(pricesObj)?.length
+        }`
+    );
+    return { currentPrices: pricesObj, timeOfLastFetch };
 };
 
 const performanceVsMarket = async ({ users_id }) => {
@@ -274,19 +309,12 @@ const collectData = async ({
     try {
         logger.debug(`/services/market/collectData`);
 
-        // these api calls should live in services/splinterlands.js
-        const activeTrades = await axiosInstance.get(
-            `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}`
-        );
-
-        if (!Array.isArray(activeTrades.data)) {
-            throw new Error(
-                `https://api2.splinterlands.com/market/active_rentals?card_detail_id=${card.id}
-              not returning array`
-            );
-        }
+        let activeTrades = await splinterlandsService.getMarketInfoForCard({
+            card_detail_id: card.id,
+        });
         const trades = {};
-        activeTrades.data.forEach((trade) => {
+
+        activeTrades.forEach((trade) => {
             const level = findCardLevel({
                 id: card.id,
                 rarity: card.rarity,
@@ -320,7 +348,7 @@ const collectData = async ({
                 rentalDays: trade.rental_days,
             });
         });
-
+        activeTrades = [];
         // do math
         const uploadArr = [];
         for (const levelEditionKey of Object.keys(trades)) {
@@ -393,10 +421,19 @@ const collectData = async ({
         // rate limit this somehow
         if (uploadArr.length > 0) {
             await MarketRentalPrices.query().insert(uploadArr);
+        } else {
+            logger.error(
+                `/services/market/collectData uploadArr has a length less than 0, uploadArr: ${JSON.stringify(
+                    uploadArr
+                )}`
+            );
         }
-        logger.info('collectData done');
+        logger.info(
+            `/services/market/collectData ID: ${card?.id}, Name: ${card?.name}`
+        );
+        return;
     } catch (err) {
-        logger.error(`collectData error: ${err.message}`);
+        logger.error(`/services/market/collectData error: ${err.message}`);
         throw err;
     }
 };

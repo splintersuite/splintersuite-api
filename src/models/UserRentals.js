@@ -42,6 +42,7 @@ class UserRentals extends Model {
                 player_rented_to: { type: 'string' },
                 rental_tx: { type: 'string' },
                 sell_trx_id: { type: 'string' },
+                sell_trx_hive_id: { type: 'string' },
             },
         };
     }

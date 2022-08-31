@@ -12,7 +12,7 @@ const enterOldSeason = async ({ seasonData }) => {
             seasonData,
         });
 
-        logger.info('enterOldSeasons done');
+        logger.info('enterOldSeasons');
         return;
     } catch (err) {
         logger.error(`enterOldSeasons error: ${err.message}`);
@@ -39,7 +39,7 @@ const enterAllOldSeasons = async () => {
         await enterOldSeason({ seasonData: sesasonData });
         await tntSeason.create({ seasonData: season1Data });
 
-        logger.info('enterAllOldSeasons done');
+        logger.info('enterAllOldSeasons');
         process.exit(0);
     } catch (err) {
         logger.error(`enterAllOldSeasons error: ${err.message}`);

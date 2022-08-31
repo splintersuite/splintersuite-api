@@ -75,7 +75,7 @@ const get = async ({ users_id }) => {
             end_date: thirty.daysAgo,
         });
 
-        logger.info(
+        logger.debug(
             `/services/earnings/get for users_id: ${users_id}, dailyEarnings: ${JSON.stringify(
                 dailyEarnings
             )}, priorDailyEarnings: ${JSON.stringify(
@@ -126,11 +126,16 @@ const get = async ({ users_id }) => {
                 date: earnings_date,
             })
         );
-        logger.info(
+        logger.debug(
             `pastWeekDailyEarnings : ${JSON.stringify(
                 pastWeekDailyEarnings
             )}, length: ${pastWeekDailyEarnings.length},
             weekly: ${JSON.stringify(weekly)}`
+        );
+        logger.debug(
+            `daily: ${JSON.stringify(daily)}, wtd: ${JSON.stringify(
+                wtd
+            )}, mtd: ${JSON.stringify(mtd)}`
         );
         const total = { daily, wtd, mtd, weekly };
         return { total };
@@ -237,7 +242,9 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
             count = count + 1;
         }
 
-        logger.info(`/services/earnings/insertAllDailyEarnings done`);
+        logger.info(
+            `/services/earnings/insertAllDailyEarnings User ID: ${users_id}`
+        );
         return;
     } catch (err) {
         logger.error(
@@ -255,7 +262,7 @@ const formatDbDailyEarnings = ({ dailyEarnings }) => {
             const date = DateTime.fromJSDate(earnings.earnings_date);
             return date.toUTC(); // needed to keep this in DateTime structure rather than just a date structure
         });
-        logger.info(
+        logger.debug(
             `/services/earnings/formatDbDailyEarnings earningsDates: ${JSON.stringify(
                 earningsDates
             )}, dailyEarnings: ${JSON.stringify(dailyEarnings)}`
@@ -264,7 +271,7 @@ const formatDbDailyEarnings = ({ dailyEarnings }) => {
 
         const uniqueObj = arrayToObj({ arr: uniqueDates });
 
-        logger.info(`/services/earnings/formatDbDailyEarnings done`);
+        logger.debug(`/services/earnings/formatDbDailyEarnings`);
         return uniqueObj;
     } catch (err) {
         logger.error(
@@ -285,7 +292,7 @@ const arrayToObj = ({ arr }) => {
             obj[key] = earnings_date;
         });
 
-        logger.debug(`/services/earnings/arrayToObj done`);
+        logger.debug(`/services/earnings/arrayToObj`);
         return obj;
     } catch (err) {
         logger.error(`/services/earnings/arrayToObj error: ${err.message}`);
@@ -312,7 +319,7 @@ const insertDayEarnings = async ({ users_id, earnings_date }) => {
             bot_num_rentals: dailyEarnings.numOfRentals,
         });
 
-        logger.debug(`/services/earnings/insertDailyEarnings done`);
+        logger.debug(`/services/earnings/insertDailyEarnings`);
         return dailyEarnings;
     } catch (err) {
         logger.error(`/services/earnings/ error: ${err.message}`);
@@ -334,7 +341,7 @@ const getDailyEarningsForDateRange = async ({
             })
             .whereBetween('earnings_date', [start_date, end_date]);
 
-        logger.debug(`/services/earnings/getDailyEarningsForDateRange done`);
+        logger.debug(`/services/earnings/getDailyEarningsForDateRange`);
         return earnings;
     } catch (err) {
         logger.error(
@@ -353,7 +360,7 @@ const getDailyEarningsForUser = async ({ users_id }) => {
         });
 
         // when none returned, will be an empty array
-        logger.debug(`/services/earnings/getDailyEarningsForUser done`);
+        logger.debug(`/services/earnings/getDailyEarningsForUser`);
         return earnings;
     } catch (err) {
         logger.error(

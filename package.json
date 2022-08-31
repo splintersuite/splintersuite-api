@@ -9,11 +9,15 @@
         "dev": "LEVEL=debug nodemon --experimental-specifier-resolution=node index.js --ignore tests",
         "earnings": "node  --trace-warnings ./src/scripts/earnings.js",
         "brawls": "node --trace-warnings ./src/scripts/brawls.js",
-        "oldSeasons": "node ./src/scripts/tests/oldSeason.js"
+        "oldSeasons": "node ./src/scripts/tests/oldSeason.js",
+        "market": "node ./src/scripts/market.js",
+        "season": "node ./src/scripts/seasons.js",
+        "catchup": "node ./src/scripts/catchup.js"
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@hiveio/dhive": "^1.2.2",
         "ajv-formats": "^2.1.1",
         "axios": "^0.27.2",
         "body-parser": "^1.20.0",
@@ -24,6 +28,7 @@
         "express": "^4.18.1",
         "express-async-errors": "^3.1.1",
         "helmet": "^5.1.0",
+        "jsonfile": "^6.1.0",
         "knex": "^2.1.0",
         "lodash": "^4.17.21",
         "luxon": "^2.4.0",
@@ -32,7 +37,8 @@
         "objection": "^3.0.1",
         "pg": "^8.7.3",
         "pino": "^8.0.0",
-        "pino-http": "^8.0.1"
+        "pino-http": "^8.0.1",
+        "redis": "^4.2.0"
     },
     "devDependencies": {
         "pino-pretty": "^8.1.0"

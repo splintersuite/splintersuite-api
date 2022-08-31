@@ -10,8 +10,9 @@ const extractSLBrawlData = (settings) => {
         const { brawl_cycle } = settings;
         const { id, name, start, end } = brawl_cycle;
 
-        logger.debug(`id: ${id}, name: ${name}, start: ${start}, end: ${end}`);
-        logger.info(`/scripts/brawls/extractSLBrawlData done`);
+        logger.info(
+            `/scripts/brawls/extractSLBrawlData ID: ${id}, Name: ${name}, Start: ${start}, End: ${end}`
+        );
         return { id, name, start, end };
     } catch (err) {
         logger.error(
@@ -57,7 +58,7 @@ const getSLBrawlData = async () => {
             throw err;
         });
 
-        logger.info(`/scripts/brawls/getSLBrawlData done`);
+        logger.info(`/scripts/brawls/getSLBrawlData`);
         process.exit(0);
     } catch (err) {
         logger.error(`/scripts/brawls/getSLBrawlData error: ${err.message}`);
