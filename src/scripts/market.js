@@ -16,17 +16,26 @@ const getHistoricalData = async () => {
         const fiveMinutesInMS = 1000 * 60 * 5;
         let count = 0;
         for (const card of cardsDetails) {
-            await marketService.collectData({
-                card,
-                now,
-                twelveHoursAgo,
-                twelveHoursAgoTime,
-            });
-            if (count !== 0 && count % 100 === 0) {
-                logger.info('/scripts/rentals/getHistoricalData sleep 5 mins');
-                await retryFncs.sleep(fiveMinutesInMS);
+            if (card?.edition === 6) {
+                logger.info(
+                    `/scripts/rentals/getHistoricalData card: ${card?.name} is Gladius`
+                );
+            } else {
+                await marketService.collectData({
+                    card,
+                    now,
+                    twelveHoursAgo,
+                    twelveHoursAgoTime,
+                });
+
+                if (count !== 0 && count % 100 === 0) {
+                    logger.info(
+                        '/scripts/rentals/getHistoricalData sleep 5 mins'
+                    );
+                    await retryFncs.sleep(fiveMinutesInMS);
+                }
+                count++;
             }
-            count++;
         }
         logger.info('/scripts/rentals/getHistoricalData');
         process.exit(0);

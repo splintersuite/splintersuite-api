@@ -70,7 +70,8 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
-        debug: process.env.DEBUG || false,
+        debug: false,
+        // debug: process.env.DEBUG || false,
     },
     onUpdateTrigger: (table) => `
         CREATE TRIGGER ${table}_updated_at
