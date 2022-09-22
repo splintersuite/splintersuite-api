@@ -21,8 +21,6 @@ class DailyEarnings extends Model {
                 id: { type: 'string' },
                 users_id: { type: 'string' },
                 earnings_date: { type: 'object', format: 'date-time' },
-                created_at: { type: 'object', format: 'date-time' },
-                updated_at: { type: 'object', format: 'date-time' },
                 num_rentals: { type: 'number' },
                 bot_num_rentals: { type: 'number' },
                 earnings_dec: { type: 'number' },
