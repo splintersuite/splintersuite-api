@@ -12,7 +12,8 @@
         "oldSeasons": "node ./src/scripts/tests/oldSeason.js",
         "market": "node ./src/scripts/market.js",
         "season": "node ./src/scripts/seasons.js",
-        "catchup": "node ./src/scripts/catchup.js"
+        "catchup": "node ./src/scripts/catchup.js",
+        "updateCardDetails": "node ./src/scripts/updateCardDetail.js"
     },
     "author": "",
     "license": "ISC",
