@@ -2,7 +2,6 @@ const Model = require('../../db/model');
 const DailyEarnings = require('./DailyEarnings');
 const Invoices = require('./Invoices');
 const UserRentals = require('./UserRentals');
-const CollectionListings = require('./CollectionListings');
 
 class Users extends Model {
     static get tableName() {
@@ -47,14 +46,6 @@ class Users extends Model {
                 join: {
                     from: 'users.id',
                     to: 'user_rentals.users_id',
-                },
-            },
-            user_listings: {
-                relation: Model.HasManyRelation,
-                modelClass: CollectionListings,
-                join: {
-                    from: 'users.id',
-                    to: 'collection_listings.users_id',
                 },
             },
         };
