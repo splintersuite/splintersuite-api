@@ -25,6 +25,7 @@ $ \q
 $ node_modules/.bin/knex migrate:latest --esm
 
 node_modules/.bin/knex migrate:down 20220731054417_v2BotEarning.js
+
 or if you have knex installed
 $ knex migrate:latest
 https://stackoverflow.com/questions/40427903/knex-rollback-specific-migration
