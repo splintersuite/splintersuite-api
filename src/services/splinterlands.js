@@ -185,6 +185,23 @@ const getSettings = async () => {
     }
 };
 
+const getHiveRentalTransactions = async ({ username }) => {
+    try {
+        logger.debug(`/services/splinterlands/getHiveRentalTransactions start`);
+        const url = `https://api2.splinterlands.com/players/history?username=${username}&from_block=-1&limit=500&types=update_rental_price`;
+        const res = await axiosInstance(url);
+
+        const results = res.data;
+        logger.debug(`/services/splinterlands/getHiveRentalTransactions done`);
+        return results;
+    } catch (err) {
+        logger.error(
+            `/services/splinterlands/getHiveRentalTransactions error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
 module.exports = {
     getCollection,
     getCollectionListings,
@@ -193,4 +210,5 @@ module.exports = {
     updateCardDetail,
     getActiveRentalsRange,
     getMarketInfoForCard,
+    getHiveRentalTransactions,
 };

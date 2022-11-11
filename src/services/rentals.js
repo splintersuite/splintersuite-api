@@ -328,12 +328,21 @@ const filterIfInDB = ({
 
 const patchRentalsBySplintersuite = async ({ users_id }) => {
     try {
+        logger.info(`/services/rentals/patchRentalsBySplintersuite start`);
         const rentalsToCheck = await UserRentals.query().where({
             users_id,
             confirmed: null,
         });
+        logger.info(
+            `/services/rentals/patchRentalsBySplintersuite rentalsToCheck: ${
+                rentalsToCheck?.length
+            }, rentalsToCheck: ${JSON.stringify(rentalsToCheck)}`
+        );
         const hiveTransactionIds = _.uniq(
             rentalsToCheck.map(({ sell_trx_hive_id }) => sell_trx_hive_id)
+        );
+        logger.info(
+            `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${hiveTransactionIds?.length}`
         );
         const splintersuiteRentalIds = [];
         const userRentalIds = [];
@@ -349,7 +358,16 @@ const patchRentalsBySplintersuite = async ({ users_id }) => {
                 userRentalIds.push(hiveTransactionId);
             }
         }
-
+        logger.info(
+            `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${hiveTransactionIds?.length}, splintersuite Rental Ids: ${splintersuiteRentalIds?.length}, userRentalIds: ${userRentalIds?.length}, rentalsToCheck: ${rentalsToCheck?.length}`
+        );
+        logger.info(
+            `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${JSON.stringify(
+                hiveTransactionIds
+            )}, splintersuiteRentalIds: ${JSON.stringify(
+                splintersuiteRentalIds
+            )}, userRentalIds: ${JSON.stringify(userRentalIds)} `
+        );
         // update the database
         let chunks = splintersuiteRentalIds;
 
@@ -384,7 +402,9 @@ const patchRentalsBySplintersuite = async ({ users_id }) => {
                 .whereIn('sell_trx_hive_id', idChunk)
                 .patch({ confirmed: false });
         }
-
+        logger.info(
+            `/services/rentals/patchRentalsBySplintersuite: ${users_id} done`
+        );
         return;
     } catch (err) {
         logger.error(
@@ -402,3 +422,7 @@ module.exports = {
     filterIfInDB,
     insertActiveRentals,
 };
+
+/*
+curl -s --data '{"jsonrpc":"2.0", "method":"account_history_api.get_account_history", "params":{"account":"xdww", "start":-1, "limit":10, "operation_filter_low": 262144}, "id":1}' https://api.hive.blog/
+*/
