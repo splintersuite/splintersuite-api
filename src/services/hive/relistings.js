@@ -1,7 +1,7 @@
 const { Client } = require('@hiveio/dhive');
 const { json } = require('body-parser');
-const logger = require('../util/pinologger');
-const splinterlandsService = require('./splinterlands');
+const logger = require('../../util/pinologger');
+const splinterlandsService = require('../splinterlands');
 
 const client = new Client([
     'https://api.hive.blog',
@@ -100,8 +100,8 @@ const getPostedSuiteRelistings = async ({ username, lastCreatedTime }) => {
 const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
     try {
         logger.debug(`/services/hive/getRecentHiveRelistings start`);
-        const hiveTxs = [];
-        let notOurs = 0;
+        const suiteHiveRelistings = [];
+        const nonSuiteHiveRelistings = [];
         let notSuccess = 0;
         const hiveTransactions = await splinterlandsService.getHiveRelistings({
             username,
@@ -112,23 +112,26 @@ const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
             const createdTime = new Date(created_date).getTime();
             const posted = successfullyPosted({ hiveTransaction: transaction });
             const isSuite = isSplintersuite({ hiveTransaction });
-            if (!isSuite) {
-                notOurs = notOurs + 1;
-                continue;
-            }
             if (!posted) {
                 notSuccess = notSuccess + 1;
                 continue;
             }
+            if (!isSuite) {
+                if (lastCreatedTime <= createdTime) {
+                    nonSuiteHiveRelistings.push(transaction);
+                }
+                continue;
+            }
             if (lastCreatedTime <= createdTime) {
-                hiveTxs.push(transaction);
+                suiteHiveRelistings.push(transaction);
+                continue;
             }
         }
         logger.info(`/services/hive/getRecentHiveRelistings for ${username}`);
         logger.info(
-            `lastCreatedTime: ${lastCreatedTime}, notOurs: ${notOurs}, notSuccess: ${notSuccess}, hiveTransactions: ${hiveTransactions?.length}, hiveTxs: ${hiveTxs?.length}`
+            `lastCreatedTime: ${lastCreatedTime}, nonSuiteHiveRelistings: ${nnonSuiteHiveRelistings}, notSuccess: ${notSuccess}, hiveTransactions: ${hiveTransactions?.length}, suiteHiveRelistings: ${suiteHiveRelistings?.length}`
         );
-        return hiveTxs;
+        return suiteHiveRelistings;
     } catch (err) {
         logger.error(
             `/services/hive/getRecentHiveRelistings error: ${err.message}`
@@ -293,3 +296,12 @@ module.exports = {
 
 // TNT NOTE: in our how to ultimately convert, we have from our active rentals endpoint https://api2.splinterlands.com/market/active_rentals?owner=xdww
 // sell_trx_id (which we can use to lookup the rentalListing shit), then we also have to match the rental_tx, next_rental_payment, payment_amount, and card_id (which is the uid of the card)
+
+// we can have our listings end up being able to convert into a card_uid and then have a map of uids to their current sell_trx_id, so we can ultimately just confirm if true
+// and any that match our listings from the hive endpoint on it, we can then obviously mark as ok cuz we made the initial rental as well, actually initial rental id isn't there, so if there is any that aren't confirmed, we can confirm with these
+// (TNT NOTE: this means that we also do want to capture splintersuite and non splintersuite data for all of this, cuz then users can manually do shit and we wouldn't know)
+
+// TNT SELF THOUGHT: Not only do we want to keep the user hive actions rather than filter out, we also want to save every single change in a searchable object with the search key being for relistings the sell_trx_id, uid
+// we have the splintersuite ones, and as long as we have the same sell_trx_id and card uid, then we are good for as many rentals between the non splintersuite actions that are done on the sell_trx_id and/or the uid of the card
+
+// we missing the rental_tx from the hive stuff, and we don't have exactly the next_rental_payment_time, but we can see the timeline

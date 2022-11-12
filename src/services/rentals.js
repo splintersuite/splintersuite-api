@@ -3,7 +3,7 @@ const _ = require('lodash');
 const UserRentals = require('../models/UserRentals');
 const logger = require('../util/pinologger');
 const splinterlandsService = require('./splinterlands');
-const hiveService = require('./hive');
+const hiveService = require('./hive/relistings');
 const utilDates = require('../util/dates');
 const findCardLevel = require('../util/calculateCardLevel');
 
