@@ -38,7 +38,10 @@ const calculateEarningsForUsers = async () => {
                     throw err;
                 });
             await rentals
-                .patchRentalsBySplintersuite({ users_id: user.id })
+                .patchRentalsBySplintersuite({
+                    users_id: user.id,
+                    username: user.username,
+                })
                 .catch((err) => {
                     logger.error(
                         `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(

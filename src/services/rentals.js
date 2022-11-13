@@ -6,6 +6,7 @@ const splinterlandsService = require('./splinterlands');
 const hiveService = require('./hive/relistings');
 const utilDates = require('../util/dates');
 const findCardLevel = require('../util/calculateCardLevel');
+const { get } = require('lodash');
 
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     try {
@@ -326,9 +327,30 @@ const filterIfInDB = ({
     }
 };
 
-const patchRentalsBySplintersuite = async ({ users_id }) => {
+const patchRentalsWithRelistings = async ({
+    users_id,
+    recentSplintersuiteHiveIDs,
+}) => {
+    for (const record of recentSplintersuiteHiveIDs) {
+        await UserRentals.query()
+            .where({ users_id })
+            .where('next_rental_payment', '>=', record.time)
+            .whereIn('sell_trx_id', record.IDs)
+            .whereIn('confirmed', [null, false])
+            .patch({ confirmed: true });
+    }
+};
+
+const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     try {
         logger.info(`/services/rentals/patchRentalsBySplintersuite start`);
+        const recentSplintersuiteHiveIDs =
+            await hiveService.getSplintersuiteHiveIDs({ username });
+        await patchRentalsWithRelistings({
+            users_id,
+            recentSplintersuiteHiveIDs,
+        });
+
         const rentalsToCheck = await UserRentals.query().where({
             users_id,
             confirmed: null,

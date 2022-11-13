@@ -2,6 +2,7 @@ const { Client } = require('@hiveio/dhive');
 const { json } = require('body-parser');
 const logger = require('../../util/pinologger');
 const splinterlandsService = require('../splinterlands');
+const _ = require('lodash');
 
 const client = new Client([
     'https://api.hive.blog',
@@ -12,7 +13,7 @@ const client = new Client([
 
 const getHiveTransaction = async ({ transactionId }) => {
     try {
-        logger.debug(`/services/hive/getHiveTransaction`);
+        logger.debug(`/services/hive/relistings/getHiveTransaction`);
         const data = await client.database.getTransaction(transactionId);
         if (
             Array.isArray(data?.operations) &&
@@ -21,18 +22,24 @@ const getHiveTransaction = async ({ transactionId }) => {
             data.operations[0].length > 1 &&
             data.operations[0][1]['json'] !== undefined
         ) {
-            logger.debug(`/services/hive/getHiveTransaction done with data`);
             logger.debug(
-                `/services/hive/getHiveTransaction data: ${JSON.stringify(
+                `/services/hive/relistings/getHiveTransaction done with data`
+            );
+            logger.debug(
+                `/services/hive/relistings/getHiveTransaction data: ${JSON.stringify(
                     data.operations[0][1].json
                 )}`
             );
             return JSON.parse(data.operations[0][1].json);
         }
-        logger.debug(`/services/hive/getHiveTransaction done with null`);
+        logger.debug(
+            `/services/hive/relistings/getHiveTransaction done with null`
+        );
         return null;
     } catch (err) {
-        logger.error(`/services/hive/getHiveTransaction error: ${err.message}`);
+        logger.error(
+            `/services/hive/relistings/getHiveTransaction error: ${err.message}`
+        );
         if (err?.jse_info?.code === 10) {
             return null;
         }
@@ -40,13 +47,69 @@ const getHiveTransaction = async ({ transactionId }) => {
     }
 };
 
+const getSplintersuiteHiveIDs = async ({ username }) => {
+    try {
+        logger.debug(`/services/hive/relistings/getAccountHistory`);
+        const data = await client.database.getAccountHistory(
+            username,
+            -1,
+            1000
+            // operation_filter_low: 262144,
+        );
+        let recentSplintersuiteHiveIDs = [];
+        if (Array.isArray(data) && data.length > 0) {
+            data.reverse(); // goes from oldest to newest now
+            data.forEach((record) => {
+                if (
+                    Array.isArray(record) &&
+                    record.length > 1 &&
+                    Array.isArray(record[1].op) &&
+                    record[1].op.length > 1 &&
+                    [
+                        'sm_update_rental_price',
+                        'sm_market_list',
+                        // 'sm_market_cancel_rental',
+                    ].includes(record[1].op[1].id) &&
+                    typeof record[1].op[1].json === 'string'
+                ) {
+                    recentSplintersuiteHiveIDs.push({
+                        time: new Date(record[1].timestamp),
+                        IDs: [],
+                    });
+                    const records = JSON.parse(record[1].op[1].json);
+                    if (
+                        records?.agent === 'splintersuite' &&
+                        Array.isArray(records?.items)
+                    ) {
+                        records?.items.forEach((rec) => {
+                            recentSplintersuiteHiveIDs[
+                                recentSplintersuiteHiveIDs.length - 1
+                            ].IDs.push(rec[0]);
+                        });
+                    }
+                    // maybe some handling for the user manually listing and then removing it from the array?
+                }
+            });
+        }
+
+        return recentSplintersuiteHiveIDs.filter(
+            (record) => record.IDs.length > 0
+        );
+    } catch (err) {
+        logger.error(
+            `/services/hive/relistings/getAccountHistory error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
 const successfullyPosted = ({ hiveTransaction }) => {
     try {
-        logger.debug(`/services/hive/successfullyPosted`);
+        logger.debug(`/services/hive/relistings/successfullyPosted`);
         if (hiveTransaction?.success) {
             if (hiveTransaction?.error) {
                 logger.error(
-                    `/services/hive/successfullyPosted we have a hive transaction with successs being true, but an error : ${hiveTransaction?.error}, hiveTransaction: ${hiveTransaction}`
+                    `/services/hive/relistings/successfullyPosted we have a hive transaction with successs being true, but an error : ${hiveTransaction?.error}, hiveTransaction: ${hiveTransaction}`
                 );
             }
             return true;
@@ -54,14 +117,16 @@ const successfullyPosted = ({ hiveTransaction }) => {
             return false;
         }
     } catch (err) {
-        logger.error(`/services/hive/successfullyPosted error: ${err.message}`);
+        logger.error(
+            `/services/hive/relistings/successfullyPosted error: ${err.message}`
+        );
         throw err;
     }
 };
 
 const isSplintersuite = ({ hiveTransaction }) => {
     try {
-        logger.debug(`/services/hive/isSplintersuite`);
+        logger.debug(`/services/hive/relistings/isSplintersuite`);
         const data = hiveTransaction?.data;
         const jsonData = JSON.parse(data);
         if (jsonData && jsonData?.agent === 'splintersuite') {
@@ -70,7 +135,9 @@ const isSplintersuite = ({ hiveTransaction }) => {
             return false;
         }
     } catch (err) {
-        logger.error(`/services/hive/isSplintersuite error: ${err.message}`);
+        logger.error(
+            `/services/hive/relistings/isSplintersuite error: ${err.message}`
+        );
         throw err;
     }
 };
@@ -91,7 +158,7 @@ const getPostedSuiteRelistings = async ({ username, lastCreatedTime }) => {
         return { relist, cancel };
     } catch (err) {
         logger.error(
-            `/services/hive/getPostedSuiteRelistings error: ${err.message}`
+            `/services/hive/relistings/getPostedSuiteRelistings error: ${err.message}`
         );
         throw err;
     }
@@ -99,7 +166,7 @@ const getPostedSuiteRelistings = async ({ username, lastCreatedTime }) => {
 
 const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
     try {
-        logger.debug(`/services/hive/getRecentHiveRelistings start`);
+        logger.debug(`/services/hive/relistings/getRecentHiveRelistings start`);
         const suiteHiveRelistings = [];
         const nonSuiteHiveRelistings = [];
         let notSuccess = 0;
@@ -127,14 +194,16 @@ const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
                 continue;
             }
         }
-        logger.info(`/services/hive/getRecentHiveRelistings for ${username}`);
+        logger.info(
+            `/services/hive/relistings/getRecentHiveRelistings for ${username}`
+        );
         logger.info(
             `lastCreatedTime: ${lastCreatedTime}, nonSuiteHiveRelistings: ${nnonSuiteHiveRelistings}, notSuccess: ${notSuccess}, hiveTransactions: ${hiveTransactions?.length}, suiteHiveRelistings: ${suiteHiveRelistings?.length}`
         );
         return suiteHiveRelistings;
     } catch (err) {
         logger.error(
-            `/services/hive/getRecentHiveRelistings error: ${err.message}`
+            `/services/hive/relistings/getRecentHiveRelistings error: ${err.message}`
         );
         throw err;
     }
@@ -142,22 +211,24 @@ const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
 
 const getRelistingType = ({ transactions }) => {
     try {
-        logger.debug(`/services/hive/getRelistingType`);
+        logger.debug(`/services/hive/relistings/getRelistingType`);
 
         const hiveListingsObj = buildHiveListingsObj({ transactions });
         const { relist, cancel } = seperateByListingType({ hiveListingsObj });
 
-        logger.info(`/services/hive/getRelistingType:`);
+        logger.info(`/services/hive/relistings/getRelistingType:`);
         return { relist, cancel };
     } catch (err) {
-        logger.error(`/services/hive/getRelistingType error: ${err.message}`);
+        logger.error(
+            `/services/hive/relistings/getRelistingType error: ${err.message}`
+        );
         throw err;
     }
 };
 
 const seperateByListingType = ({ hiveListingsObj }) => {
     try {
-        logger.debug(`/services/hive/seperateByListingType`);
+        logger.debug(`/services/hive/relistings/seperateByListingType`);
         const relist = {};
         const cancel = {};
         let none = 0;
@@ -178,7 +249,7 @@ const seperateByListingType = ({ hiveListingsObj }) => {
             }
         }
         logger.info(
-            `/services/hive/seperateByListingType: Relistings: ${
+            `/services/hive/relistings/seperateByListingType: Relistings: ${
                 Object.keys(relist)?.length
             }, Cancelled: ${
                 Object.keys(cancel)?.length
@@ -194,7 +265,7 @@ const seperateByListingType = ({ hiveListingsObj }) => {
         return { relist, cancel };
     } catch (err) {
         logger.error(
-            `/services/hive/seperateByListingType error: ${err.message}`
+            `/services/hive/relistings/seperateByListingType error: ${err.message}`
         );
         throw err;
     }
@@ -202,14 +273,14 @@ const seperateByListingType = ({ hiveListingsObj }) => {
 
 const buildHiveListingsObj = ({ transactions }) => {
     try {
-        logger.debug(`/services/hive/buildHiveListingsObj start`);
+        logger.debug(`/services/hive/relistings/buildHiveListingsObj start`);
         const listings = {};
         const oldTxs = 0;
         let tx = 0;
 
         if (transactions?.length < 1) {
             logger.warn(
-                `/services/hive/buildHiveListingsObj input transactions has a length less than 1, transactions: ${JSON.stringify(
+                `/services/hive/relistings/buildHiveListingsObj input transactions has a length less than 1, transactions: ${JSON.stringify(
                     transactions
                 )}`
             );
@@ -220,7 +291,7 @@ const buildHiveListingsObj = ({ transactions }) => {
             const jsonData = JSON.parse(data);
             if (!jsonData) {
                 logger.warn(
-                    `/services/hive/buildHiveListingsObj transaction doesnt have any data element to it, transaction: ${JSON.stringify(
+                    `/services/hive/relistings/buildHiveListingsObj transaction doesnt have any data element to it, transaction: ${JSON.stringify(
                         transaction
                     )}`
                 );
@@ -269,7 +340,7 @@ const buildHiveListingsObj = ({ transactions }) => {
             }
         }
 
-        logger.info(`/services/hive/buildHiveListingsObj:`);
+        logger.info(`/services/hive/relistings/buildHiveListingsObj:`);
         logger.info(
             `Hive Transactions: ${
                 transactions?.length
@@ -281,7 +352,7 @@ const buildHiveListingsObj = ({ transactions }) => {
         return listings;
     } catch (err) {
         logger.error(
-            `/services/hive/buildHiveListingsObj error: ${err.message}`
+            `/services/hive/relistings/buildHiveListingsObj error: ${err.message}`
         );
         throw err;
     }
@@ -292,6 +363,7 @@ const buildHiveListingsObj = ({ transactions }) => {
 module.exports = {
     getHiveTransaction,
     getPostedSuiteRelistings,
+    getSplintersuiteHiveIDs,
 };
 
 // TNT NOTE: in our how to ultimately convert, we have from our active rentals endpoint https://api2.splinterlands.com/market/active_rentals?owner=xdww
