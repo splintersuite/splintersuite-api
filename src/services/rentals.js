@@ -6,7 +6,6 @@ const splinterlandsService = require('./splinterlands');
 const hiveService = require('./hive/relistings');
 const utilDates = require('../util/dates');
 const findCardLevel = require('../util/calculateCardLevel');
-const { get } = require('lodash');
 
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     try {
@@ -334,7 +333,7 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
     for (const record of recentHiveIDs) {
         await UserRentals.query()
             .where({ users_id })
-            .where('next_rental_payment', '>=', record.time)
+            .where('last_rental_payment', '>=', record.time)
             .whereIn('sell_trx_id', record.IDs)
             .patch({ confirmed: record.isSplintersuite });
     }
@@ -343,25 +342,28 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
 const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     try {
         logger.info(`/services/rentals/patchRentalsBySplintersuite start`);
+        const rentalsToCheck = await UserRentals.query().where({
+            users_id,
+            confirmed: null,
+        });
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
         });
 
+        throw new Error(
+            `checking userRentals where confirmed: null for user: ${users_id}`
+        );
         await patchRentalsWithRelistings({
             users_id,
             recentHiveIDs,
         });
 
-        const rentalsToCheck = await UserRentals.query().where({
-            users_id,
-            confirmed: null,
-        });
         logger.info(
             `/services/rentals/patchRentalsBySplintersuite rentalsToCheck: ${
                 rentalsToCheck?.length
             }, rentalsToCheck: ${JSON.stringify(rentalsToCheck)}`
         );
-        const hiveTransactionIds = _.uniq(
+        /*  const hiveTransactionIds = _.uniq(
             rentalsToCheck.map(({ sell_trx_hive_id }) => sell_trx_hive_id)
         );
         logger.info(
@@ -424,7 +426,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
                 .where({ users_id })
                 .whereIn('sell_trx_hive_id', idChunk)
                 .patch({ confirmed: false });
-        }
+        }*/
         logger.info(
             `/services/rentals/patchRentalsBySplintersuite: ${users_id} done`
         );

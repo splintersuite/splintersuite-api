@@ -47,7 +47,10 @@ const getHiveTransaction = async ({ transactionId }) => {
     }
 };
 
-const getTransactionHiveIDsByUser = async ({ username }) => {
+const getTransactionHiveIDsByUser = async ({
+    username,
+    lastUnconfirmedRentalTime,
+}) => {
     try {
         logger.debug(`/services/hive/relistings/getTransactionHiveIDsByUser`);
         // last 1000 transactions... about 3 weeks for tamecards
@@ -55,13 +58,29 @@ const getTransactionHiveIDsByUser = async ({ username }) => {
             username,
             -1,
             1000
-            // operation_filter_low: 262144,
+            //  operation_filter_low: 262144,
         );
         const recentSplintersuiteHiveIDs = [];
         const recentUserHiveIDs = [];
+        const tooOld = [];
+        logger.info(`data; ${JSON.stringify(data)}`);
+
         if (Array.isArray(data) && data.length > 0) {
             data.reverse(); // goes from oldest to newest now
             data.forEach((record) => {
+                /*
+                record[0] is the current block (so if we want to start at it, instead of -1 we'd put in this block number)
+                record: [4186,{\"trx_id\":\"9b7b3309cec012fe02730c87fab990c45c68cae4\",\"block\":69643929,\"trx_in_block\":36,\"op_in_trx\":0,\"virtual_op\":false,\"timestamp\":\"2022-11-14T03:35:18\",\"op\":[\"custom_json\",{\"required_auths\":[],\"required_posting_auths\":[\"xdww\"],\"id\":\"sm_update_rental_price\",\"json\":\"{\\\"items\\\":[[\\\"4630ca6872af0204e7f117129c06c9cfd2098533-4\\\",13.05513],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-54\\\",145.2065],[\\\"402e0f1e42a75d7a890ba33d50602973c1d003e8-0\\\",33],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-55\\\",7.042],[\\\"a0ea371597d66713f4febbad5b84901edcff3d5e-1\\\",15]],\\\"agent\\\":\\\"splintersuite\\\",\\\"suite_action\\\":\\\"cancel\\\"}\"}]}]
+                 */
+
+                const recordCreatedDate = new Date(record[1].timestamp);
+                const recordTime = recordCreatedDate.getTime();
+                if (recordTime < lastUnconfirmedRentalTime) {
+                    tooOld.push(record);
+                    return;
+                }
+                logger.info(`record: ${JSON.stringify(record)}`);
+                //throw new Error('checking');
                 if (
                     Array.isArray(record) &&
                     record.length > 1 &&
@@ -72,6 +91,7 @@ const getTransactionHiveIDsByUser = async ({ username }) => {
                     ) &&
                     typeof record[1].op[1].json === 'string'
                 ) {
+                    // records are
                     const records = JSON.parse(record[1].op[1].json);
                     if (
                         records?.agent === 'splintersuite' &&
@@ -106,13 +126,18 @@ const getTransactionHiveIDsByUser = async ({ username }) => {
                 }
             });
         }
-
+        // TNT NOTE: this all makes sense to me
         // sorts ascending... it should already be but just in case...
         const recentHiveIDs = _.sortBy(
             _.concat(recentSplintersuiteHiveIDs, recentUserHiveIDs),
             'time'
         );
-
+        logger.info(`tooOld: ${JSON.stringify(tooOld)}`);
+        logger.info(`tooOld length: ${tooOld?.length}`);
+        throw new Error(`checking to see which are deemed toOld`);
+        logger.info(
+            `/services/hive/relistings/getTransactionHiveIDsByUser: ${username}`
+        );
         return recentHiveIDs;
     } catch (err) {
         logger.error(

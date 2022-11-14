@@ -13,7 +13,8 @@
         "market": "node ./src/scripts/market.js",
         "season": "node ./src/scripts/seasons.js",
         "catchup": "node ./src/scripts/catchup.js",
-        "updateCardDetails": "node ./src/scripts/updateCardDetail.js"
+        "updateCardDetails": "node ./src/scripts/updateCardDetail.js",
+        "testHive": "node ./src/scripts/tests/hive.js"
     },
     "author": "",
     "license": "ISC",
