@@ -47,16 +47,18 @@ const getHiveTransaction = async ({ transactionId }) => {
     }
 };
 
-const getSplintersuiteHiveIDs = async ({ username }) => {
+const getTransactionHiveIDsByUser = async ({ username }) => {
     try {
-        logger.debug(`/services/hive/relistings/getAccountHistory`);
+        logger.debug(`/services/hive/relistings/getTransactionHiveIDsByUser`);
+        // last 1000 transactions... about 3 weeks for tamecards
         const data = await client.database.getAccountHistory(
             username,
             -1,
             1000
             // operation_filter_low: 262144,
         );
-        let recentSplintersuiteHiveIDs = [];
+        const recentSplintersuiteHiveIDs = [];
+        const recentUserHiveIDs = [];
         if (Array.isArray(data) && data.length > 0) {
             data.reverse(); // goes from oldest to newest now
             data.forEach((record) => {
@@ -65,39 +67,56 @@ const getSplintersuiteHiveIDs = async ({ username }) => {
                     record.length > 1 &&
                     Array.isArray(record[1].op) &&
                     record[1].op.length > 1 &&
-                    [
-                        'sm_update_rental_price',
-                        'sm_market_list',
-                        // 'sm_market_cancel_rental',
-                    ].includes(record[1].op[1].id) &&
+                    ['sm_update_rental_price', 'sm_market_list'].includes(
+                        record[1].op[1].id
+                    ) &&
                     typeof record[1].op[1].json === 'string'
                 ) {
-                    recentSplintersuiteHiveIDs.push({
-                        time: new Date(record[1].timestamp),
-                        IDs: [],
-                    });
                     const records = JSON.parse(record[1].op[1].json);
                     if (
                         records?.agent === 'splintersuite' &&
-                        Array.isArray(records?.items)
+                        Array.isArray(records?.items) &&
+                        records?.items.length > 0
                     ) {
+                        recentSplintersuiteHiveIDs.push({
+                            time: new Date(record[1].timestamp),
+                            IDs: [],
+                            isSplintersuite: true,
+                        });
                         records?.items.forEach((rec) => {
                             recentSplintersuiteHiveIDs[
                                 recentSplintersuiteHiveIDs.length - 1
                             ].IDs.push(rec[0]);
                         });
+                    } else if (
+                        Array.isArray(records?.items) &&
+                        records?.items.length > 0
+                    ) {
+                        recentUserHiveIDs.push({
+                            time: new Date(record[1].timestamp),
+                            IDs: [],
+                            isSplintersuite: false,
+                        });
+                        records?.items.forEach((rec) => {
+                            recentUserHiveIDs[
+                                recentUserHiveIDs.length - 1
+                            ].IDs.push(rec[0]);
+                        });
                     }
-                    // maybe some handling for the user manually listing and then removing it from the array?
                 }
             });
         }
 
-        return recentSplintersuiteHiveIDs.filter(
-            (record) => record.IDs.length > 0
+        // sorts ascending... it should already be but just in case...
+        const recentHiveIDs = _.sortBy(
+            _.concat(recentSplintersuiteHiveIDs, recentUserHiveIDs),
+            'time'
         );
+
+        return recentHiveIDs;
     } catch (err) {
         logger.error(
-            `/services/hive/relistings/getAccountHistory error: ${err.message}`
+            `/services/hive/relistings/getTransactionHiveIDsByUser error: ${err.message}`
         );
         throw err;
     }
@@ -363,7 +382,7 @@ const buildHiveListingsObj = ({ transactions }) => {
 module.exports = {
     getHiveTransaction,
     getPostedSuiteRelistings,
-    getSplintersuiteHiveIDs,
+    getTransactionHiveIDsByUser,
 };
 
 // TNT NOTE: in our how to ultimately convert, we have from our active rentals endpoint https://api2.splinterlands.com/market/active_rentals?owner=xdww

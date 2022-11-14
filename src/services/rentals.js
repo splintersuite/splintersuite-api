@@ -327,28 +327,29 @@ const filterIfInDB = ({
     }
 };
 
-const patchRentalsWithRelistings = async ({
-    users_id,
-    recentSplintersuiteHiveIDs,
-}) => {
-    for (const record of recentSplintersuiteHiveIDs) {
+const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
+    logger.info(`/services/rentals/patchRentalsWithRelistings start`);
+    // patch... dates are ascending... so we may overwrite a few times but it will be accurate...
+    // and fortunately fewer db calls
+    for (const record of recentHiveIDs) {
         await UserRentals.query()
             .where({ users_id })
             .where('next_rental_payment', '>=', record.time)
             .whereIn('sell_trx_id', record.IDs)
-            .whereIn('confirmed', [null, false])
-            .patch({ confirmed: true });
+            .patch({ confirmed: record.isSplintersuite });
     }
 };
 
 const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     try {
         logger.info(`/services/rentals/patchRentalsBySplintersuite start`);
-        const recentSplintersuiteHiveIDs =
-            await hiveService.getSplintersuiteHiveIDs({ username });
+        const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
+            username,
+        });
+
         await patchRentalsWithRelistings({
             users_id,
-            recentSplintersuiteHiveIDs,
+            recentHiveIDs,
         });
 
         const rentalsToCheck = await UserRentals.query().where({
