@@ -346,13 +346,21 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             users_id,
             confirmed: null,
         });
+
+        const farthestBack = rentalsToCheck.reduce(
+            (oldSoFar, rentalToCheck) => {
+                return oldSoFar?.last_rental_payment <
+                    rentalToCheck?.last_rental_payment
+                    ? oldSoFar
+                    : rentalToCheck;
+            }
+        );
+
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
+            lastUnconfirmedRentalTime: farthestBack?.last_rental_payment,
         });
 
-        throw new Error(
-            `checking userRentals where confirmed: null for user: ${users_id}`
-        );
         await patchRentalsWithRelistings({
             users_id,
             recentHiveIDs,

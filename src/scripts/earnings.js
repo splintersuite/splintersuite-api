@@ -37,19 +37,19 @@ const calculateEarningsForUsers = async () => {
                     );
                     throw err;
                 });
-            // await rentals
-            //     .patchRentalsBySplintersuite({
-            //         users_id: user.id,
-            //         username: user.username,
-            //     })
-            //     .catch((err) => {
-            //         logger.error(
-            //             `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
-            //                 user.id
-            //             )} error: ${err.message}`
-            //         );
-            //         throw err;
-            //     });
+            await rentals
+                .patchRentalsBySplintersuite({
+                    users_id: user.id,
+                    username: user.username,
+                })
+                .catch((err) => {
+                    logger.error(
+                        `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
+                            user.id
+                        )} error: ${err.message}`
+                    );
+                    throw err;
+                });
             if (count !== 0 && count % 100 === 0) {
                 await retryFncs.sleep(fiveMinutesInMS);
             }
@@ -57,12 +57,12 @@ const calculateEarningsForUsers = async () => {
             count++;
         }
 
-        for (const user of users) {
-            await earningsService.insertAllDailyEarnings({
-                users_id: user.id,
-                created_at: user.created_at,
-            });
-        }
+        // for (const user of users) {
+        //     await earningsService.insertAllDailyEarnings({
+        //         users_id: user.id,
+        //         created_at: user.created_at,
+        //     });
+        // }
         logger.info('/scripts/earnings/calculateEarningsForUsers');
         process.exit(0);
     } catch (err) {

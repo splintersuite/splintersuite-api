@@ -79,8 +79,7 @@ const getTransactionHiveIDsByUser = async ({
                     tooOld.push(record);
                     return;
                 }
-                logger.info(`record: ${JSON.stringify(record)}`);
-                //throw new Error('checking');
+
                 if (
                     Array.isArray(record) &&
                     record.length > 1 &&
@@ -126,18 +125,16 @@ const getTransactionHiveIDsByUser = async ({
                 }
             });
         }
-        // TNT NOTE: this all makes sense to me
+
         // sorts ascending... it should already be but just in case...
         const recentHiveIDs = _.sortBy(
             _.concat(recentSplintersuiteHiveIDs, recentUserHiveIDs),
             'time'
         );
-        logger.info(`tooOld: ${JSON.stringify(tooOld)}`);
-        logger.info(`tooOld length: ${tooOld?.length}`);
-        throw new Error(`checking to see which are deemed toOld`);
         logger.info(
             `/services/hive/relistings/getTransactionHiveIDsByUser: ${username}`
         );
+        logger.info(`tooOld: ${tooOld?.length}`);
         return recentHiveIDs;
     } catch (err) {
         logger.error(
