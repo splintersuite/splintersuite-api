@@ -330,10 +330,16 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
     logger.info(`/services/rentals/patchRentalsWithRelistings start`);
     // patch... dates are ascending... so we may overwrite a few times but it will be accurate...
     // and fortunately fewer db calls
+    const now = new Date();
     for (const record of recentHiveIDs) {
+        logger.info(
+            `/patchRentalsWithRelistings record: ${JSON.stringify(record)}`
+        );
+        //  throw new Error('checking record');
         await UserRentals.query()
             .where({ users_id })
-            .where('last_rental_payment', '>=', record.time)
+            //.where('last_rental_payment', '>=', record.time)
+            .whereBetween('last_rental_payment', [record.time, now])
             .whereIn('sell_trx_id', record.IDs)
             .patch({ confirmed: record.isSplintersuite });
     }
@@ -346,19 +352,24 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             users_id,
             confirmed: null,
         });
-
-        const farthestBack = rentalsToCheck.reduce(
-            (oldSoFar, rentalToCheck) => {
-                return oldSoFar?.last_rental_payment <
-                    rentalToCheck?.last_rental_payment
-                    ? oldSoFar
-                    : rentalToCheck;
-            }
-        );
+        if (!Array.isArray(rentalsToCheck) || rentalsToCheck?.length < 1) {
+            logger.warn(
+                `for user: ${username}, don't have any saved userRentals whose confirmed is null`
+            );
+            return;
+        }
+        // const farthestBack = rentalsToCheck.reduce(
+        //     (oldSoFar, rentalToCheck) => {
+        //         return oldSoFar?.last_rental_payment <
+        //             rentalToCheck?.last_rental_payment
+        //             ? oldSoFar
+        //             : rentalToCheck;
+        //     }
+        // );
 
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
-            lastUnconfirmedRentalTime: farthestBack?.last_rental_payment,
+            //  lastUnconfirmedRentalTime: farthestBack?.last_rental_payment,
         });
 
         await patchRentalsWithRelistings({
