@@ -53,11 +53,7 @@ const getHiveTransaction = async ({ transactionId }) => {
     }
 };
 
-const getTransactionHiveIDsByUser = async ({
-    username,
-    timeToStopAt,
-    // lastUnconfirmedRentalTime,
-}) => {
+const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
     try {
         logger.debug(`/services/hive/relistings/getTransactionHiveIDsByUser`);
         // last 1000 transactions... about 3 weeks for tamecards
@@ -66,72 +62,29 @@ const getTransactionHiveIDsByUser = async ({
         const recentUserHiveIDs = [];
         const tooOld = [];
         const ids = [];
-        let iteration = 0;
-        let timeYet = true;
         let startingRecord = -1;
         let breakOut = false;
         let lastRecord;
         const startingRecords = [];
-        // logger.info(`data; ${JSON.stringify(data)}`);
-        //    while (timeYet === true) {
-        // if (breakOut === true) {
-        //     break;
-        // }
+
         for (let i = 0; i < 10; i++) {
-            iteration = iteration + 1;
             const data = await client.database.getAccountHistory(
                 username,
-                // 2298,
-                // 1000,
                 startingRecord,
                 1000
                 //  operation_filter_low: 262144,
             );
             if (Array.isArray(data) && data.length > 0) {
-                // console.log('data', data);
                 data.reverse(); // goes from oldest to newest now
-                // data.forEach((record) => {
-                logger.info(`data[0]: ${JSON.stringify(data[0])}`);
-                logger.info(
-                    `data[data?.length-1]: ${JSON.stringify(
-                        data[data?.length - 1]
-                    )}`
-                );
-                // throw new Error(
-                //     'checking the first and last of first for loop'
-                // );
                 for (const record of data) {
                     /*
                 record[0] is the current block (so if we want to start at it, instead of -1 we'd put in this block number)
                 record: [4186,{\"trx_id\":\"9b7b3309cec012fe02730c87fab990c45c68cae4\",\"block\":69643929,\"trx_in_block\":36,\"op_in_trx\":0,\"virtual_op\":false,\"timestamp\":\"2022-11-14T03:35:18\",\"op\":[\"custom_json\",{\"required_auths\":[],\"required_posting_auths\":[\"xdww\"],\"id\":\"sm_update_rental_price\",\"json\":\"{\\\"items\\\":[[\\\"4630ca6872af0204e7f117129c06c9cfd2098533-4\\\",13.05513],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-54\\\",145.2065],[\\\"402e0f1e42a75d7a890ba33d50602973c1d003e8-0\\\",33],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-55\\\",7.042],[\\\"a0ea371597d66713f4febbad5b84901edcff3d5e-1\\\",15]],\\\"agent\\\":\\\"splintersuite\\\",\\\"suite_action\\\":\\\"cancel\\\"}\"}]}]
                  */
-                    // TNT NOTE: we need to get this to once we have this set, we go back another 75 blocks (in case people are running it once/hour at max)
-                    // const recordCreatedDate = new Date(record[1].timestamp);
-                    // const recordTime = recordCreatedDate.getTime();
-                    // if (recordTime < lastUnconfirmedRentalTime) {
-                    //     tooOld.push(record);
-                    //     return;
-                    // }
                     const timestampz = record[1].timestamp + 'Z';
                     const timestampzDate = new Date(timestampz);
                     const timestampzTime = timestampzDate.getTime();
 
-                    // this means the record is older than we wanted
-
-                    // if (timestamp > now) {
-                    //     logger.error(
-                    //         `new Date(record[1].timestamp): ${new Date(
-                    //             record[1].timestamp
-                    //         )}, record[1].timestamp: ${
-                    //             record[1].timestamp
-                    //         }, now: ${now},  timestampzDate: ${timestampzDate}, timestampz: ${timestampz}`
-                    //     );
-
-                    //     logger.error(
-                    //         `timestamp.getTime() : ${timestamp.getTime()}, now.getTime(): ${now.getTime()}, timestampzTime: ${timestampzTime},rightNow : ${rightNow}`
-                    //     );
-                    //     throw new Error('checking the timestamps');
-                    // }
                     lastRecord = record;
                     ids.push(record[1].op[1].id);
                     if (
@@ -158,8 +111,6 @@ const getTransactionHiveIDsByUser = async ({
                         ) {
                             if (records?.agent === 'splintersuite') {
                                 recentSplintersuiteHiveIDs.push({
-                                    //  time: new Date(record[1].timestamp),
-                                    //time: new Date(timestampz),
                                     time: timestampzDate,
                                     IDs: [],
                                     isPriceUpdate: lookupKey === 'items',
@@ -172,8 +123,6 @@ const getTransactionHiveIDsByUser = async ({
                                 });
                             } else {
                                 recentUserHiveIDs.push({
-                                    //time: new Date(record[1].timestamp),
-                                    // time: new Date(timestampz),
                                     time: timestampzDate,
                                     IDs: [],
                                     isPriceUpdate: lookupKey === 'items',
@@ -195,18 +144,6 @@ const getTransactionHiveIDsByUser = async ({
                         )
                     ) {
                         tooOld.push(record);
-                        logger.warn(
-                            `timestampzTime: ${timestampzTime}, is less than timeToStopAt: ${timeToStopAt}`
-                        );
-                        logger.warn(`record: ${JSON.stringify(record)}`);
-                        logger.warn(
-                            `lastRecord: ${JSON.stringify(lastRecord)}`
-                        );
-                        logger.warn(
-                            `timetoStopAt: ${timeToStopAt}, new Date(timetoStopAt) : ${new Date(
-                                timeToStopAt
-                            )}`
-                        );
                         breakOut = true;
                         break;
                     }
@@ -216,13 +153,10 @@ const getTransactionHiveIDsByUser = async ({
             startingRecord = parseInt(lastRecord[0]) - 1;
             if (startingRecord < 1000) {
                 //  UnhandledPromiseRejectionWarning: RPCError: args.start >= args.limit-1: start must be greater than or equal to limit-1 (start is 0-based index)
-                // we need our startingRecord to be greater than or equal to the limit
+                // we need our startingRecord to be greater than or equal to the limit, which is 1000 (the max value it can be)
                 startingRecord = 1000;
             }
             if (breakOut) {
-                break;
-            }
-            if (iteration > 15) {
                 break;
             }
         }
@@ -231,28 +165,15 @@ const getTransactionHiveIDsByUser = async ({
             _.concat(recentSplintersuiteHiveIDs, recentUserHiveIDs),
             'time'
         );
-        const length = recentHiveIDs?.length;
-        logger.info(`recentHiveIDs[0]: ${JSON.stringify(recentHiveIDs[0])}`);
-        logger.info(
-            `recentHiveIDs[length-1]: ${JSON.stringify(
-                recentHiveIDs[length - 1]
-            )}`
-        );
-        logger.info(`lastRecord: ${JSON.stringify(lastRecord)}`);
-        logger.info(`lastRecord[0]: ${JSON.stringify(lastRecord[0])}`);
-        logger.info(`startingRecord: ${startingRecord}`);
-        logger.info(`startingRecords: ${JSON.stringify(startingRecords)}`);
-        logger.info(
-            `timeToStopAt: ${timeToStopAt}, new Date(timeToStopAt): ${new Date(
-                timeToStopAt
-            )}`
-        );
+
         logger.info(
             `/services/hive/relistings/getTransactionHiveIDsByUser: ${username}`
         );
-        logger.info(`tooOld: ${tooOld?.length}`);
-        logger.info(`iteration: ${iteration}`);
-        throw new Error('checking');
+        logger.info(
+            `tooOld: ${tooOld?.length}, lastRecord[0]: ${JSON.stringify(
+                lastRecord[0]
+            )}`
+        );
         return recentHiveIDs;
     } catch (err) {
         logger.error(
