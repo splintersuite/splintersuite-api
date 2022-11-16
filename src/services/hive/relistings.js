@@ -71,6 +71,7 @@ const getTransactionHiveIDsByUser = async ({
         let startingRecord = -1;
         let breakOut = false;
         let lastRecord;
+        const startingRecords = [];
         // logger.info(`data; ${JSON.stringify(data)}`);
         //    while (timeYet === true) {
         // if (breakOut === true) {
@@ -80,6 +81,7 @@ const getTransactionHiveIDsByUser = async ({
             iteration = iteration + 1;
             const data = await client.database.getAccountHistory(
                 username,
+                // 2298,
                 // 1000,
                 startingRecord,
                 1000
@@ -89,6 +91,15 @@ const getTransactionHiveIDsByUser = async ({
                 // console.log('data', data);
                 data.reverse(); // goes from oldest to newest now
                 // data.forEach((record) => {
+                logger.info(`data[0]: ${JSON.stringify(data[0])}`);
+                logger.info(
+                    `data[data?.length-1]: ${JSON.stringify(
+                        data[data?.length - 1]
+                    )}`
+                );
+                // throw new Error(
+                //     'checking the first and last of first for loop'
+                // );
                 for (const record of data) {
                     /*
                 record[0] is the current block (so if we want to start at it, instead of -1 we'd put in this block number)
@@ -177,7 +188,12 @@ const getTransactionHiveIDsByUser = async ({
                         }
                     }
 
-                    if (timestampzTime < timeToStopAt) {
+                    if (
+                        timestampzTime < timeToStopAt &&
+                        ['sm_update_rental_price', 'sm_market_list'].includes(
+                            record[1].op[1].id
+                        )
+                    ) {
                         tooOld.push(record);
                         logger.warn(
                             `timestampzTime: ${timestampzTime}, is less than timeToStopAt: ${timeToStopAt}`
@@ -193,25 +209,21 @@ const getTransactionHiveIDsByUser = async ({
                         );
                         breakOut = true;
                         break;
-                        // throw new Error(
-                        //     'WHY DOES THE RECORD SHOW PROPERLY RN WTF'
-                        // );
-                        // timeYet = false;
-                        //    breakOut = true;
                     }
                 }
+            }
+            startingRecords.push(startingRecord);
+            startingRecord = parseInt(lastRecord[0]) - 1;
+            if (startingRecord < 1000) {
+                //  UnhandledPromiseRejectionWarning: RPCError: args.start >= args.limit-1: start must be greater than or equal to limit-1 (start is 0-based index)
+                // we need our startingRecord to be greater than or equal to the limit
+                startingRecord = 1000;
             }
             if (breakOut) {
                 break;
             }
             if (iteration > 15) {
                 break;
-            }
-            startingRecord = parseInt(lastRecord[0]) - 1;
-            if (startingRecord < 1000) {
-                //  UnhandledPromiseRejectionWarning: RPCError: args.start >= args.limit-1: start must be greater than or equal to limit-1 (start is 0-based index)
-                // we need our startingRecord to be greater than or equal to the limit
-                startingRecord = 1000;
             }
         }
         // sorts ascending... it should already be but just in case...
@@ -229,6 +241,7 @@ const getTransactionHiveIDsByUser = async ({
         logger.info(`lastRecord: ${JSON.stringify(lastRecord)}`);
         logger.info(`lastRecord[0]: ${JSON.stringify(lastRecord[0])}`);
         logger.info(`startingRecord: ${startingRecord}`);
+        logger.info(`startingRecords: ${JSON.stringify(startingRecords)}`);
         logger.info(
             `timeToStopAt: ${timeToStopAt}, new Date(timeToStopAt): ${new Date(
                 timeToStopAt
