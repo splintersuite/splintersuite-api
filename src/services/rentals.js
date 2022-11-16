@@ -382,6 +382,19 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         //             : rentalToCheck;
         //     }
         // );
+        const marketIdsForCollection = await marketIdsForCollection({
+            username,
+        });
+        const sellTransactionIds = _.uniq(
+            rentalsToCheck.map(({ sell_trx_id }) => sell_trx_id)
+        );
+
+        const msInADay = 1000 * 60 * 60 * 24;
+        const fortyFiveDaysTime = 45 * msInADay;
+        const nowTime = new Date().getTime();
+
+        const fortyFiveDaysAgo = nowTime - fortyFiveDaysTime;
+        // now we can use the map to find out the created_at, and then find the earliest created_at and use it in the lastUncomfirmedRentalTime
 
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
@@ -392,7 +405,9 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             users_id,
             recentHiveIDs,
         });
-
+        // TNT IDEAs: 1) we have the earliest date we go back be the beginning of the null market_ids created and go from there,
+        // 2) we could instead just say go back the past 2 months at most and ignore everything else/say fuck it.
+        // 3) once we have shit deleting after a month and we consolidate that, we should be good to go then
         logger.info(
             `/services/rentals/patchRentalsBySplintersuite rentalsToCheck: ${
                 rentalsToCheck?.length
@@ -469,6 +484,42 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     } catch (err) {
         logger.error(
             `/services/rentals/patchRentalsBySplintersuite error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const marketIdsForCollection = async ({ username }) => {
+    try {
+        logger.debug(`/services/rentals/marketIdsForCollection`);
+        const collection = await splinterlandsService.getCollection({
+            username,
+        });
+        const notListed = [];
+        const listed = {};
+        for (const card of collection) {
+            if (!card?.market_id || !card?.market_created_date || !card.uid) {
+                notListed.push(card);
+            } else {
+                const cardToInsert = {
+                    uid: card.uid,
+                    market_id: card.market_id,
+                    market_created_date: card.market_created_date,
+                };
+                listed[card?.market_id] = cardToInsert;
+            }
+        }
+        logger.info(`/services/rentals/marketIdsForCollection: ${username}`);
+        logger.info(
+            `notListed: ${notListed?.length}, listed: ${
+                Object.keys(listed)?.length
+            }`
+        );
+        throw new Error('checking to see if marketIds fn works');
+        return listed;
+    } catch (err) {
+        logger.error(
+            `/services/rentals/marketIdsForCollection error: ${err.message}`
         );
         throw err;
     }

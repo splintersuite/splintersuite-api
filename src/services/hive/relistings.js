@@ -87,26 +87,22 @@ const getTransactionHiveIDsByUser = async ({
                 //     tooOld.push(record);
                 //     return;
                 // }
-                const now = new Date();
-                const rightNow = DateTime.utc();
                 const timestampz = record[1].timestamp + 'Z';
-                const timestamp = new Date(record[1].timestamp);
-                const timestampzDate = new Date(timestampz);
-                const timestampzTime = timestampzDate.getTime();
-                if (timestamp > now) {
-                    logger.error(
-                        `new Date(record[1].timestamp): ${new Date(
-                            record[1].timestamp
-                        )}, record[1].timestamp: ${
-                            record[1].timestamp
-                        }, now: ${now},  timestampzDate: ${timestampzDate}, timestampz: ${timestampz}`
-                    );
 
-                    logger.error(
-                        `timestamp.getTime() : ${timestamp.getTime()}, now.getTime(): ${now.getTime()}, timestampzTime: ${timestampzTime},rightNow : ${rightNow}`
-                    );
-                    throw new Error('checking the timestamps');
-                }
+                // if (timestamp > now) {
+                //     logger.error(
+                //         `new Date(record[1].timestamp): ${new Date(
+                //             record[1].timestamp
+                //         )}, record[1].timestamp: ${
+                //             record[1].timestamp
+                //         }, now: ${now},  timestampzDate: ${timestampzDate}, timestampz: ${timestampz}`
+                //     );
+
+                //     logger.error(
+                //         `timestamp.getTime() : ${timestamp.getTime()}, now.getTime(): ${now.getTime()}, timestampzTime: ${timestampzTime},rightNow : ${rightNow}`
+                //     );
+                //     throw new Error('checking the timestamps');
+                // }
                 ids.push(record[1].op[1].id);
                 if (
                     Array.isArray(record) &&
@@ -132,7 +128,8 @@ const getTransactionHiveIDsByUser = async ({
                     ) {
                         if (records?.agent === 'splintersuite') {
                             recentSplintersuiteHiveIDs.push({
-                                time: new Date(record[1].timestamp),
+                                //  time: new Date(record[1].timestamp),
+                                time: new Date(timestampz),
                                 IDs: [],
                                 isPriceUpdate: lookupKey === 'items',
                                 isSplintersuite: true,
@@ -144,7 +141,8 @@ const getTransactionHiveIDsByUser = async ({
                             });
                         } else {
                             recentUserHiveIDs.push({
-                                time: new Date(record[1].timestamp),
+                                //time: new Date(record[1].timestamp),
+                                time: new Date(timestampz),
                                 IDs: [],
                                 isPriceUpdate: lookupKey === 'items',
                                 isSplintersuite: false,
