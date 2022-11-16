@@ -2,6 +2,7 @@ const { Client } = require('@hiveio/dhive');
 const { json } = require('body-parser');
 const logger = require('../../util/pinologger');
 const splinterlandsService = require('../splinterlands');
+const { DateTime } = require('luxon');
 const _ = require('lodash');
 
 const client = new Client([
@@ -86,6 +87,26 @@ const getTransactionHiveIDsByUser = async ({
                 //     tooOld.push(record);
                 //     return;
                 // }
+                const now = new Date();
+                const rightNow = DateTime.utc();
+                const timestampz = record[1].timestamp + 'Z';
+                const timestamp = new Date(record[1].timestamp);
+                const timestampzDate = new Date(timestampz);
+                const timestampzTime = timestampzDate.getTime();
+                if (timestamp > now) {
+                    logger.error(
+                        `new Date(record[1].timestamp): ${new Date(
+                            record[1].timestamp
+                        )}, record[1].timestamp: ${
+                            record[1].timestamp
+                        }, now: ${now},  timestampzDate: ${timestampzDate}, timestampz: ${timestampz}`
+                    );
+
+                    logger.error(
+                        `timestamp.getTime() : ${timestamp.getTime()}, now.getTime(): ${now.getTime()}, timestampzTime: ${timestampzTime},rightNow : ${rightNow}`
+                    );
+                    throw new Error('checking the timestamps');
+                }
                 ids.push(record[1].op[1].id);
                 if (
                     Array.isArray(record) &&

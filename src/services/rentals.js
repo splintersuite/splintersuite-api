@@ -336,19 +336,23 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
                 `/patchRentalsWithRelistings record: ${JSON.stringify(record)}`
             );
             if (record.isPriceUpdate) {
-                await UserRentals.query()
+                const res = await UserRentals.query()
                     .where({ users_id })
                     .where('last_rental_payment', '>=', record.time)
                     .whereIn('sell_trx_id', record.IDs)
                     .patch({ confirmed: record.isSplintersuite });
+                logger.info(`res is: ${res}`);
             } else {
-                await UserRentals.query()
+                const res = await UserRentals.query()
                     .where({ users_id })
                     .where('last_rental_payment', '>=', record.time)
                     .whereIn('card_uid', record.IDs)
                     .patch({ confirmed: record.isSplintersuite });
+                logger.info(`res is: ${res}`);
             }
         }
+        throw new Error('checking patchRentalsWithRelistings');
+        return;
     } catch (err) {
         logger.error(
             `/services/rentals/patchRentalsWithRelistings error: ${err.message}`
