@@ -327,21 +327,33 @@ const filterIfInDB = ({
 };
 
 const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
-    logger.info(`/services/rentals/patchRentalsWithRelistings start`);
-    // patch... dates are ascending... so we may overwrite a few times but it will be accurate...
-    // and fortunately fewer db calls
-    const now = new Date();
-    for (const record of recentHiveIDs) {
-        logger.info(
-            `/patchRentalsWithRelistings record: ${JSON.stringify(record)}`
+    try {
+        logger.info(`/services/rentals/patchRentalsWithRelistings start`);
+        // patch... dates are ascending... so we may overwrite a few times but it will be accurate...
+        // and fortunately fewer db calls
+        for (const record of recentHiveIDs) {
+            logger.info(
+                `/patchRentalsWithRelistings record: ${JSON.stringify(record)}`
+            );
+            if (record.isPriceUpdate) {
+                await UserRentals.query()
+                    .where({ users_id })
+                    .where('last_rental_payment', '>=', record.time)
+                    .whereIn('sell_trx_id', record.IDs)
+                    .patch({ confirmed: record.isSplintersuite });
+            } else {
+                await UserRentals.query()
+                    .where({ users_id })
+                    .where('last_rental_payment', '>=', record.time)
+                    .whereIn('card_uid', record.IDs)
+                    .patch({ confirmed: record.isSplintersuite });
+            }
+        }
+    } catch (err) {
+        logger.error(
+            `/services/rentals/patchRentalsWithRelistings error: ${err.message}`
         );
-        //  throw new Error('checking record');
-        await UserRentals.query()
-            .where({ users_id })
-            //.where('last_rental_payment', '>=', record.time)
-            .whereBetween('last_rental_payment', [record.time, now])
-            .whereIn('sell_trx_id', record.IDs)
-            .patch({ confirmed: record.isSplintersuite });
+        throw err;
     }
 };
 

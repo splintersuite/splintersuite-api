@@ -15,6 +15,7 @@ const getHiveTransaction = async ({ transactionId }) => {
     try {
         logger.debug(`/services/hive/relistings/getHiveTransaction`);
         const data = await client.database.getTransaction(transactionId);
+        console.log('data', data);
         if (
             Array.isArray(data?.operations) &&
             data.operations.length === 1 &&
@@ -29,6 +30,10 @@ const getHiveTransaction = async ({ transactionId }) => {
                 `/services/hive/relistings/getHiveTransaction data: ${JSON.stringify(
                     data.operations[0][1].json
                 )}`
+            );
+            console.log(
+                'data.operations[0][1].json',
+                data.operations[0][1].json
             );
             return JSON.parse(data.operations[0][1].json);
         }
@@ -63,9 +68,11 @@ const getTransactionHiveIDsByUser = async ({
         const recentSplintersuiteHiveIDs = [];
         const recentUserHiveIDs = [];
         const tooOld = [];
-        logger.info(`data; ${JSON.stringify(data)}`);
+        const ids = [];
+        // logger.info(`data; ${JSON.stringify(data)}`);
 
         if (Array.isArray(data) && data.length > 0) {
+            // console.log('data', data);
             data.reverse(); // goes from oldest to newest now
             data.forEach((record) => {
                 /*
@@ -79,7 +86,7 @@ const getTransactionHiveIDsByUser = async ({
                 //     tooOld.push(record);
                 //     return;
                 // }
-
+                ids.push(record[1].op[1].id);
                 if (
                     Array.isArray(record) &&
                     record.length > 1 &&
@@ -91,36 +98,42 @@ const getTransactionHiveIDsByUser = async ({
                     typeof record[1].op[1].json === 'string'
                 ) {
                     // records are
+                    let lookupKey;
+                    if (record[1].op[1].id === 'sm_update_rental_price') {
+                        lookupKey = 'items';
+                    } else {
+                        lookupKey = 'cards';
+                    }
                     const records = JSON.parse(record[1].op[1].json);
                     if (
-                        records?.agent === 'splintersuite' &&
-                        Array.isArray(records?.items) &&
-                        records?.items.length > 0
+                        Array.isArray(records?.[lookupKey]) &&
+                        records?.[lookupKey].length > 0
                     ) {
-                        recentSplintersuiteHiveIDs.push({
-                            time: new Date(record[1].timestamp),
-                            IDs: [],
-                            isSplintersuite: true,
-                        });
-                        records?.items.forEach((rec) => {
-                            recentSplintersuiteHiveIDs[
-                                recentSplintersuiteHiveIDs.length - 1
-                            ].IDs.push(rec[0]);
-                        });
-                    } else if (
-                        Array.isArray(records?.items) &&
-                        records?.items.length > 0
-                    ) {
-                        recentUserHiveIDs.push({
-                            time: new Date(record[1].timestamp),
-                            IDs: [],
-                            isSplintersuite: false,
-                        });
-                        records?.items.forEach((rec) => {
-                            recentUserHiveIDs[
-                                recentUserHiveIDs.length - 1
-                            ].IDs.push(rec[0]);
-                        });
+                        if (records?.agent === 'splintersuite') {
+                            recentSplintersuiteHiveIDs.push({
+                                time: new Date(record[1].timestamp),
+                                IDs: [],
+                                isPriceUpdate: lookupKey === 'items',
+                                isSplintersuite: true,
+                            });
+                            records?.[lookupKey].forEach((rec) => {
+                                recentSplintersuiteHiveIDs[
+                                    recentSplintersuiteHiveIDs.length - 1
+                                ].IDs.push(rec[0]);
+                            });
+                        } else {
+                            recentUserHiveIDs.push({
+                                time: new Date(record[1].timestamp),
+                                IDs: [],
+                                isPriceUpdate: lookupKey === 'items',
+                                isSplintersuite: false,
+                            });
+                            records?.[lookupKey].forEach((rec) => {
+                                recentUserHiveIDs[
+                                    recentUserHiveIDs.length - 1
+                                ].IDs.push(rec[0]);
+                            });
+                        }
                     }
                 }
             });
