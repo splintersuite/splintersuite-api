@@ -382,9 +382,10 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         //             : rentalToCheck;
         //     }
         // );
-        const marketIdsForCollection = await marketIdsForCollection({
-            username,
-        });
+        const marketIdsForCollection =
+            await splinterlandsService.marketIdsForCollection({
+                username,
+            });
         const sellTransactionIds = _.uniq(
             rentalsToCheck.map(({ sell_trx_id }) => sell_trx_id)
         );
@@ -489,41 +490,41 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     }
 };
 
-const marketIdsForCollection = async ({ username }) => {
-    try {
-        logger.debug(`/services/rentals/marketIdsForCollection`);
-        const collection = await splinterlandsService.getCollection({
-            username,
-        });
-        const notListed = [];
-        const listed = {};
-        for (const card of collection) {
-            if (!card?.market_id || !card?.market_created_date || !card.uid) {
-                notListed.push(card);
-            } else {
-                const cardToInsert = {
-                    uid: card.uid,
-                    market_id: card.market_id,
-                    market_created_date: card.market_created_date,
-                };
-                listed[card?.market_id] = cardToInsert;
-            }
-        }
-        logger.info(`/services/rentals/marketIdsForCollection: ${username}`);
-        logger.info(
-            `notListed: ${notListed?.length}, listed: ${
-                Object.keys(listed)?.length
-            }`
-        );
-        throw new Error('checking to see if marketIds fn works');
-        return listed;
-    } catch (err) {
-        logger.error(
-            `/services/rentals/marketIdsForCollection error: ${err.message}`
-        );
-        throw err;
-    }
-};
+// const marketIdsForCollection = async ({ username }) => {
+//     try {
+//         logger.debug(`/services/rentals/marketIdsForCollection`);
+//         const collection = await splinterlandsService.getCollection({
+//             username,
+//         });
+//         const notListed = [];
+//         const listed = {};
+//         for (const card of collection) {
+//             if (!card?.market_id || !card?.market_created_date || !card.uid) {
+//                 notListed.push(card);
+//             } else {
+//                 const cardToInsert = {
+//                     uid: card.uid,
+//                     market_id: card.market_id,
+//                     market_created_date: card.market_created_date,
+//                 };
+//                 listed[card?.market_id] = cardToInsert;
+//             }
+//         }
+//         logger.info(`/services/rentals/marketIdsForCollection: ${username}`);
+//         logger.info(
+//             `notListed: ${notListed?.length}, listed: ${
+//                 Object.keys(listed)?.length
+//             }`
+//         );
+//         //throw new Error('checking to see if marketIds fn works');
+//         return listed;
+//     } catch (err) {
+//         logger.error(
+//             `/services/rentals/marketIdsForCollection error: ${err.message}`
+//         );
+//         throw err;
+//     }
+// };
 
 module.exports = {
     updateRentalsInDb,

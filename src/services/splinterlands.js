@@ -73,33 +73,68 @@ const getCollection = async ({ username }) => {
     // filters out delegated or rentals cards
     return collection.data.cards.filter(({ player }) => player === username);
 };
+const marketIdsForCollection = async ({ username }) => {
+    try {
+        logger.debug(`/services/rentals/marketIdsForCollection`);
+        const collection = await getCollection({
+            username,
+        });
+        const notListed = [];
+        const listed = {};
+        for (const card of collection) {
+            if (!card?.market_id || !card?.market_created_date || !card.uid) {
+                notListed.push(card);
+            } else {
+                const cardToInsert = {
+                    uid: card.uid,
+                    market_id: card.market_id,
+                    market_created_date: card.market_created_date,
+                };
+                listed[card?.market_id] = cardToInsert;
+            }
+        }
+        logger.info(`/services/rentals/marketIdsForCollection: ${username}`);
+        logger.info(
+            `notListed: ${notListed?.length}, listed: ${
+                Object.keys(listed)?.length
+            }`
+        );
 
-const getCollectionListings = async ({ username }) => {
-    logger.debug(`/services/splinterlands/getCollectionListings`);
-    const collection = await getCollection({ username });
-
-    // listed but not rented market_listing_status = 0
-    // rented, market_listing_status = 3
-    // market_id in collection = sell_trx_id in our db
-    // delegation_tx in collection = rental_tx in our db
-
-    return {
-        rented: collection
-            .filter(({ market_listing_status }) => market_listing_status === 3)
-            .map((listing) => ({
-                ...listing,
-                sell_trx_id: listing.market_id,
-                rental_tx: listing.delegation_tx,
-            })),
-        notRented: collection
-            .filter(({ market_listing_status }) => market_listing_status === 0)
-            .map((listing) => ({
-                ...listing,
-                sell_trx_id: listing.market_id,
-                rental_tx: listing.delegation_tx,
-            })),
-    };
+        return listed;
+    } catch (err) {
+        logger.error(
+            `/services/rentals/marketIdsForCollection error: ${err.message}`
+        );
+        throw err;
+    }
 };
+
+// const getCollectionListings = async ({ username }) => {
+//     logger.debug(`/services/splinterlands/getCollectionListings`);
+//     const collection = await getCollection({ username });
+
+//     // listed but not rented market_listing_status = 0
+//     // rented, market_listing_status = 3
+//     // market_id in collection = sell_trx_id in our db
+//     // delegation_tx in collection = rental_tx in our db
+
+//     return {
+//         rented: collection
+//             .filter(({ market_listing_status }) => market_listing_status === 3)
+//             .map((listing) => ({
+//                 ...listing,
+//                 sell_trx_id: listing.market_id,
+//                 rental_tx: listing.delegation_tx,
+//             })),
+//         notRented: collection
+//             .filter(({ market_listing_status }) => market_listing_status === 0)
+//             .map((listing) => ({
+//                 ...listing,
+//                 sell_trx_id: listing.market_id,
+//                 rental_tx: listing.delegation_tx,
+//             })),
+//     };
+// };
 
 const getActiveRentals = async ({ username }) => {
     try {
@@ -204,7 +239,8 @@ const getHiveRelistings = async ({ username }) => {
 
 module.exports = {
     getCollection,
-    getCollectionListings,
+    marketIdsForCollection,
+    // getCollectionListings,
     getActiveRentals,
     getSettings,
     updateCardDetail,
