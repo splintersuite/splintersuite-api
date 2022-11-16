@@ -64,6 +64,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
         const ids = [];
         let startingRecord = -1;
         let breakOut = false;
+        let finalLoop = false;
         let lastRecord;
         const startingRecords = [];
 
@@ -77,6 +78,9 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
             if (Array.isArray(data) && data.length > 0) {
                 data.reverse(); // goes from oldest to newest now
                 for (const record of data) {
+                    if (tooOld?.length > 0) {
+                        finalLoop = true;
+                    }
                     /*
                 record[0] is the current block (so if we want to start at it, instead of -1 we'd put in this block number)
                 record: [4186,{\"trx_id\":\"9b7b3309cec012fe02730c87fab990c45c68cae4\",\"block\":69643929,\"trx_in_block\":36,\"op_in_trx\":0,\"virtual_op\":false,\"timestamp\":\"2022-11-14T03:35:18\",\"op\":[\"custom_json\",{\"required_auths\":[],\"required_posting_auths\":[\"xdww\"],\"id\":\"sm_update_rental_price\",\"json\":\"{\\\"items\\\":[[\\\"4630ca6872af0204e7f117129c06c9cfd2098533-4\\\",13.05513],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-54\\\",145.2065],[\\\"402e0f1e42a75d7a890ba33d50602973c1d003e8-0\\\",33],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-55\\\",7.042],[\\\"a0ea371597d66713f4febbad5b84901edcff3d5e-1\\\",15]],\\\"agent\\\":\\\"splintersuite\\\",\\\"suite_action\\\":\\\"cancel\\\"}\"}]}]
@@ -115,6 +119,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                     IDs: [],
                                     isPriceUpdate: lookupKey === 'items',
                                     isSplintersuite: true,
+                                    recordId: record[0],
                                 });
                                 records?.[lookupKey].forEach((rec) => {
                                     recentSplintersuiteHiveIDs[
@@ -127,6 +132,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                     IDs: [],
                                     isPriceUpdate: lookupKey === 'items',
                                     isSplintersuite: false,
+                                    recordId: record[0],
                                 });
                                 records?.[lookupKey].forEach((rec) => {
                                     recentUserHiveIDs[
@@ -136,7 +142,21 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                             }
                         }
                     }
-
+                    // if (record[0] === 2638) {
+                    //     logger.info(
+                    //         `recentSplintersuiteHiveIDs[recentSplintersuiteHiveIDs?.length - 1: ${JSON.stringify(
+                    //             recentSplintersuiteHiveIDs[
+                    //                 recentSplintersuiteHiveIDs?.length - 1
+                    //             ]
+                    //         )}`
+                    //     );
+                    //     logger.info(
+                    //         `recentSplintersuiteHiveIDs[0]: ${JSON.stringify(
+                    //             recentSplintersuiteHiveIDs[0]
+                    //         )}`
+                    //     );
+                    //     throw new Error('checking what is up');
+                    // }
                     if (
                         timestampzTime < timeToStopAt &&
                         ['sm_update_rental_price', 'sm_market_list'].includes(
@@ -144,8 +164,10 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                         )
                     ) {
                         tooOld.push(record);
-                        breakOut = true;
-                        break;
+                        if (finalLoop) {
+                            breakOut = true;
+                            break;
+                        }
                     }
                 }
             }

@@ -351,7 +351,6 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
                 logger.info(`res is: ${res}`);
             }
         }
-        throw new Error('checking patchRentalsWithRelistings');
         return;
     } catch (err) {
         logger.error(
@@ -402,9 +401,9 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
             timeToStopAt,
-            //  lastUnconfirmedRentalTime: farthestBack?.last_rental_payment,
         });
-        throw new Error('checking to see if we are blocking old txs now');
+        // logger.info(`recentHiveIDs[0]: ${JSON.stringify(recentHiveIDs[0])}`);
+        // throw new Error('checking to see if we are blocking old txs now');
         await patchRentalsWithRelistings({
             users_id,
             recentHiveIDs,
