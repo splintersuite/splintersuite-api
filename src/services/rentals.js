@@ -374,34 +374,37 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             );
             return;
         }
-        // const farthestBack = rentalsToCheck.reduce(
-        //     (oldSoFar, rentalToCheck) => {
-        //         return oldSoFar?.last_rental_payment <
-        //             rentalToCheck?.last_rental_payment
-        //             ? oldSoFar
-        //             : rentalToCheck;
-        //     }
-        // );
+
         const marketIdsForCollection =
             await splinterlandsService.marketIdsForCollection({
                 username,
             });
+
         const sellTransactionIds = _.uniq(
             rentalsToCheck.map(({ sell_trx_id }) => sell_trx_id)
         );
 
+        const earliestTime = earliestMarketId({
+            marketIdsForCollection,
+            sellTransactionIds,
+        });
         const msInADay = 1000 * 60 * 60 * 24;
         const fortyFiveDaysTime = 45 * msInADay;
         const nowTime = new Date().getTime();
 
         const fortyFiveDaysAgo = nowTime - fortyFiveDaysTime;
+
+        // larger number means it was more recent, we want to go as far back as neccessary
+        const timeToStopAt =
+            earliestTime < fortyFiveDaysAgo ? earliestTime : fortyFiveDaysAgo;
         // now we can use the map to find out the created_at, and then find the earliest created_at and use it in the lastUncomfirmedRentalTime
 
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
+            timeToStopAt,
             //  lastUnconfirmedRentalTime: farthestBack?.last_rental_payment,
         });
-
+        throw new Error('checking to see if we are blocking old txs now');
         await patchRentalsWithRelistings({
             users_id,
             recentHiveIDs,
@@ -490,41 +493,37 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     }
 };
 
-// const marketIdsForCollection = async ({ username }) => {
-//     try {
-//         logger.debug(`/services/rentals/marketIdsForCollection`);
-//         const collection = await splinterlandsService.getCollection({
-//             username,
-//         });
-//         const notListed = [];
-//         const listed = {};
-//         for (const card of collection) {
-//             if (!card?.market_id || !card?.market_created_date || !card.uid) {
-//                 notListed.push(card);
-//             } else {
-//                 const cardToInsert = {
-//                     uid: card.uid,
-//                     market_id: card.market_id,
-//                     market_created_date: card.market_created_date,
-//                 };
-//                 listed[card?.market_id] = cardToInsert;
-//             }
-//         }
-//         logger.info(`/services/rentals/marketIdsForCollection: ${username}`);
-//         logger.info(
-//             `notListed: ${notListed?.length}, listed: ${
-//                 Object.keys(listed)?.length
-//             }`
-//         );
-//         //throw new Error('checking to see if marketIds fn works');
-//         return listed;
-//     } catch (err) {
-//         logger.error(
-//             `/services/rentals/marketIdsForCollection error: ${err.message}`
-//         );
-//         throw err;
-//     }
-// };
+const earliestMarketId = ({ marketIdsForCollection, sellTransactionIds }) => {
+    try {
+        logger.debug(`/services/rentals/earliestMarketId start`);
+        const txDates = [];
+        let noTxFound = 0;
+        for (const sellTxId of sellTransactionIds) {
+            const sellTxInfo = marketIdsForCollection[sellTxId];
+            if (sellTxInfo) {
+                const txDate = new Date(
+                    sellTxInfo?.market_created_date
+                ).getTime();
+                txDates.push(txDate);
+            } else {
+                noTxFound = noTxFound + 1;
+            }
+        }
+        const minDateTime = _.min(txDates);
+        const minDate = new Date(minDateTime);
+        logger.info(`/services/rentals/earliestMarketId:`);
+        logger.info(
+            `txDates: ${txDates?.length}, noTxFound: ${noTxFound}, minDateTime: ${minDateTime}, minDate: ${minDate}`
+        );
+
+        return minDateTime;
+    } catch (err) {
+        logger.error(
+            `/services/rentals/earliestMarketId error: ${err.message}`
+        );
+        throw err;
+    }
+};
 
 module.exports = {
     updateRentalsInDb,

@@ -55,118 +55,180 @@ const getHiveTransaction = async ({ transactionId }) => {
 
 const getTransactionHiveIDsByUser = async ({
     username,
-    lastUnconfirmedRentalTime,
+    timeToStopAt,
+    // lastUnconfirmedRentalTime,
 }) => {
     try {
         logger.debug(`/services/hive/relistings/getTransactionHiveIDsByUser`);
         // last 1000 transactions... about 3 weeks for tamecards
-        const data = await client.database.getAccountHistory(
-            username,
-            -1,
-            1000
-            //  operation_filter_low: 262144,
-        );
+
         const recentSplintersuiteHiveIDs = [];
         const recentUserHiveIDs = [];
         const tooOld = [];
         const ids = [];
+        let iteration = 0;
+        let timeYet = false;
+        let startingRecord = -1;
+        let lastRecord;
         // logger.info(`data; ${JSON.stringify(data)}`);
-
-        if (Array.isArray(data) && data.length > 0) {
-            // console.log('data', data);
-            data.reverse(); // goes from oldest to newest now
-            data.forEach((record) => {
-                /*
+        while (timeYet === false) {
+            iteration = iteration + 1;
+            const data = await client.database.getAccountHistory(
+                username,
+                // 1000,
+                startingRecord,
+                1000
+                //  operation_filter_low: 262144,
+            );
+            if (Array.isArray(data) && data.length > 0) {
+                // console.log('data', data);
+                data.reverse(); // goes from oldest to newest now
+                data.forEach((record) => {
+                    /*
                 record[0] is the current block (so if we want to start at it, instead of -1 we'd put in this block number)
                 record: [4186,{\"trx_id\":\"9b7b3309cec012fe02730c87fab990c45c68cae4\",\"block\":69643929,\"trx_in_block\":36,\"op_in_trx\":0,\"virtual_op\":false,\"timestamp\":\"2022-11-14T03:35:18\",\"op\":[\"custom_json\",{\"required_auths\":[],\"required_posting_auths\":[\"xdww\"],\"id\":\"sm_update_rental_price\",\"json\":\"{\\\"items\\\":[[\\\"4630ca6872af0204e7f117129c06c9cfd2098533-4\\\",13.05513],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-54\\\",145.2065],[\\\"402e0f1e42a75d7a890ba33d50602973c1d003e8-0\\\",33],[\\\"dd998bc29079abcab71de53f195f9ea55942e0da-55\\\",7.042],[\\\"a0ea371597d66713f4febbad5b84901edcff3d5e-1\\\",15]],\\\"agent\\\":\\\"splintersuite\\\",\\\"suite_action\\\":\\\"cancel\\\"}\"}]}]
                  */
-                // TNT NOTE: we need to get this to once we have this set, we go back another 75 blocks (in case people are running it once/hour at max)
-                // const recordCreatedDate = new Date(record[1].timestamp);
-                // const recordTime = recordCreatedDate.getTime();
-                // if (recordTime < lastUnconfirmedRentalTime) {
-                //     tooOld.push(record);
-                //     return;
-                // }
-                const timestampz = record[1].timestamp + 'Z';
+                    // TNT NOTE: we need to get this to once we have this set, we go back another 75 blocks (in case people are running it once/hour at max)
+                    // const recordCreatedDate = new Date(record[1].timestamp);
+                    // const recordTime = recordCreatedDate.getTime();
+                    // if (recordTime < lastUnconfirmedRentalTime) {
+                    //     tooOld.push(record);
+                    //     return;
+                    // }
+                    const timestampz = record[1].timestamp + 'Z';
+                    const timestampzDate = new Date(timestampz);
+                    const timestampzTime = timestampzDate.getTime();
 
-                // if (timestamp > now) {
-                //     logger.error(
-                //         `new Date(record[1].timestamp): ${new Date(
-                //             record[1].timestamp
-                //         )}, record[1].timestamp: ${
-                //             record[1].timestamp
-                //         }, now: ${now},  timestampzDate: ${timestampzDate}, timestampz: ${timestampz}`
-                //     );
+                    // this means the record is older than we wanted
 
-                //     logger.error(
-                //         `timestamp.getTime() : ${timestamp.getTime()}, now.getTime(): ${now.getTime()}, timestampzTime: ${timestampzTime},rightNow : ${rightNow}`
-                //     );
-                //     throw new Error('checking the timestamps');
-                // }
-                ids.push(record[1].op[1].id);
-                if (
-                    Array.isArray(record) &&
-                    record.length > 1 &&
-                    Array.isArray(record[1].op) &&
-                    record[1].op.length > 1 &&
-                    ['sm_update_rental_price', 'sm_market_list'].includes(
-                        record[1].op[1].id
-                    ) &&
-                    typeof record[1].op[1].json === 'string'
-                ) {
-                    // records are
-                    let lookupKey;
-                    if (record[1].op[1].id === 'sm_update_rental_price') {
-                        lookupKey = 'items';
-                    } else {
-                        lookupKey = 'cards';
-                    }
-                    const records = JSON.parse(record[1].op[1].json);
+                    // if (timestamp > now) {
+                    //     logger.error(
+                    //         `new Date(record[1].timestamp): ${new Date(
+                    //             record[1].timestamp
+                    //         )}, record[1].timestamp: ${
+                    //             record[1].timestamp
+                    //         }, now: ${now},  timestampzDate: ${timestampzDate}, timestampz: ${timestampz}`
+                    //     );
+
+                    //     logger.error(
+                    //         `timestamp.getTime() : ${timestamp.getTime()}, now.getTime(): ${now.getTime()}, timestampzTime: ${timestampzTime},rightNow : ${rightNow}`
+                    //     );
+                    //     throw new Error('checking the timestamps');
+                    // }
+                    lastRecord = record;
+                    ids.push(record[1].op[1].id);
                     if (
-                        Array.isArray(records?.[lookupKey]) &&
-                        records?.[lookupKey].length > 0
+                        Array.isArray(record) &&
+                        record.length > 1 &&
+                        Array.isArray(record[1].op) &&
+                        record[1].op.length > 1 &&
+                        ['sm_update_rental_price', 'sm_market_list'].includes(
+                            record[1].op[1].id
+                        ) &&
+                        typeof record[1].op[1].json === 'string'
                     ) {
-                        if (records?.agent === 'splintersuite') {
-                            recentSplintersuiteHiveIDs.push({
-                                //  time: new Date(record[1].timestamp),
-                                time: new Date(timestampz),
-                                IDs: [],
-                                isPriceUpdate: lookupKey === 'items',
-                                isSplintersuite: true,
-                            });
-                            records?.[lookupKey].forEach((rec) => {
-                                recentSplintersuiteHiveIDs[
-                                    recentSplintersuiteHiveIDs.length - 1
-                                ].IDs.push(rec[0]);
-                            });
+                        // records are
+                        let lookupKey;
+                        if (record[1].op[1].id === 'sm_update_rental_price') {
+                            lookupKey = 'items';
                         } else {
-                            recentUserHiveIDs.push({
-                                //time: new Date(record[1].timestamp),
-                                time: new Date(timestampz),
-                                IDs: [],
-                                isPriceUpdate: lookupKey === 'items',
-                                isSplintersuite: false,
-                            });
-                            records?.[lookupKey].forEach((rec) => {
-                                recentUserHiveIDs[
-                                    recentUserHiveIDs.length - 1
-                                ].IDs.push(rec[0]);
-                            });
+                            lookupKey = 'cards';
+                        }
+                        const records = JSON.parse(record[1].op[1].json);
+                        if (
+                            Array.isArray(records?.[lookupKey]) &&
+                            records?.[lookupKey].length > 0
+                        ) {
+                            if (records?.agent === 'splintersuite') {
+                                recentSplintersuiteHiveIDs.push({
+                                    //  time: new Date(record[1].timestamp),
+                                    //time: new Date(timestampz),
+                                    time: timestampzDate,
+                                    IDs: [],
+                                    isPriceUpdate: lookupKey === 'items',
+                                    isSplintersuite: true,
+                                });
+                                records?.[lookupKey].forEach((rec) => {
+                                    recentSplintersuiteHiveIDs[
+                                        recentSplintersuiteHiveIDs.length - 1
+                                    ].IDs.push(rec[0]);
+                                });
+                            } else {
+                                recentUserHiveIDs.push({
+                                    //time: new Date(record[1].timestamp),
+                                    // time: new Date(timestampz),
+                                    time: timestampzDate,
+                                    IDs: [],
+                                    isPriceUpdate: lookupKey === 'items',
+                                    isSplintersuite: false,
+                                });
+                                records?.[lookupKey].forEach((rec) => {
+                                    recentUserHiveIDs[
+                                        recentUserHiveIDs.length - 1
+                                    ].IDs.push(rec[0]);
+                                });
+                            }
                         }
                     }
-                }
-            });
-        }
 
+                    if (timestampzTime < timeToStopAt) {
+                        tooOld.push(record);
+                        logger.warn(
+                            `timestampzTime: ${timestampzTime}, is less than timeToStopAt: ${timeToStopAt}`
+                        );
+                        logger.warn(`record: ${JSON.stringify(record)}`);
+                        logger.warn(
+                            `lastRecord: ${JSON.stringify(lastRecord)}`
+                        );
+                        logger.warn(
+                            `timetoStopAt: ${timeToStopAt}, new Date(timetoStopAt) : ${new Date(
+                                timeToStopAt
+                            )}`
+                        );
+                        // throw new Error(
+                        //     'WHY DOES THE RECORD SHOW PROPERLY RN WTF'
+                        // );
+                        timeYet = true;
+                    }
+                });
+            }
+
+            startingRecord = parseInt(lastRecord[0]) - 1;
+            if (startingRecord < 1000) {
+                //  UnhandledPromiseRejectionWarning: RPCError: args.start >= args.limit-1: start must be greater than or equal to limit-1 (start is 0-based index)
+                // we need our startingRecord to be greater than or equal to the limit
+                startingRecord = 1000;
+            }
+            if (iteration > 15) {
+                timeYet = true;
+            }
+        }
         // sorts ascending... it should already be but just in case...
         const recentHiveIDs = _.sortBy(
             _.concat(recentSplintersuiteHiveIDs, recentUserHiveIDs),
             'time'
         );
+        const length = recentHiveIDs?.length;
+        logger.info(`recentHiveIDs[0]: ${JSON.stringify(recentHiveIDs[0])}`);
+        logger.info(
+            `recentHiveIDs[length-1]: ${JSON.stringify(
+                recentHiveIDs[length - 1]
+            )}`
+        );
+        logger.info(`lastRecord: ${JSON.stringify(lastRecord)}`);
+        logger.info(`lastRecord[0]: ${JSON.stringify(lastRecord[0])}`);
+        logger.info(`startingRecord: ${startingRecord}`);
+        logger.info(
+            `timeToStopAt: ${timeToStopAt}, new Date(timeToStopAt): ${new Date(
+                timeToStopAt
+            )}`
+        );
         logger.info(
             `/services/hive/relistings/getTransactionHiveIDsByUser: ${username}`
         );
         logger.info(`tooOld: ${tooOld?.length}`);
+        logger.info(`iteration: ${iteration}`);
+        throw new Error('checking');
         return recentHiveIDs;
     } catch (err) {
         logger.error(
@@ -450,3 +512,10 @@ module.exports = {
 // we have the splintersuite ones, and as long as we have the same sell_trx_id and card uid, then we are good for as many rentals between the non splintersuite actions that are done on the sell_trx_id and/or the uid of the card
 
 // we missing the rental_tx from the hive stuff, and we don't have exactly the next_rental_payment_time, but we can see the timeline
+
+/*
+{"level":40,"time":"2022-11-16T14:07:15.007Z","pid":10232,"hostname":"Trevors-Mac-mini.local","msg":"record: [2461,{\"trx_id\":\"03f88a3bdd4a3b53ecb0097ad4341168bc36bc34\",\"block\":67045407,\"trx_in_block\":56,\"op_in_trx\":0,\"virtual_op\":false,\"timestamp\":\"2022-08-15T17:25:27\"
+{"level":40,"time":"2022-11-16T14:07:15.007Z","pid":10232,"hostname":"Trevors-Mac-mini.local","msg":"lastRecord: [2462,{\"trx_id\":\"a4bc4ea5a57224f8245a371784753d80cf47fb8e\",\"block\":67045408,\"trx_in_block\":8,\"op_in_trx\":0,\"virtual_op\":false,\"timestamp\":\"2022-08-15T17:25:30\",\"op\":[\"custom_json\",{\"required_auths\":[],\"required_posting_auths\":[\"xdww\"],\"id\":\"sm_update_rental_price\",\"json\":\"{\\\"items\\\":[[\\\"3f5ae14af7380928907fd6558411c40ca43debd5-2\\\",114.513],[\\\"78305c574e9e763e32099c2bd212f7f61eb83f1b-9\\\",\\\"29.658\\\"],[\\\"c459a32c445c117510b06eb9e5905e61d79ac740-4\\\",\\\"6.7\\\"]],\\\"agent\\\":\\\"splintersuite\\\",\\\"required_posting_auths\\\":[\\\"xdww\\\"],\\\"required_auths\\\":[]}\"}]}]"}
+{"level":40,"time":"2022-11-16T14:07:15.007Z","pid":10232,"hostname":"Trevors-Mac-mini.local","msg":"timetoStopAt: 1660584330000, new Date(timetoStopAt) : Mon Aug 15 2022 13:25:30 GMT-0400 (Eastern Daylight Time)"}
+
+*/
