@@ -154,13 +154,40 @@ const getEarningsForRange = async ({ users_id, start_date, end_date }) => {
             start_date,
             end_date,
         });
-        const numOfRentals = activeRentals.length;
-        const totalEarnings = sumRentals({
-            activeRentals,
-        });
 
-        logger.debug(`/services/earnings/getEarningsForRange done`);
-        return { totalEarnings, numOfRentals };
+        /*
+        // this is the last point in the array coming back from activeRentals
+        {\"id\":\"60351aa1-7bc7-4e0d-bfcd-3e036911eb07\",\"users_id\":\"5e345186-704e-4839-8fbb-9e49a4bea5c6\",\"created_at\":\"2022-11-13T18:31:43.825Z\",\"updated_at\":\"2022-11-16T16:52:45.341Z\",\"rented_at\":\"2022-11-13T03:34:54.000Z\",\"next_rental_payment\":\"2022-11-14T03:34:54.000Z\",\"last_rental_payment\":\"2022-11-13T03:34:54.000Z\",\"edition\":7,\"card_detail_id\":375,\"level\":1,\"xp\":1,\"price\":0.235,\"is_gold\":false,\"card_uid\":\"C7-375-K61LXJ3IO0\",\"player_rented_to\":\"hayxanh619\",\"rental_tx\":\"ffe119c811db79da66cafb868e33f7602f521070\",\"sell_trx_id\":\"a401574c39e2cc6cd385072db6b3a0a7586e44f6-70\",\"sell_trx_hive_id\":\"a401574c39e2cc6cd385072db6b3a0a7586e44f6\",\"confirmed\":true}]
+        */
+
+        const numOfRentals = activeRentals?.length;
+        const allEarnings = sumRentals({ activeRentals });
+
+        if (!allEarnings) {
+            return null;
+        }
+
+        logger.info(
+            `/services/earnings/getEarningsForRange: users_id: ${users_id}, start_date: ${JSON.stringify(
+                start_date
+            )}, end_date: ${JSON.stringify(end_date)}, allEarnings.total: ${
+                allEarnings?.total
+            }, suiteRentals: ${allEarnings.suiteRentals}, otherRentals: ${
+                allEarnings?.otherRentals
+            }, numSuiteRentals: ${
+                allEarnings?.numSuiteRentals
+            }, numOtherRentals: ${
+                allEarnings?.numOtherRentals
+            }, numOfRentals: ${numOfRentals}`
+        );
+        return {
+            totalEarnings: allEarnings?.total,
+            numOfRentals,
+            suiteRentals: allEarnings?.suiteRentals,
+            otherRentals: allEarnings?.otherRentals,
+            numSuiteRentals: allEarnings?.numSuiteRentals,
+            numOtherRentals: allEarnings?.numOtherRentals,
+        };
     } catch (err) {
         logger.error(
             `/services/earnings/getEarningsForRange error: ${err.message}`
@@ -174,12 +201,40 @@ const sumRentals = ({ activeRentals }) => {
         logger.debug('/services/earnings/sumRentals');
 
         let total = 0;
-        activeRentals.forEach((rental) => {
-            total = total + rental.price;
-        });
+        let isNull = false;
+        let suiteRentals = 0;
+        let otherRentals = 0;
+        let numSuiteRentals = 0;
+        let numOtherRentals = 0;
 
-        // logger.debug(`/services/earnings/sumRentals`);
-        return total;
+        for (const rental of activeRentals) {
+            total = total + rental.price;
+            if (rental?.confirmed == null) {
+                isNull = true;
+                break;
+            }
+            if (rental?.confirmed) {
+                suiteRentals = suiteRentals + rental.price;
+                numSuiteRentals = numSuiteRentals + 1;
+            } else {
+                otherRentals = otherRentals + rental.price;
+                numOtherRentals = numOtherRentals + 1;
+            }
+        }
+
+        if (isNull) {
+            logger.debug(`/services/earnings/sumRentals:`);
+            return null;
+        } else {
+            logger.debug(`/services/earnings/sumRentals:`);
+            return {
+                total,
+                suiteRentals,
+                otherRentals,
+                numSuiteRentals,
+                numOtherRentals,
+            };
+        }
     } catch (err) {
         logger.error(`/services/earnings/sumRentals error: ${err.message}`);
         throw err;
@@ -204,6 +259,7 @@ const getActiveRentalsForRange = async ({ users_id, start_date, end_date }) => {
     }
 };
 
+// created_at is the date that the users_id account was created in our db
 const insertAllDailyEarnings = async ({ users_id, created_at }) => {
     try {
         logger.debug(`/services/earnings/insertAllDailyEarnings`);
@@ -216,10 +272,11 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
 
         const yesterday = startOfToday.minus({ days: 1 });
 
+        // this interval is the interval between the first day our account was created, and
         const interval = Interval.fromDateTimes(startOfDay, yesterday);
 
         const intervalDays = interval.length('days');
-        // go through the days, starting wiht startOfDay through yesterday, and insert into dailyEarnings table a row for each
+        // go through the days, starting with startOfDay through yesterday, and insert into dailyEarnings table a row for each
 
         let count = 0;
         let earnings_date = startOfDay;
@@ -236,7 +293,7 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
             const dbEntry = dailyEarningsDates[key];
 
             if (!dbEntry) {
-                await insertDayEarnings({ users_id, earnings_date });
+                await insertDailyEarnings({ users_id, earnings_date });
             }
             earnings_date = earnings_date.plus({ days: 1 });
             count = count + 1;
@@ -300,7 +357,7 @@ const arrayToObj = ({ arr }) => {
     }
 };
 
-const insertDayEarnings = async ({ users_id, earnings_date }) => {
+const insertDailyEarnings = async ({ users_id, earnings_date }) => {
     try {
         logger.debug(`/services/earnings/insertDailyEarnings`);
 
@@ -310,19 +367,30 @@ const insertDayEarnings = async ({ users_id, earnings_date }) => {
             end_date: earnings_date.plus({ days: 1 }),
         });
 
-        await DailyEarnings.query().insert({
-            users_id,
-            earnings_date,
-            earnings_dec: dailyEarnings.totalEarnings,
-            num_rentals: dailyEarnings.numOfRentals,
-            bot_earnings_dec: dailyEarnings.totalEarnings,
-            bot_num_rentals: dailyEarnings.numOfRentals,
-        });
+        if (!dailyEarnings) {
+            logger.warn(
+                `user: ${users_id}, earnings_date: ${JSON.stringify(
+                    earnings_date
+                )}, some part of the userRentals had not been confirmed, skipping over it for now`
+            );
+            return null;
+        } else {
+            await DailyEarnings.query().insert({
+                users_id,
+                earnings_date,
+                earnings_dec: dailyEarnings.totalEarnings,
+                num_rentals: dailyEarnings.numOfRentals,
+                bot_earnings_dec: dailyEarnings.suiteRentals,
+                bot_num_rentals: dailyEarnings.numSuiteRentals,
+            });
 
-        logger.debug(`/services/earnings/insertDailyEarnings`);
-        return dailyEarnings;
+            logger.debug(`/services/earnings/insertDailyEarnings`);
+            return dailyEarnings;
+        }
     } catch (err) {
-        logger.error(`/services/earnings/ error: ${err.message}`);
+        logger.error(
+            `/services/earnings/insertDailyEarnings error: ${err.message}`
+        );
         throw err;
     }
 };

@@ -14,7 +14,8 @@
         "season": "node ./src/scripts/seasons.js",
         "catchup": "node ./src/scripts/catchup.js",
         "updateCardDetails": "node ./src/scripts/updateCardDetail.js",
-        "testHive": "node ./src/scripts/tests/hive.js"
+        "testHive": "node ./src/scripts/tests/hive.js",
+        "confirmEarnings": "node ./src/scripts/confirmations.js"
     },
     "author": "",
     "license": "ISC",
