@@ -15,7 +15,8 @@
         "catchup": "node ./src/scripts/catchup.js",
         "updateCardDetails": "node ./src/scripts/updateCardDetail.js",
         "testHive": "node ./src/scripts/tests/hive.js",
-        "confirmEarnings": "node ./src/scripts/confirmations.js"
+        "confirmEarnings": "node ./src/scripts/confirmations.js",
+        "invoices": "node ./src/scripts/invoices.js"
     },
     "author": "",
     "license": "ISC",

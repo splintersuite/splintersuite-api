@@ -17,7 +17,7 @@ exports.up = function (knex) {
             t.boolean('confirmed').nullable().defaultTo(null);
         })
         .table('users', (t) => {
-            t.integer('bot_loops').notNullable().defaultTo(0);
+            t.integer('bot_loops').notNullable().defaultTo(0); // TNT NOTE: I have no idea what we are using this for if anything
         })
         .createTable('market_price_runs', (t) => {
             t.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));

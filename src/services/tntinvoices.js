@@ -1,3 +1,4 @@
+'use strict';
 const logger = require('../util/pinologger');
 const _ = require('lodash');
 const Invoices = require('../models/Invoices');
@@ -16,12 +17,12 @@ const getForUser = async ({ users_id }) => {
             .where({ users_id })
             .catch((err) => {
                 logger.error(
-                    `/services/invoices/get query for invoices of users_id: ${users_id} error: ${err.message}`
+                    `/services/invoices/get Invoices query of users_id: ${users_id} error: ${err.message}`
                 );
                 throw err;
             });
 
-        logger.debug(`/services/invoices/get done`);
+        logger.debug(`/services/invoices/get:`);
         return invoices;
     } catch (err) {
         logger.error(`/services/invoices/get error: ${err.message}`);
@@ -39,16 +40,17 @@ const create = async ({ users_id, start_date, end_date }) => {
             end_date,
         });
 
-        const seven = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 7 });
+        // const seven = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 7 });
         const three = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 3 });
-
-        const ourcut = earnings * 0.1;
+        const five = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 5 });
+        // how much we are taking in fees, which is 2.5%
+        const ourcut = earnings?.suiteRentals * 0.025;
         const amountDue = _.round(ourcut, 2);
 
         const invoice = {
             users_id,
             discounted_due_at: three.daysFromNow,
-            due_at: seven.daysFromNow,
+            due_at: five.daysFromNow,
             amount_due: parseFloat(amountDue),
             start_date,
             end_date,
