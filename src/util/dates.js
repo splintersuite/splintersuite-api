@@ -93,20 +93,20 @@ const getNumDaysAgo = ({ numberOfDaysAgo, date }) => {
     }
 };
 
-const getNumDaysFromNow = ({ numberOfDaysFromNow }) => {
+const getNumDaysLater = ({ numberOfDaysLater, date }) => {
     try {
-        logger.debug(`/util/dates/getNumDaysFromNow`);
+        logger.debug(`/util/dates/getNumDaysLater`);
 
-        const nowMs = new Date.getTime();
+        const nowMs = date.getTime();
         const msInADay = 1000 * 60 * 60 * 24;
-        const numOfDaysMs = msInADay * numberOfDaysFromNow;
-        const msDaysFromNow = nowMs + parseInt(numOfDaysMs);
-        const daysFromNow = new Date(msDaysFromNow);
+        const numOfDaysMs = msInADay * numberOfDaysLater;
+        const msDaysFromLater = nowMs + parseInt(numOfDaysMs);
+        const daysFromLater = new Date(msDaysFromLater);
 
-        logger.debug(`/util/dates/getNumDaysFromNow done`);
-        return { daysFromNow, msDaysFromNow: parseInt(msDaysFromNow) };
+        logger.debug(`/util/dates/getNumDaysLater done`);
+        return { daysFromLater, msDaysFromLater: parseInt(msDaysFromLater) };
     } catch (err) {
-        logger.error(`/util/dates/getNumDaysFromNow error: ${err.message}`);
+        logger.error(`/util/dates/getNumDaysLater error: ${err.message}`);
         throw err;
     }
 };
@@ -148,6 +148,6 @@ module.exports = {
     getYesterdayAndTomorrow,
     getOneDayAgo,
     getNumDaysAgo,
-    getNumDaysFromNow,
+    getNumDaysLater,
     getStartOfDay,
 };

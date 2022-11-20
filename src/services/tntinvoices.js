@@ -39,10 +39,16 @@ const create = async ({ users_id, start_date, end_date }) => {
             start_date,
             end_date,
         });
-
+        const now = new Date();
         // const seven = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 7 });
-        const three = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 3 });
-        const five = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 5 });
+        const three = utilDates.getNumDaysLater({
+            numberOfDaysFromNow: 3,
+            date: now,
+        });
+        const five = utilDates.getNumDaysLater({
+            numberOfDaysFromNow: 5,
+            date: now,
+        });
         // how much we are taking in fees, which is 2.5%
         const ourcut = earnings?.suiteRentals * 0.025;
         const amountDue = _.round(ourcut, 2);
