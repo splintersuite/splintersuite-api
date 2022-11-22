@@ -7,7 +7,8 @@ const Seasons = require('../models/Seasons');
 
 const Users = require('../models/Users');
 const utilDates = require('../util/dates');
-const earnings = require('./earnings');
+const earningsService = require('./earnings');
+const { DateTime } = require('luxon');
 
 const getForUser = async ({ users_id }) => {
     try {
@@ -30,33 +31,72 @@ const getForUser = async ({ users_id }) => {
     }
 };
 
-const create = async ({ users_id, start_date, end_date }) => {
+const create = async ({
+    users_id,
+    start_date,
+    end_date,
+    first_invoice = false,
+    firstDayAdjustment = 0,
+}) => {
     try {
         logger.debug(`/services/invoices/create`);
+        // TNT NOTE: WE NEED DIFFERENT EARNINGS CUZ WE NEED THE REAL EARNINGS IN THE DAILYEARNINGS SHIT, NOT THE RENTAL_INCOME
+        /// WHY? BECAUSE WHAT IF WE NEED TO DELETE THE RENTAL_INCOME RECORDS BEFORE A 15 day period (could easily happen)
+        // const earnings = await earnings.getEarningsForRange({
+        //     users_id,
+        //     start_date,
+        //     end_date,
+        // });
 
-        const earnings = await earnings.getEarningsForRange({
+        const earnings = await earningsService.getDailyEarningsForDateRange({
             users_id,
             start_date,
             end_date,
         });
-        const now = new Date();
-        // const seven = utilDates.getNumDaysFromNow({ numberOfDaysFromNow: 7 });
-        const three = utilDates.getNumDaysLater({
-            numberOfDaysFromNow: 3,
-            date: now,
+        logger.info(
+            `/services/invoices/create users_id: ${users_id}, start_date: ${start_date}, end_date: ${end_date}, earnings: ${JSON.stringify(
+                earnings
+            )}, num of days earnings: ${earnings?.length}`
+        );
+        // this filter prevents us from double counting the end_date when we do the start_date on the next call, also gives us 15 days rather than 16
+        const newEarnings = earnings.filter((record) => {
+            if (record?.earnings_date < end_date) {
+                return true;
+            } else {
+                return false;
+            }
         });
-        const five = utilDates.getNumDaysLater({
-            numberOfDaysFromNow: 5,
-            date: now,
-        });
+        logger.info(
+            `newEarnings: ${JSON.stringify(newEarnings)}, numOfDaysEarnings: ${
+                newEarnings?.length
+            }`
+        );
+
+        if (newEarnings?.length < 15) {
+            logger.warn(
+                `for user: ${users_id}, start_date: ${start_date}, end_date: ${end_date}, had less than 15 length. newEarnings.length: ${newEarnings?.length}`
+            );
+            throw new Error('checking warning');
+            return;
+        }
+        const botEarnings = sumDailyEarnings({ dailyEarnings: newEarnings });
+        // WE NEED TO FIND OUT EXACTLY HOW TO JUST DROP THE ARRAY FROM earnings that EARNINGS_DATE EQUALS THE END_DATE
+        const now = DateTime.utc();
+
+        const threeDaysFromNow = now.plus({ days: 3 });
+        const fiveDaysFromNow = now.plus({ days: 5 });
+
         // how much we are taking in fees, which is 2.5%
-        const ourcut = earnings?.suiteRentals * 0.025;
+        const ourcut = botEarnings * 0.025;
+        // TNT TODO: insert the firstDayAdjustment after
         const amountDue = _.round(ourcut, 2);
 
         const invoice = {
             users_id,
-            discounted_due_at: three.daysFromNow,
-            due_at: five.daysFromNow,
+            discounted_due_at: threeDaysFromNow,
+            // discounted_due_at: three.daysFromNow,
+            due_at: fiveDaysFromNow,
+            // due_at: five.daysFromNow,
             amount_due: parseFloat(amountDue),
             start_date,
             end_date,
@@ -77,6 +117,25 @@ const create = async ({ users_id, start_date, end_date }) => {
         return;
     } catch (err) {
         logger.error(`/services/invoices/create error: ${err.message}`);
+        throw err;
+    }
+};
+
+const sumDailyEarnings = ({ dailyEarnings }) => {
+    try {
+        logger.debug(`/services/invoices/sumDailyEarnings start`);
+
+        let total = 0;
+        for (const dailyEarning of dailyEarnings) {
+            total = total + dailyEarning?.bot_earnings_dec;
+        }
+
+        logger.debug(`/services/invoices/sumDailyEarnings: ${total}`);
+        return total;
+    } catch (err) {
+        logger.error(
+            `/services/invoices/sumDailyEarnings error: ${err.message}`
+        );
         throw err;
     }
 };

@@ -437,9 +437,11 @@ const getDailyEarningsForUser = async ({ users_id }) => {
         throw err;
     }
 };
+
 module.exports = {
     get,
     getEarningsForRange,
     insertAllDailyEarnings,
     getDailyEarningsForDateRange,
+    getDailyEarningsForUser,
 };
