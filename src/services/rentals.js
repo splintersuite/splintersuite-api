@@ -333,7 +333,9 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
         // and fortunately fewer db calls
         for (const record of recentHiveIDs) {
             logger.info(
-                `/patchRentalsWithRelistings record: ${JSON.stringify(record)}`
+                `/services/rentals/patchRentalsWithRelistings record: ${JSON.stringify(
+                    record
+                )}`
             );
             if (record.isPriceUpdate) {
                 const res = await UserRentals.query()

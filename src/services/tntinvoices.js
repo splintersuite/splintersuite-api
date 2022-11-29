@@ -40,14 +40,8 @@ const create = async ({
 }) => {
     try {
         logger.debug(`/services/invoices/create`);
-        // TNT NOTE: WE NEED DIFFERENT EARNINGS CUZ WE NEED THE REAL EARNINGS IN THE DAILYEARNINGS SHIT, NOT THE RENTAL_INCOME
-        /// WHY? BECAUSE WHAT IF WE NEED TO DELETE THE RENTAL_INCOME RECORDS BEFORE A 15 day period (could easily happen)
-        // const earnings = await earnings.getEarningsForRange({
-        //     users_id,
-        //     start_date,
-        //     end_date,
-        // });
 
+        // this queries the DailyEarnings table by users_id, from start_date to end_date
         const earnings = await earningsService.getDailyEarningsForDateRange({
             users_id,
             start_date,
@@ -74,11 +68,11 @@ const create = async ({
 
         if (newEarnings?.length < 15) {
             logger.warn(
-                `for user: ${users_id}, start_date: ${start_date}, end_date: ${end_date}, had less than 15 length. newEarnings.length: ${newEarnings?.length}`
+                `for user: ${users_id}, start_date: ${start_date}, end_date: ${end_date}, has less than 15 days of earning. newEarnings.length: ${newEarnings?.length}`
             );
-            throw new Error('checking warning');
             return;
         }
+        throw new Error('checking newEarnings');
         const botEarnings = sumDailyEarnings({ dailyEarnings: newEarnings });
         // WE NEED TO FIND OUT EXACTLY HOW TO JUST DROP THE ARRAY FROM earnings that EARNINGS_DATE EQUALS THE END_DATE
         const now = DateTime.utc();

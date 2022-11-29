@@ -90,6 +90,8 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                     const timestampzTime = timestampzDate.getTime();
 
                     lastRecord = record;
+                    logger.info(`record: ${JSON.stringify(record)}`);
+                    // throw new Error('checking record');
                     ids.push(record[1].op[1].id);
                     if (
                         Array.isArray(record) &&
@@ -113,6 +115,12 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                             Array.isArray(records?.[lookupKey]) &&
                             records?.[lookupKey].length > 0
                         ) {
+                            logger.info(
+                                `/services/hive/relistings/getTransactionHiveIDsByUser records: ${JSON.stringify(
+                                    records
+                                )}`
+                            );
+
                             if (records?.agent === 'splintersuite') {
                                 recentSplintersuiteHiveIDs.push({
                                     time: timestampzDate,
@@ -121,10 +129,76 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                     isSplintersuite: true,
                                     recordId: record[0],
                                 });
+
+                                if (parseInt(record[0]) === 2638) {
+                                    logger.info(
+                                        `records?.[lookupKey].length < 2 is true, b4 forEach`
+                                    );
+                                    records?.[lookupKey]?.forEach((rec) => {
+                                        logger.info(
+                                            `Array.isArray(rec): ${Array.isArray(
+                                                rec
+                                            )}`
+                                        );
+                                        logger.info(
+                                            `rec: ${JSON.stringify(rec)}`
+                                        );
+                                    });
+                                    logger.info(`after forEach`);
+
+                                    logger.info(
+                                        `records?.[lookupKey].length: ${records?.[lookupKey].length}`
+                                    );
+                                    // throw new Error(
+                                    //     'checking the length being less than 2'
+                                    // );
+                                }
                                 records?.[lookupKey].forEach((rec) => {
-                                    recentSplintersuiteHiveIDs[
-                                        recentSplintersuiteHiveIDs.length - 1
-                                    ].IDs.push(rec[0]);
+                                    logger.info(`rec: ${JSON.stringify(rec)}`);
+                                    logger.info(
+                                        `Array.isArray(rec): ${Array.isArray(
+                                            rec
+                                        )}`
+                                    );
+                                    logger.info(`rec: ${JSON.stringify(rec)}`);
+                                    // throw new Error('stop here');
+                                    if (Array.isArray(rec)) {
+                                        recentSplintersuiteHiveIDs[
+                                            recentSplintersuiteHiveIDs.length -
+                                                1
+                                        ].IDs.push(rec[0]);
+                                    } else if (typeof rec === 'string') {
+                                        recentSplintersuiteHiveIDs[
+                                            recentSplintersuiteHiveIDs.length -
+                                                1
+                                        ].IDs.push(rec);
+                                    } else if (typeof rec === 'number') {
+                                        logger.info(
+                                            `rec is a number, rec: ${JSON.stringify(
+                                                rec
+                                            )}`
+                                        );
+                                    } else {
+                                        logger.error(
+                                            `record is fuded, rec: ${JSON.stringify(
+                                                rec
+                                            )}`
+                                        );
+                                        throw new Error('checking the rec fud');
+                                    }
+                                    // if (parseInt(record[0]) === 2638) {
+                                    //     logger.info(
+                                    //         `record 2638, IDs is: ${JSON.stringify(
+                                    //             recentSplintersuiteHiveIDs[
+                                    //                 recentSplintersuiteHiveIDs.length -
+                                    //                     1
+                                    //             ].IDs
+                                    //         )}`
+                                    //     );
+                                    //     throw new Error(
+                                    //         'checking to see if fix worked'
+                                    //     );
+                                    // }
                                 });
                             } else {
                                 recentUserHiveIDs.push({
@@ -135,9 +209,34 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                     recordId: record[0],
                                 });
                                 records?.[lookupKey].forEach((rec) => {
-                                    recentUserHiveIDs[
-                                        recentUserHiveIDs.length - 1
-                                    ].IDs.push(rec[0]);
+                                    logger.info(
+                                        `Array.isArray(rec): ${Array.isArray(
+                                            rec
+                                        )}`
+                                    );
+                                    logger.info(`rec: ${JSON.stringify(rec)}`);
+                                    if (Array.isArray(rec)) {
+                                        recentUserHiveIDs[
+                                            recentUserHiveIDs.length - 1
+                                        ].IDs.push(rec[0]);
+                                    } else if (typeof rec === 'string') {
+                                        recentUserHiveIDs[
+                                            recentUserHiveIDs.length - 1
+                                        ].IDs.push(rec);
+                                    } else if (typeof rec === 'number') {
+                                        logger.info(
+                                            `rec is a number, rec: ${JSON.stringify(
+                                                rec
+                                            )}`
+                                        );
+                                    } else {
+                                        logger.error(
+                                            `record is fuded, rec: ${JSON.stringify(
+                                                rec
+                                            )}`
+                                        );
+                                        throw new Error('checking the rec fud');
+                                    }
                                 });
                             }
                         }
