@@ -41,7 +41,7 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
                 Object.keys(dbRentalsByUid).length
             )}`
         );
-        // throw new Error(`checking the lengths`);
+
         const { rentalsToInsert, rentalsAlreadyInserted } = filterIfInDB({
             newActiveRentals,
             dbRentalsByUid,
@@ -211,7 +211,6 @@ const cleanAPIActiveRentals = ({ activeRentals }) => {
             )}`
         );
 
-        //     return activeRentals;
         return cleanedActiveRentals;
     } catch (err) {
         logger.error(
@@ -332,27 +331,30 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
         // patch... dates are ascending... so we may overwrite a few times but it will be accurate...
         // and fortunately fewer db calls
         for (const record of recentHiveIDs) {
-            logger.info(
-                `/services/rentals/patchRentalsWithRelistings record: ${JSON.stringify(
-                    record
-                )}`
-            );
-            if (record.isPriceUpdate) {
+            // logger.info(
+            //     `/services/rentals/patchRentalsWithRelistings record: ${JSON.stringify(
+            //         record
+            //     )}`
+            // );
+            if (record?.isPriceUpdate) {
                 const res = await UserRentals.query()
                     .where({ users_id })
                     .where('last_rental_payment', '>=', record.time)
                     .whereIn('sell_trx_id', record.IDs)
                     .patch({ confirmed: record.isSplintersuite });
-                logger.info(`res is: ${res}`);
+                //    logger.info(`res is: ${res}`);
             } else {
                 const res = await UserRentals.query()
                     .where({ users_id })
                     .where('last_rental_payment', '>=', record.time)
                     .whereIn('card_uid', record.IDs)
                     .patch({ confirmed: record.isSplintersuite });
-                logger.info(`res is: ${res}`);
+                //      logger.info(`res is: ${res}`);
             }
         }
+        logger.info(
+            `/services/rentals/patchRentalsWithRelistings: user: ${users_id}`
+        );
         return;
     } catch (err) {
         logger.error(
@@ -365,11 +367,11 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
 const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     try {
         logger.info(`/services/rentals/patchRentalsBySplintersuite start`);
-        const rentalsToCheck = await UserRentals.query().where({
+        const rentalsToConfirm = await UserRentals.query().where({
             users_id,
             confirmed: null,
         });
-        if (!Array.isArray(rentalsToCheck) || rentalsToCheck?.length < 1) {
+        if (!Array.isArray(rentalsToConfirm) || rentalsToConfirm?.length < 1) {
             logger.warn(
                 `for user: ${username}, don't have any saved userRentals whose confirmed is null`
             );
@@ -382,7 +384,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             });
 
         const sellTransactionIds = _.uniq(
-            rentalsToCheck.map(({ sell_trx_id }) => sell_trx_id)
+            rentalsToConfirm.map(({ sell_trx_id }) => sell_trx_id)
         );
 
         const earliestTime = earliestMarketId({
@@ -413,13 +415,9 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         // TNT IDEAs: 1) we have the earliest date we go back be the beginning of the null market_ids created and go from there,
         // 2) we could instead just say go back the past 2 months at most and ignore everything else/say fuck it.
         // 3) once we have shit deleting after a month and we consolidate that, we should be good to go then
-        logger.info(
-            `/services/rentals/patchRentalsBySplintersuite rentalsToCheck: ${
-                rentalsToCheck?.length
-            }, rentalsToCheck: ${JSON.stringify(rentalsToCheck)}`
-        );
+
         /*  const hiveTransactionIds = _.uniq(
-            rentalsToCheck.map(({ sell_trx_hive_id }) => sell_trx_hive_id)
+            rentalsToConfirm.map(({ sell_trx_hive_id }) => sell_trx_hive_id)
         );
         logger.info(
             `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${hiveTransactionIds?.length}`
@@ -439,7 +437,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             }
         }
         logger.info(
-            `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${hiveTransactionIds?.length}, splintersuite Rental Ids: ${splintersuiteRentalIds?.length}, userRentalIds: ${userRentalIds?.length}, rentalsToCheck: ${rentalsToCheck?.length}`
+            `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${hiveTransactionIds?.length}, splintersuite Rental Ids: ${splintersuiteRentalIds?.length}, userRentalIds: ${userRentalIds?.length}, rentalsToConfirm: ${rentalsToConfirm?.length}`
         );
         logger.info(
             `/services/rentals/patchRentalsBySplintersuite hiveTransactionIds: ${JSON.stringify(
@@ -483,7 +481,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
                 .patch({ confirmed: false });
         }*/
         logger.info(
-            `/services/rentals/patchRentalsBySplintersuite: ${users_id} done`
+            `/services/rentals/patchRentalsBySplintersuite: ${users_id}, rentalsToConfirm: ${rentalsToConfirm?.length}, recentHiveIDs: ${recentHiveIDs?.length}`
         );
         return;
     } catch (err) {

@@ -2,7 +2,6 @@ const { Client } = require('@hiveio/dhive');
 const { json } = require('body-parser');
 const logger = require('../../util/pinologger');
 const splinterlandsService = require('../splinterlands');
-const { DateTime } = require('luxon');
 const _ = require('lodash');
 
 const client = new Client([
@@ -16,7 +15,6 @@ const getHiveTransaction = async ({ transactionId }) => {
     try {
         logger.debug(`/services/hive/relistings/getHiveTransaction`);
         const data = await client.database.getTransaction(transactionId);
-        console.log('data', data);
         if (
             Array.isArray(data?.operations) &&
             data.operations.length === 1 &&
@@ -31,10 +29,6 @@ const getHiveTransaction = async ({ transactionId }) => {
                 `/services/hive/relistings/getHiveTransaction data: ${JSON.stringify(
                     data.operations[0][1].json
                 )}`
-            );
-            console.log(
-                'data.operations[0][1].json',
-                data.operations[0][1].json
             );
             return JSON.parse(data.operations[0][1].json);
         }
@@ -68,7 +62,10 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
         let lastRecord;
         const startingRecords = [];
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 100; i++) {
+            logger.info(
+                `/services/hive/relistings/getTransactionHiveIDsByUser for user: ${username}, startingRecord: ${startingRecord}, iteration: ${i}`
+            );
             const data = await client.database.getAccountHistory(
                 username,
                 startingRecord,
@@ -90,8 +87,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                     const timestampzTime = timestampzDate.getTime();
 
                     lastRecord = record;
-                    logger.info(`record: ${JSON.stringify(record)}`);
-                    // throw new Error('checking record');
+
                     ids.push(record[1].op[1].id);
                     if (
                         Array.isArray(record) &&
@@ -115,12 +111,6 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                             Array.isArray(records?.[lookupKey]) &&
                             records?.[lookupKey].length > 0
                         ) {
-                            logger.info(
-                                `/services/hive/relistings/getTransactionHiveIDsByUser records: ${JSON.stringify(
-                                    records
-                                )}`
-                            );
-
                             if (records?.agent === 'splintersuite') {
                                 recentSplintersuiteHiveIDs.push({
                                     time: timestampzDate,
@@ -130,38 +120,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                     recordId: record[0],
                                 });
 
-                                if (parseInt(record[0]) === 2638) {
-                                    logger.info(
-                                        `records?.[lookupKey].length < 2 is true, b4 forEach`
-                                    );
-                                    records?.[lookupKey]?.forEach((rec) => {
-                                        logger.info(
-                                            `Array.isArray(rec): ${Array.isArray(
-                                                rec
-                                            )}`
-                                        );
-                                        logger.info(
-                                            `rec: ${JSON.stringify(rec)}`
-                                        );
-                                    });
-                                    logger.info(`after forEach`);
-
-                                    logger.info(
-                                        `records?.[lookupKey].length: ${records?.[lookupKey].length}`
-                                    );
-                                    // throw new Error(
-                                    //     'checking the length being less than 2'
-                                    // );
-                                }
                                 records?.[lookupKey].forEach((rec) => {
-                                    logger.info(`rec: ${JSON.stringify(rec)}`);
-                                    logger.info(
-                                        `Array.isArray(rec): ${Array.isArray(
-                                            rec
-                                        )}`
-                                    );
-                                    logger.info(`rec: ${JSON.stringify(rec)}`);
-                                    // throw new Error('stop here');
                                     if (Array.isArray(rec)) {
                                         recentSplintersuiteHiveIDs[
                                             recentSplintersuiteHiveIDs.length -
@@ -173,11 +132,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                                 1
                                         ].IDs.push(rec);
                                     } else if (typeof rec === 'number') {
-                                        logger.info(
-                                            `rec is a number, rec: ${JSON.stringify(
-                                                rec
-                                            )}`
-                                        );
+                                        // do nothing, don't want to add it into IDs cuz it isn't one
                                     } else {
                                         logger.error(
                                             `record is fuded, rec: ${JSON.stringify(
@@ -186,19 +141,6 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                         );
                                         throw new Error('checking the rec fud');
                                     }
-                                    // if (parseInt(record[0]) === 2638) {
-                                    //     logger.info(
-                                    //         `record 2638, IDs is: ${JSON.stringify(
-                                    //             recentSplintersuiteHiveIDs[
-                                    //                 recentSplintersuiteHiveIDs.length -
-                                    //                     1
-                                    //             ].IDs
-                                    //         )}`
-                                    //     );
-                                    //     throw new Error(
-                                    //         'checking to see if fix worked'
-                                    //     );
-                                    // }
                                 });
                             } else {
                                 recentUserHiveIDs.push({
@@ -209,12 +151,6 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                     recordId: record[0],
                                 });
                                 records?.[lookupKey].forEach((rec) => {
-                                    logger.info(
-                                        `Array.isArray(rec): ${Array.isArray(
-                                            rec
-                                        )}`
-                                    );
-                                    logger.info(`rec: ${JSON.stringify(rec)}`);
                                     if (Array.isArray(rec)) {
                                         recentUserHiveIDs[
                                             recentUserHiveIDs.length - 1
@@ -224,11 +160,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                                             recentUserHiveIDs.length - 1
                                         ].IDs.push(rec);
                                     } else if (typeof rec === 'number') {
-                                        logger.info(
-                                            `rec is a number, rec: ${JSON.stringify(
-                                                rec
-                                            )}`
-                                        );
+                                        // do nothing, don't want to add it into IDs cuz it isn't one
                                     } else {
                                         logger.error(
                                             `record is fuded, rec: ${JSON.stringify(
@@ -241,21 +173,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
                             }
                         }
                     }
-                    // if (record[0] === 2638) {
-                    //     logger.info(
-                    //         `recentSplintersuiteHiveIDs[recentSplintersuiteHiveIDs?.length - 1: ${JSON.stringify(
-                    //             recentSplintersuiteHiveIDs[
-                    //                 recentSplintersuiteHiveIDs?.length - 1
-                    //             ]
-                    //         )}`
-                    //     );
-                    //     logger.info(
-                    //         `recentSplintersuiteHiveIDs[0]: ${JSON.stringify(
-                    //             recentSplintersuiteHiveIDs[0]
-                    //         )}`
-                    //     );
-                    //     throw new Error('checking what is up');
-                    // }
+
                     if (
                         timestampzTime < timeToStopAt &&
                         ['sm_update_rental_price', 'sm_market_list'].includes(
@@ -291,9 +209,9 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
             `/services/hive/relistings/getTransactionHiveIDsByUser: ${username}`
         );
         logger.info(
-            `tooOld: ${tooOld?.length}, lastRecord[0]: ${JSON.stringify(
-                lastRecord[0]
-            )}`
+            `recentHiveIDs: ${recentHiveIDs?.length}, tooOld: ${
+                tooOld?.length
+            }, lastRecord[0]: ${JSON.stringify(lastRecord[0])}`
         );
         return recentHiveIDs;
     } catch (err) {
@@ -355,7 +273,7 @@ const getPostedSuiteRelistings = async ({ username, lastCreatedTime }) => {
             transactions: relistings,
         });
 
-        logger.info(`services/hive/getPostedSuiteRelistings`);
+        logger.info(`services/hive/getPostedSuiteRelistings:`);
         return { relist, cancel };
     } catch (err) {
         logger.error(
@@ -396,7 +314,7 @@ const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
             }
         }
         logger.info(
-            `/services/hive/relistings/getRecentHiveRelistings for ${username}`
+            `/services/hive/relistings/getRecentHiveRelistings: for ${username}`
         );
         logger.info(
             `lastCreatedTime: ${lastCreatedTime}, nonSuiteHiveRelistings: ${nnonSuiteHiveRelistings}, notSuccess: ${notSuccess}, hiveTransactions: ${hiveTransactions?.length}, suiteHiveRelistings: ${suiteHiveRelistings?.length}`
@@ -547,9 +465,10 @@ const buildHiveListingsObj = ({ transactions }) => {
                 transactions?.length
             }, Hive Listings: ${tx}, Latest Listings: ${
                 Object.keys(listings)?.length
-            }, oldTransactions: ${oldTxs}`
+            }, oldTransactions: ${oldTxs}, Check: ${
+                oldTxs + Object.keys(listings)?.length === tx
+            }`
         );
-        logger.info(`Check: ${oldTxs + Object.keys(listings)?.length === tx}`);
         return listings;
     } catch (err) {
         logger.error(
