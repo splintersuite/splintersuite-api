@@ -2,14 +2,20 @@ const { Client } = require('@hiveio/dhive');
 const { json } = require('body-parser');
 const logger = require('../../util/pinologger');
 const splinterlandsService = require('../splinterlands');
+const retryFncs = require('../../util/axios_retry/general');
 const _ = require('lodash');
 
-const client = new Client([
-    'https://api.hive.blog',
-    'https://api.hivekings.com',
-    'https://anyx.io',
-    'https://api.openhive.network',
-]);
+// https://gitlab.syncad.com/hive/dhive/-/blob/master/src/client.ts
+const client = new Client(
+    [
+        'https://api.hive.blog',
+        'https://api.hivekings.com',
+        'https://anyx.io',
+        'https://api.openhive.network',
+    ],
+    { timeout: 0, failoverThreshold: 0, consoleOnFailover: true }
+    //  { timeout: 300000, failoverThreshold: 4, consoleOnFailover: true }
+);
 
 const getHiveTransaction = async ({ transactionId }) => {
     try {
@@ -198,6 +204,7 @@ const getTransactionHiveIDsByUser = async ({ username, timeToStopAt }) => {
             if (breakOut) {
                 break;
             }
+            await retryFncs.sleep(10000);
         }
         // sorts ascending... it should already be but just in case...
         const recentHiveIDs = _.sortBy(

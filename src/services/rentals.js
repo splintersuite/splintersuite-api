@@ -9,7 +9,9 @@ const findCardLevel = require('../util/calculateCardLevel');
 
 const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
     try {
-        logger.debug('/services/rentals/allAccountUpdate/updateRentalsInDB');
+        logger.info(
+            `/services/rentals/allAccountUpdate/updateRentalsInDB start for ${username}`
+        );
 
         const activeRentals = await splinterlandsService
             .getActiveRentals({ username })

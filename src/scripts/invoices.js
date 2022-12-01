@@ -95,12 +95,6 @@ const generateInvoices = async () => {
                     });
                 }
 
-                // if (count > 2) {
-                //     throw new Error(
-                //         'checking the start_date and end_date for the earnings'
-                //     );
-                // }
-                // we need to query to make sure that we don't already have an invoice input
                 if (first_invoice) {
                     first_invoice = false;
                 }

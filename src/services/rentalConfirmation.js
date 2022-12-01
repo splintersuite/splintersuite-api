@@ -3,12 +3,11 @@ const logger = require('../util/pinologger');
 const Users = require('../models/Users');
 const retryFncs = require('../util/axios_retry/general');
 const cardDetails = require('../util/cardDetails.json');
-const rentals = require('../services/rentals');
-const earningsService = require('../services/earnings');
+const rentals = require('./rentals');
 
-const confirmEarnigsForUsers = async () => {
+const confirmRentalsForUsers = async () => {
     try {
-        logger.debug(`/scripts/services/confirmations/confirmEarnigsForUsers`);
+        logger.debug(`/services/rentalConfirmation/confirmRentalsForUsers`);
         const cardDetailsObj = {};
         cardDetails.forEach((card) => {
             cardDetailsObj[card.id] = card;
@@ -25,7 +24,7 @@ const confirmEarnigsForUsers = async () => {
                 })
                 .catch((err) => {
                     logger.error(
-                        `/scripts/services/confirmations/confirmEarnigsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
+                        `/services/rentalConfirmation/confirmRentalsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
                             user.id
                         )} error: ${err.message}`
                     );
@@ -39,7 +38,7 @@ const confirmEarnigsForUsers = async () => {
                 })
                 .catch((err) => {
                     logger.error(
-                        `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
+                        `/services/rentalConfirmation/confirmRentalsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
                             user.id
                         )} error: ${err.message}`
                     );
@@ -51,22 +50,18 @@ const confirmEarnigsForUsers = async () => {
             await retryFncs.sleep(1000);
             count++;
         }
-
-        for (const user of users) {
-            await earningsService.insertAllDailyEarnings({
-                users_id: user.id,
-                created_at: user.created_at,
-            });
-        }
-
-        logger.info(`/scripts/services/confirmations/confirmEarnigsForUsers:`);
-        process.exit(0);
+        logger.info(
+            `/services/rentalConfirmation/confirmRentalsForUsers: for ${users?.length} users`
+        );
+        return;
     } catch (err) {
         logger.error(
-            `/scripts/services/confirmations/confirmEarnigsForUsers error: ${err.message}`
+            `/services/rentalConfirmation/confirmRentalsForUsers error: ${err.message}`
         );
         throw err;
     }
 };
 
-confirmEarnigsForUsers();
+module.exports = {
+    confirmRentalsForUsers,
+};
