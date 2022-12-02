@@ -8,13 +8,13 @@ const _ = require('lodash');
 // https://gitlab.syncad.com/hive/dhive/-/blob/master/src/client.ts
 const client = new Client(
     [
+        'https://anyx.io',
         'https://api.hive.blog',
         'https://api.hivekings.com',
-        'https://anyx.io',
         'https://api.openhive.network',
     ],
-    { timeout: 0, failoverThreshold: 0, consoleOnFailover: true }
-    //  { timeout: 300000, failoverThreshold: 4, consoleOnFailover: true }
+    //{ timeout: 0, failoverThreshold: 0, consoleOnFailover: true } . this should retry forever but doesn't work for some reason, seems like the timeout doesn't get called properly when its an RC issue
+    { timeout: 300000, failoverThreshold: 4, consoleOnFailover: true }
 );
 
 const getHiveTransaction = async ({ transactionId }) => {

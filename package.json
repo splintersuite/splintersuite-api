@@ -22,7 +22,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@hiveio/dhive": "^1.2.4",
+        "@hiveio/dhive": "1.2.3",
         "ajv-formats": "^2.1.1",
         "axios": "^0.27.2",
         "body-parser": "^1.20.0",

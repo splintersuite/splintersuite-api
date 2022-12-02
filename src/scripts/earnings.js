@@ -19,7 +19,7 @@ const calculateEarningsForUsers = async () => {
         //     cardDetailsObj[card.id] = card;
         // });
 
-        //  const users = await Users.query();
+        const users = await Users.query();
         // let count = 0;
         // const fiveMinutesInMS = 1000 * 60 * 5;
         // for (const user of users) {
