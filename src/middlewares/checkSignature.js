@@ -1,5 +1,5 @@
 const decrypt = require('../util/crypto');
-
+const logger = require('../util/pinologger');
 const checkSignature = (req, res, next) => {
     if (
         req.headers?.ss_access_token_iv &&
@@ -15,6 +15,7 @@ const checkSignature = (req, res, next) => {
             return next();
         }
     }
+    logger.warn(`unauthorized request`);
     // unauthenticated
     res.sendStatus(403);
 };

@@ -5,10 +5,10 @@ const userService = require('../services/users');
 const pay = async (req, res, next) => {
     const { id } = req.params;
     const { paid_at } = req.body;
-
+    const _paid_at = new Date(paid_at);
     const [invoice] = await Invoices.query()
         .where({ id })
-        .patch({ paid_at })
+        .patch({ paid_at: _paid_at })
         .returning('*');
 
     const locked = await invoiceService.handleLockedUser({
@@ -22,7 +22,7 @@ const get = async (req, res, next) => {
     const { username } = req.params;
 
     if (!username) {
-        const invoices = await Invoices.query();
+        const invoices = await Invoices.query().where('amount_due', '>', 0);
         res.send(invoices);
     } else {
         const user = await userService.get({ username });
@@ -35,3 +35,4 @@ module.exports = {
     pay,
     get,
 };
+//const users = await Users.query().where('created_at', '<', fifteenDaysAgo);

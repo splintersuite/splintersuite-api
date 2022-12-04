@@ -16,6 +16,7 @@ const getForUser = async ({ users_id }) => {
         // TNT Question: should we have this only gives us unpaid invoices?
         const invoices = await Invoices.query()
             .where({ users_id })
+            .where('amount_due', '>', 0)
             .catch((err) => {
                 logger.error(
                     `/services/invoices/get Invoices query of users_id: ${users_id} error: ${err.message}`
@@ -72,7 +73,7 @@ const create = async ({
             );
             return;
         }
-        throw new Error('checking newEarnings');
+        // throw new Error('checking newEarnings');
         const botEarnings = sumDailyEarnings({ dailyEarnings: newEarnings });
         // WE NEED TO FIND OUT EXACTLY HOW TO JUST DROP THE ARRAY FROM earnings that EARNINGS_DATE EQUALS THE END_DATE
         const now = DateTime.utc();

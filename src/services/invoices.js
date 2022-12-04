@@ -8,7 +8,9 @@ const DailyEarnings = require('../models/DailyEarnings');
 
 const get = async ({ users_id }) => {
     logger.debug('/services/invoices/get');
-    const invoices = await Invoices.query().where({ users_id });
+    const invoices = await Invoices.query()
+        .where({ users_id })
+        .where('amount_due', '>', 0);
 
     if (!Array.isArray(invoices)) {
         throw new Error('database errored on querying invoices');
