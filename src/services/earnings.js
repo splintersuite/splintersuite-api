@@ -38,7 +38,7 @@ const get = async ({ users_id }) => {
             numberOfDaysAgo: 60,
             date: now,
         });
-
+        // TODO: change getEarningsForRange to get the dailyEarnings table shit
         const dailyEarnings = await getEarningsForRange({
             users_id,
             start_date: one.daysAgo,
@@ -62,6 +62,11 @@ const get = async ({ users_id }) => {
             start_date: fourteen.daysAgo,
             end_date: seven.daysAgo,
         });
+        logger.info(
+            `before monthlyEarnings, start_date: ${JSON.stringify(
+                thirty.daysAgo
+            )}, end_date: ${JSON.stringify(now)}, users_id: ${users_id}`
+        );
 
         const monthlyEarnings = await getEarningsForRange({
             users_id,
@@ -75,7 +80,7 @@ const get = async ({ users_id }) => {
             end_date: thirty.daysAgo,
         });
 
-        logger.debug(
+        logger.info(
             `/services/earnings/get for users_id: ${users_id}, dailyEarnings: ${JSON.stringify(
                 dailyEarnings
             )}, priorDailyEarnings: ${JSON.stringify(
@@ -164,7 +169,15 @@ const getEarningsForRange = async ({ users_id, start_date, end_date }) => {
         const allEarnings = sumRentals({ activeRentals });
 
         if (!allEarnings) {
-            return null;
+            // return null;
+            return {
+                totalEarnings: 69420,
+                numOfRentals: 69420,
+                suiteRentals: 69420,
+                otherRentals: 69420,
+                numSuiteRentals: 69420,
+                numOtherRentals: 69420,
+            };
         }
 
         logger.info(
@@ -440,7 +453,6 @@ const getDailyEarningsForUser = async ({ users_id }) => {
 
 module.exports = {
     get,
-    getEarningsForRange,
     insertAllDailyEarnings,
     getDailyEarningsForDateRange,
     getDailyEarningsForUser,

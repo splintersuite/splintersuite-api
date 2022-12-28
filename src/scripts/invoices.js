@@ -16,7 +16,6 @@ const generateInvoices = async () => {
         const now = DateTime.utc();
         const startOfToday = datesUtil.getStartOfDay({ date: now });
         const yesterday = startOfToday.minus({ days: 1 });
-        // WE SHOULD CHANGE THIS TO 14 DAYS?
         const fifteenDaysAgo = now.minus({ days: 15 });
 
         // first 15 days are free, so we don't need to generate invoices for these peeps during that time period
@@ -37,12 +36,17 @@ const generateInvoices = async () => {
                 date: userCreatedAtDT,
             });
             // this will only be useful if we end up needing to calculate the first day of earnings for a first invoice
+            // TNT TODO: make this so when we first create an invoice, the first day we have the diffDays * first day of earnings in that cycle, then its 100% for the rest of them
+
             const IntCreatedTimes = Interval.fromDateTimes(
                 startOfCreatedAtDay,
                 userCreatedAtDT
             );
-            const diffDays = IntCreatedTimes.length('days');
+            logger.info(`IntCreatedTimes: ${JSON.stringify(IntCreatedTimes)}`);
 
+            const diffDays = IntCreatedTimes.length('days');
+            logger.info(`diffDays: ${JSON.stringify(diffDays)}`);
+            throw new Error('IntCreatedTimes check');
             const startSuiteFees = startOfCreatedAtDay.plus({ days: 15 });
             start_interval_date = startSuiteFees;
             end_interval_date = start_interval_date.plus({ days: 15 });

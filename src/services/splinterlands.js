@@ -208,6 +208,11 @@ const getSettings = async () => {
         const url = 'https://api2.splinterlands.com/settings';
 
         const res = await axiosInstance(url);
+        // logger.info(
+        //     `axiosInstance.defaults.headers: ${JSON.stringify(
+        //         axiosInstance.defaults.headers
+        //     )}`
+        // );
 
         const data = res.data;
         logger.info(`/services/splinterlands/getSettings`);
