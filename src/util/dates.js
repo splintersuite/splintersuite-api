@@ -141,6 +141,22 @@ const getStartOfDay = ({ date }) => {
     }
 };
 
+const computeMinsSinceStart = ({ startTime, endTime }) => {
+    try {
+        logger.debug(`/util/dates/computeMinsSinceStart`);
+
+        const MIN_IN_MS = 1000 * 60;
+        const msLong = endTime - startTime;
+        const minsLong = msLong / MIN_IN_MS;
+
+        logger.debug(`/util/dates/computeMinsSinceStart:`);
+        return minsLong;
+    } catch (err) {
+        logger.error(`/util/dates/computeMinsSinceStart error: ${err.message}`);
+        throw err;
+    }
+};
+
 module.exports = {
     firstDayOfWeek,
     getLastWeek,
@@ -150,4 +166,5 @@ module.exports = {
     getNumDaysAgo,
     getNumDaysLater,
     getStartOfDay,
+    computeMinsSinceStart,
 };

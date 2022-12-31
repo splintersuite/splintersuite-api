@@ -1,18 +1,28 @@
 'use strict';
 const logger = require('../util/pinologger');
-const userRentals = require('../services/userRentals');
+const userRentalsService = require('../services/userRentals');
+const utilDates = require(`../util/dates`);
 
 const update = async () => {
     try {
         const start = new Date();
+        const startTime = start.getTime();
         logger.info(
-            `/scripts/userRentals/update start: ${start}, startTime: ${start.getTime()}`
+            `/scripts/userRentals/update start: ${start}, startTime: ${startTime}`
         );
 
-        await userRentals.update();
+        const timeSummary = await userRentalsService.update();
         const end = new Date();
+        const endTime = end.getTime();
+        const totalMinsLong = utilDates.computeMinsSinceStart({
+            startTime,
+            endTime,
+        });
+
         logger.info(
-            `/scripts/userRentals/update: end: ${end}, endTime: ${end.getTime()}`
+            `/scripts/userRentals/update: end: ${end}, endTime: ${endTime}, totalMinsLong: ${totalMinsLong}, timeSummary: ${JSON.stringify(
+                timeSummary
+            )}`
         );
         process.exit(0);
     } catch (err) {

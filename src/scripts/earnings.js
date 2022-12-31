@@ -6,6 +6,7 @@ const cardDetails = require('../util/cardDetails.json');
 const rentals = require('../services/rentals');
 const earningsService = require('../services/earnings');
 const rentalConfirmation = require('../services/rentalConfirmation');
+const userRentalsService = require('../services/userRentals');
 
 const calculateEarningsForUsers = async () => {
     try {
@@ -14,12 +15,13 @@ const calculateEarningsForUsers = async () => {
             `/scripts/earnings/calculateEarningsForUsers start: ${start}, startTime: ${start.getTime()}`
         );
 
+        await userRentalsService.update();
         // const cardDetailsObj = {};
         // cardDetails.forEach((card) => {
         //     cardDetailsObj[card.id] = card;
         // });
 
-        const users = await Users.query();
+        //  const users = await Users.query();
         // let count = 0;
         // const fiveMinutesInMS = 1000 * 60 * 5;
         // for (const user of users) {

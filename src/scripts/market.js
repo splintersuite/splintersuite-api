@@ -28,7 +28,7 @@ const getHistoricalData = async () => {
                     twelveHoursAgoTime,
                 });
 
-                if (count !== 0 && count % 300 === 0) {
+                if (count !== 0 && count % 100 === 0) {
                     logger.info(
                         '/scripts/rentals/getHistoricalData sleep 5 mins'
                     );
