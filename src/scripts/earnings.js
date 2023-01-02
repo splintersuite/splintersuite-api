@@ -15,7 +15,13 @@ const calculateEarningsForUsers = async () => {
             `/scripts/earnings/calculateEarningsForUsers start: ${start}, startTime: ${start.getTime()}`
         );
 
-        await userRentalsService.update();
+        const timeSummary = await userRentalsService.update();
+        logger.info(
+            `/scripts/earnings/calculateEarningsForUsers userRentalsService timeSummary: ${JSON.stringify(
+                timeSummary
+            )}`
+        );
+
         // const cardDetailsObj = {};
         // cardDetails.forEach((card) => {
         //     cardDetailsObj[card.id] = card;
@@ -59,13 +65,14 @@ const calculateEarningsForUsers = async () => {
         //     await retryFncs.sleep(1000);
         //     count++;
         // }
+
         await rentalConfirmation.confirmRentalsForUsers();
-        for (const user of users) {
-            await earningsService.insertAllDailyEarnings({
-                users_id: user.id,
-                created_at: user.created_at,
-            });
-        }
+        // for (const user of users) {
+        //     await earningsService.insertAllDailyEarnings({
+        //         users_id: user.id,
+        //         created_at: user.created_at,
+        //     });
+        // }
         const end = new Date();
         logger.info(
             `/scripts/earnings/calculateEarningsForUsers end: ${end}, endTime: ${end.getTime()}`

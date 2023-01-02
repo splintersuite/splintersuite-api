@@ -12,6 +12,8 @@ const findCardLevel = require('../util/calculateCardLevel');
 const update = async () => {
     try {
         logger.debug(`/services/userRentals/update`);
+        const now = new Date();
+        const nowTime = now.getTime();
         const cardDetailsObj = {};
         cardDetails.forEach((card) => {
             cardDetailsObj[card.id] = card;
@@ -72,7 +74,16 @@ const update = async () => {
             await retryFncs.sleep(1000);
             count++;
         }
-        logger.info(`/services/userRentals/update: ${users?.length} users`);
+        const finalEnd = new Date();
+        const finalEndTime = finalEnd.getTime();
+        const totalMinsLong = utilDates.computeMinsSinceStart({
+            startTime: nowTime,
+            endTime: finalEndTime,
+        });
+        timeSummary['totalMinsLong'] = totalMinsLong;
+        logger.info(
+            `/services/userRentals/update: ${users?.length} users, totalMinsLong: ${totalMinsLong}`
+        );
         return timeSummary;
     } catch (err) {
         logger.error(`/services/userRentals/update error: ${err.message}`);
