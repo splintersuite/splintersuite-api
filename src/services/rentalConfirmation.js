@@ -152,18 +152,39 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     }
 };
 
-const getEarliestDateNeeded = ({ rentalsConfirmed, rentalsToConfirm }) => {
+const getEarliestDateNeeded = ({
+    recentRentalsConfirmed,
+    rentalsToConfirm,
+}) => {
     try {
         logger.debug(`/services/rentalConfirmation/getEarliestDateNeeded`);
 
-        const notConfirmedSellTrxIds = _.uniq(
-            rentalsToConfirm.map(({ sell_trx_id }) => sell_trx_id)
-        );
-
-        if (!Array.isArray(rentalsConfirmed) || rentalsConfirmed?.length < 1) {
-            // we don't have any rentals confirmed, we need to go with our old method of getting the earliest date
+        if (
+            !Array.isArray(recentRentalsConfirmed) ||
+            recentRentalsConfirmed?.length < 1
+        ) {
+            // TNT NOTE: THIS IS TOTALLY FINE AND A OK!
+            const earliestDateTime = getEarliestRentalCreatedDate({
+                rentals: rentalsToConfirm,
+            });
+            logger.info(
+                `/services/rentalConfirmation/getEarliestDateNeeded: no confirmed rentals: ${earliestDateTime}`
+            );
+            return earliestDateTime;
+            // const allTxDates = [];
+            // we don't have any rentals confirmed, we need to go with our old method of getting the earliest created_at date
+            // for (const ucRental of rentalsToConfirm) {
+            //     const { created_at } = ucRental;
+            //     const created_at_time = new Date(created_at).getTime();
+            //     allDates.push(created_at_time);
+            //     const earliestDateTime = _.min(allTxDates);
+            //     logger.info(
+            //         `there was no recent rentals to confirm, therefore we just took the earliest date from created_at, earliestDateTime: ${earliestDateTime}`
+            //     );
+            //     return earliestDateTime;
+            // }
         } else {
-            // we have rentals confirmed, we need to go and first find if there are any of these IDs that are missing from notConfirmedSellTrxIds
+            // we have rentals confirmed, we need to go and first find if there are any of these IDs that are missing from sellTrxIdsToConfirm
             // we then need to determine if there are, the earliest date FROM an array of:
             // 1) market_created_date for the nonmatched sellTrxIds, AND 2) the last_rental_payment of all the ones that matched
         }
@@ -175,8 +196,67 @@ const getEarliestDateNeeded = ({ rentalsConfirmed, rentalsToConfirm }) => {
     }
 };
 
+// goal of this function is to get any IDs that have never been confirmed, because we need to get their created_at date rather than the last_payment_date (since last_payment_date is confirmed)
+const getNewIdsToConfirm = ({ rentalsConfirmed, rentalsToConfirm }) => {
+    try {
+        logger.debug(`/services/rentalConfirmation/getNewIdsToConfirm`);
+
+        // const sellTrxIdsToConfirm = _.uniq(
+        //     rentalsToConfirm.map(({ sell_trx_id }) => sell_trx_id)
+        // );
+
+        const sellTrxIdsConfirmed = _.uniq(
+            rentalsConfirmed.map(({ sell_trx_id }) => sell_trx_id)
+        );
+
+        // we need to loop over all the rentalsToConfirm, and see if they result in any matches in sellTrxIdsConfirmed, if they don't then we need to add the created_at datetime to list of potential dates
+    } catch (err) {
+        logger.error(
+            `/services/rentalConfirmation/getNewIdsToConfirm error: ${err.message}`
+        );
+        throw err;
+    }
+};
+// market_created_date comes from the collection which is what we need to ultimately get, need to first filter out which Ids we need to look up, and then create the market collection Ids filter imo
+const getSearchableRentalsBySellTrxId = ({ rentals }) => {
+    try {
+        logger.debug(
+            `services/rentalConfirmation/getSearchableRentalsBySellTrxId`
+        );
+
+        const searachableObj = {};
+
+        for (const rental of rentals) {
+            const { sell_trx_id } = rental;
+        }
+    } catch (err) {
+        logger.error(
+            `/services/rentalConfirmation/getSearchableRentalsBySellTrxId error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
 const getEarliestRentalCreatedDate = ({ rentals }) => {
     try {
+        logger.debug(
+            `/services/rentalConfirmation/getEarliestRentalCreatedDate`
+        );
+
+        const allCreatedDateTimes = [];
+
+        for (const rental of rentals) {
+            const { created_at } = rental;
+            const created_at_time = new Date(created_at).getTime();
+            allCreatedDates.push(created_at_time);
+        }
+
+        const earliestDateTime = _.min(allCreatedDateTimes);
+
+        logger.info(
+            `/services/rentalConfirmation/getEarliestRentalCreatedDate: ${earliestDateTime}, rentals: ${rentals?.length}`
+        );
+        return earliestDateTime;
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/getEarliestRentalCreatedDate error: ${err.message}`
