@@ -484,6 +484,41 @@ const buildHiveListingsObj = ({ transactions }) => {
         throw err;
     }
 };
+
+const getHiveTransactionDate = async ({ transactionId }) => {
+    try {
+        logger.debug(`/services/hive/relistings/getHiveTransactionDate`);
+        const data = await client.database.getTransaction(transactionId);
+        if (
+            data?.expiration &&
+            typeof data?.expiration === 'string' &&
+            data?.expiration?.length > 0 &&
+            Array.isArray(data?.operations) &&
+            data.operations.length === 1 &&
+            Array.isArray(data.operations[0]) &&
+            data.operations[0].length > 1 &&
+            data.operations[0][1]['json'] !== undefined
+        ) {
+            // this seems like a legit request that has gone through
+            const hive_date = data?.expiration + 'Z';
+            const hive_created_at_date = new Date(hive_date);
+            const hive_created_at_time = hive_created_at_date.getTime();
+            return { hive_created_at_time, hive_created_at_date };
+        } else {
+            logger.warn(
+                `transactionId: ${transactionId} did not pass our tests to see if its a real transaction, data: ${JSON.stringify(
+                    data
+                )}`
+            );
+            return null;
+        }
+    } catch (err) {
+        logger.error(
+            `/services/hive/relistings/getHiveTransactionDate error: ${err.message}`
+        );
+        throw err;
+    }
+};
 // we need uids for the arrays that are listings, sell_trx_id for relistings and relistActive
 // TNT NOTE: we are building just the relistings and relistActive portion right now
 // we can also go over listings to since we need to, but can also look up those ones individually if there aren't any matches here
@@ -491,6 +526,7 @@ module.exports = {
     getHiveTransaction,
     getPostedSuiteRelistings,
     getTransactionHiveIDsByUser,
+    getHiveTransactionDate,
 };
 
 // TNT NOTE: in our how to ultimately convert, we have from our active rentals endpoint https://api2.splinterlands.com/market/active_rentals?owner=xdww

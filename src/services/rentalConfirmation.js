@@ -160,6 +160,7 @@ const getEarliestDateNeeded = ({
         logger.debug(`/services/rentalConfirmation/getEarliestDateNeeded`);
 
         if (
+            !recentRentalsConfirmed ||
             !Array.isArray(recentRentalsConfirmed) ||
             recentRentalsConfirmed?.length < 1
         ) {
@@ -357,3 +358,5 @@ module.exports = {
     confirmRentalsForUsers,
     patchRentalsBySplintersuite,
 };
+
+// TNT TODO: we can actually just end up looking at the created_at dates for these hive transactions, and then add that to the userRentals db, so that we can ultimately get them all at the same created_at dates, rather than have to rely on them being in the collection IMO

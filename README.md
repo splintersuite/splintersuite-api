@@ -22,9 +22,9 @@ $ psql
 $ \i /Users/jackdealtrey/Documents/code/spl/splintersuite-api/init.sql (your path obv)
 $ \q
 
-$ node_modules/.bin/knex migrate:latest --esm
+node_modules/.bin/knex migrate:latest --esm
 
-node_modules/.bin/knex migrate:down 20220731054417_v2BotEarning.js
+node_modules/.bin/knex migrate:down 20230106065308_hive_tx_date.js
 
 node_modules/.bin/knex migrate:list
 x
