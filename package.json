@@ -18,7 +18,8 @@
         "testHive": "node  --trace-warnings ./src/scripts/tests/hive.js",
         "rentalConfirmation": "node  --trace-warnings ./src/scripts/rentalConfirmation.js",
         "invoices": "node  --trace-warnings ./src/scripts/invoices.js",
-        "userRentals": "node --trace-warnings ./src/scripts/userRentals.js"
+        "userRentals": "node --trace-warnings ./src/scripts/userRentals.js",
+        "hiveDates": "node --trace-warnings ./src/scripts/hiveDates.js"
     },
     "author": "",
     "license": "ISC",

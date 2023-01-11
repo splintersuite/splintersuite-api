@@ -122,8 +122,14 @@ select ur._, url._ from user_rentals ur join user_rental_listings url on ur.user
 pg_dump command:
 
 # https://www.digitalocean.com/community/questions/how-to-download-database-backup
+# https://snapshooter.com/learn/postgresql/pg_dump_pg_restore
+  - TNT NOTE: this is the best link for learning how to do pg_dump and pg_restore stuff imo
 
 PGPASSWORD=DBPassword pg_dump -h splintersuite-do-user-2517044-0.b.db.ondigitalocean.com -U doadmin -p 25060 -Fc splintersuite-production > dbdump.pgsql
+
+PGPASSWORD="AVNS_Zf4uLgrGjr4z8-VRsZW" pg_dump -h splintersuite-do-user-2517044-0.b.db.ondigitalocean.com -U user -p 25060 -F t splintersuite-production > backup.tar
+
+TNT NOTE: we just had this work
 
 pg_restore -d 'use_your_connnectionURI' --jobs 4 use_your_dump_file
 
@@ -165,3 +171,36 @@ sudo apt-get update
 
 sudo apt-get -y install postgresql-14
 ```
+
+# Local M1 mac
+
+https://www.codementor.io/@engineerapart/getting-started-with-postgresql-on-mac-osx-are8jcopb
+
+https://gist.github.com/phortuin/2fe698b6c741fd84357cec84219c6667
+after brew download, run this command (different than above a lil due to differing file system)
+pg_ctl -D /usr/local/var/postgresql@14 start
+
+local connection string:
+
+Old One:
+
+DB_CONNECTION=postgresql://user:AVNS_Zf4uLgrGjr4z8-VRsZW@splintersuite-do-user-2517044-0.b.db.ondigitalocean.com:25060/tnt-earnings
+
+local one:
+DB_CONNECTION=postgresql://tnt@localhost:5432/localprod
+
+PGPASSWORD="AVNS_Zf4uLgrGjr4z8-VRsZW" pg_dump -h splintersuite-do-user-2517044-0.b.db.ondigitalocean.com -U user -p 25060 -F t splintersuite-production > backup.tar
+
+PGPASSWORD="AVNS_Zf4uLgrGjr4z8-VRsZW" pg_dump -T knex_migrations -T knex_migrations_lock -h splintersuite-do-user-2517044-0.b.db.ondigitalocean.com -U user -p 25060 --data-only --no-owner splintersuite-production > dataonlybackup69.sql
+
+
+pg_restore -U "user" -Ft -d localprod < backup.tar
+
+pg_restore -U tnt
+
+https://stackoverflow.com/questions/40642359/ignoring-a-table-in-pg-dump-and-restore
+-T option allows us to ignore certain tables when doing a sql dump
+
+
+
+# STEPS THAT ACTUALLY GOT IT ALL TO WORK:

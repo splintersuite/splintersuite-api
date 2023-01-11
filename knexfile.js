@@ -6,13 +6,14 @@ module.exports = {
         client: 'pg',
         connection: {
             connectionString: process.env.DB_CONNECTION,
-            ssl: {
-                rejectUnauthorized: false,
-            },
+            ssl: false,
+            // ssl: {
+            //     rejectUnauthorized: false,
+            // },
         },
         pool: {
-            min: 5,
-            max: 30,
+            min: 0,
+            max: 20,
             afterCreate(conn, done) {
                 conn.query('SET timezone="UTC";', (err) => {
                     if (err) {
@@ -35,6 +36,7 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
+        debug: true,
         // debug: process.env.DEBUG || true,
     },
     production: {
@@ -46,8 +48,8 @@ module.exports = {
             },
         },
         pool: {
-            min: 5,
-            max: 30,
+            min: 0,
+            max: 20,
             afterCreate(conn, done) {
                 conn.query('SET timezone="UTC";', (err) => {
                     if (err) {
@@ -70,7 +72,8 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
-        debug: false,
+        // debug: false,
+        debug: true,
         // debug: process.env.DEBUG || false,
     },
     onUpdateTrigger: (table) => `
