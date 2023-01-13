@@ -17,7 +17,7 @@ exports.up = function (knex) {
         })
         .then(() => knex.raw(knexfile.onUpdateTrigger('hive_tx_date')));
 };
-
+// TNT TODO: reneg on this migration, and then we should remake it and add t.dateTime (recent_date_confirmation)
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }

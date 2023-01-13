@@ -15,6 +15,16 @@ const updateHiveTxDates = async () => {
             //.select('sell_trx_hive_id') // this makes it so we only get the sell_trx_hive_id back
             .distinct('sell_trx_hive_id')
             .debug();
+        // https://stackoverflow.com/questions/4076098/how-to-select-rows-with-no-matching-entry-in-another-table 
+        // make SQL query that is like this
+
+        // then once we have all of these IDs, we need to actually insert the non new ones into the hive_tx_date table
+        // once this is done, we can then query this table for all of the ones that have a hive_created_at of null, 
+        // and update that shit
+
+
+        // THEN WE CAN CHANGE OUR rentalConfirmation shit to also include recording and updating all of the unique hive_trx_ids
+
         //.toKnexQuery(); // this makes it so we don't get any duplicates
         //  .distinct();
 

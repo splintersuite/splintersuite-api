@@ -196,7 +196,6 @@ PGPASSWORD="AVNS_Zf4uLgrGjr4z8-VRsZW" pg_dump -T knex_migrations -T knex_migrati
 
 pg_restore -U "user" -Ft -d localprod < backup.tar
 
-pg_restore -U tnt
 
 https://stackoverflow.com/questions/40642359/ignoring-a-table-in-pg-dump-and-restore
 -T option allows us to ignore certain tables when doing a sql dump
