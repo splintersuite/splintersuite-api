@@ -26,15 +26,6 @@ const updateHiveTxDates = async () => {
 
         // THEN WE CAN CHANGE OUR rentalConfirmation shit to also include recording and updating all of the unique hive_trx_ids
 
-        //.toKnexQuery(); // this makes it so we don't get any duplicates
-        //  .distinct();
-
-        // logger.info(
-        //     `distinctHiveIds: ${JSON.stringify(distinctHiveIds)}, count: ${
-        //         distinctHiveIds?.length
-        //     }`
-        // );
-
         // TNT TODO: we also need a function to go over the userRentals and get them their sell_tx
         logger.info(
             ` count: ${distinctHiveIds?.length}, firstRow: ${JSON.stringify(
