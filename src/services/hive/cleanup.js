@@ -1,6 +1,7 @@
 'use strict';
 const UserRentals = require('../../models/UserRentals');
 const logger = require('../../util/pinologger');
+const _ = require('lodash');
 
 // TNT TODO:
 // we need a function that looks through UserRentals, and finds those that have a sell_trx_hive_id as 'N' which is the default
@@ -20,7 +21,10 @@ const updateSellTrxHiveIds = async () => {
         logger.info(
             `badIds: ${badIds?.length}, uniqueBadIds: ${uniqueBadIds.length}`
         );
-        sortUniqueHiveSellIds({ sell_trx_ids: uniqueBadIds });
+        const idsToBeInserted = sortUniqueHiveSellIds({
+            sell_trx_ids: uniqueBadIds,
+        });
+        logger.info(`idsToBeInserted: ${JSON.stringify(idsToBeInserted)}`);
         return;
     } catch (err) {
         logger.error(
@@ -51,25 +55,29 @@ const sortUniqueHiveSellIds = ({ sell_trx_ids }) => {
 
             if (sell_trx_hive_id.length > 1) {
                 if (!uniqueIds[sell_trx_hive_id]) {
-                    uniqueIds[sell_trx_hive_id] = sell_trx_hive_id;
+                    const newArr = [];
+                    newArr.push(sell_trx_id);
+                    // uniqueIds[sell_trx_hive_id] = sell_trx_hive_id;
+                    uniqueIds[sell_trx_hive_id] = newArr;
                 } else {
                     duplicateId = duplicateId + 1;
+                    uniqueIds[sell_trx_hive_id].push(sell_trx_id);
                 }
             }
         }
-
+        const allUniqueIds = Object.keys(uniqueIds);
         logger.info(
             `/services/hive/cleanup/sortUniqueHiveSellIds: sell_trx_ids: ${
                 sell_trx_ids?.length
-            } duplicates: ${duplicateId}, uniqueIds: ${
-                Object.keys(uniqueIds).length
+            } duplicates: ${duplicateId}, allUniqueIds: ${
+                Object.keys(allUniqueIds).length
             }, check: ${
                 sell_trx_ids?.length ===
-                Object.keys(uniqueIds).length + duplicateId
+                Object.keys(allUniqueIds).length + duplicateId
             }`
         );
-        const allUniqueIds = Object.keys(uniqueIds);
-        return allUniqueIds;
+
+        return uniqueIds;
     } catch (err) {
         logger.error(
             `/services/hive/cleanup/sortUniqueHiveSellIds error: ${err.message}`
