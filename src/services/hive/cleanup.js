@@ -2,29 +2,29 @@
 const UserRentals = require('../../models/UserRentals');
 const logger = require('../../util/pinologger');
 const _ = require('lodash');
-
-// TNT TODO:
-// we need a function that looks through UserRentals, and finds those that have a sell_trx_hive_id as 'N' which is the default
-// we need to replace that with the real sell_trx_hive_id
+// TNT NOTE: this is only to be run if we somehow have data that needs to be cleaned up
 
 const updateSellTrxHiveIds = async () => {
     try {
         logger.debug(`/services/hive/cleanup/updateSellTrxHiveIds`);
 
-        const badIds = await UserRentals.query()
-            .select('sell_trx_id')
-            .where('sell_trx_hive_id', 'N');
         const uniqueBadIds = await UserRentals.query()
             .select('sell_trx_id')
             .where('sell_trx_hive_id', 'N')
             .distinctOn('sell_trx_id');
-        logger.info(
-            `badIds: ${badIds?.length}, uniqueBadIds: ${uniqueBadIds.length}`
-        );
+
+        logger.info(`uniqueBadIds: ${uniqueBadIds.length}`);
         const idsToBeInserted = sortUniqueHiveSellIds({
             sell_trx_ids: uniqueBadIds,
         });
-        logger.info(`idsToBeInserted: ${JSON.stringify(idsToBeInserted)}`);
+        if (!idsToBeInserted) {
+            logger.info(
+                `/services/hive/cleanup/updateSellTrxHiveIds: nothing to insert`
+            );
+            return;
+        }
+        await insertHiveSellIds({ hiveIdsToBeInserted: idsToBeInserted });
+        logger.info(`/services/hive/cleanup/updateSellTrxHiveIds:`);
         return;
     } catch (err) {
         logger.error(
@@ -57,7 +57,6 @@ const sortUniqueHiveSellIds = ({ sell_trx_ids }) => {
                 if (!uniqueIds[sell_trx_hive_id]) {
                     const newArr = [];
                     newArr.push(sell_trx_id);
-                    // uniqueIds[sell_trx_hive_id] = sell_trx_hive_id;
                     uniqueIds[sell_trx_hive_id] = newArr;
                 } else {
                     duplicateId = duplicateId + 1;
@@ -86,4 +85,29 @@ const sortUniqueHiveSellIds = ({ sell_trx_ids }) => {
     }
 };
 
+const insertHiveSellIds = async ({ hiveIdsToBeInserted }) => {
+    try {
+        logger.debug(`/services/hive/cleanup/insertHiveSellIds`);
+        let inserted = 0;
+
+        for (const [sell_trx_hive_id, sell_trx_id_arr] of Object.entries(
+            hiveIdsToBeInserted
+        )) {
+            const res = await UserRentals.query()
+                .where('sell_trx_hive_id', 'N')
+                .whereIn('sell_trx_id', sell_trx_id_arr)
+                .patch({ sell_trx_hive_id: sell_trx_hive_id });
+            inserted = inserted + res;
+        }
+        logger.info(
+            `/services/hive/cleanup/insertHiveSellIds: inserted: ${inserted}`
+        );
+        return;
+    } catch (err) {
+        logger.error(
+            `/services/hive/cleanup/insertHiveSellIds error: ${err.message}`
+        );
+        throw err;
+    }
+};
 module.exports = { updateSellTrxHiveIds };
