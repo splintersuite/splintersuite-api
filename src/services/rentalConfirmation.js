@@ -9,7 +9,7 @@ const rentals = require('./rentals');
 const utilDates = require('../util/dates');
 const splinterlandsService = require('./splinterlands');
 const { NotNullViolationError } = require('objection');
-
+const knexInstance = require('../../db/index');
 const confirmRentalsForUsers = async () => {
     try {
         logger.debug(`/services/rentalConfirmation/confirmRentalsForUsers`);

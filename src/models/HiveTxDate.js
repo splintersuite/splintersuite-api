@@ -13,6 +13,7 @@ class HiveTxDate extends Model {
                 hive_created_at: { type: 'object', format: 'date-time' },
                 recently_confirmed: { type: 'object', format: 'date-time' },
                 hive_tx_id: { type: 'string' },
+                confirmed: { type: 'boolean' },
             },
         };
     }
