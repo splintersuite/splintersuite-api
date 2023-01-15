@@ -27,6 +27,9 @@ node_modules/.bin/knex migrate:latest --esm
 node_modules/.bin/knex migrate:down 20230106065308_hive_tx_date.js
 
 node_modules/.bin/knex migrate:list
+
+node_modules/.bin/knex migrate:down 20230115064423_hive_tx_date_result.js
+
 x
 or if you have knex installed
 $ knex migrate:latest
@@ -193,13 +196,9 @@ PGPASSWORD="AVNS_Zf4uLgrGjr4z8-VRsZW" pg_dump -h splintersuite-do-user-2517044-0
 
 PGPASSWORD="AVNS_Zf4uLgrGjr4z8-VRsZW" pg_dump -T knex_migrations -T knex_migrations_lock -h splintersuite-do-user-2517044-0.b.db.ondigitalocean.com -U user -p 25060 --data-only --no-owner splintersuite-production > dataonlybackup69.sql
 
-
 pg_restore -U "user" -Ft -d localprod < backup.tar
-
 
 https://stackoverflow.com/questions/40642359/ignoring-a-table-in-pg-dump-and-restore
 -T option allows us to ignore certain tables when doing a sql dump
-
-
 
 # STEPS THAT ACTUALLY GOT IT ALL TO WORK:

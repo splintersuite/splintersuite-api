@@ -66,7 +66,7 @@ const calculateEarningsForUsers = async () => {
         //     count++;
         // }
 
-        await rentalConfirmation.confirmRentalsForUsers();
+        // await rentalConfirmation.confirmRentalsForUsers();
         // for (const user of users) {
         //     await earningsService.insertAllDailyEarnings({
         //         users_id: user.id,

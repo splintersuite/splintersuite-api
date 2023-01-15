@@ -87,13 +87,18 @@ const getAndInsertNewHiveTxDates = async () => {
             chunks = _.chunk(unique_sell_hive_ids.rows, 1000);
         }
 
-        if (chunks.length === unique_sell_hive_ids.rows) {
+        if (chunks.length === unique_sell_hive_ids.rows.length) {
             chunks = [chunks];
         }
         logger.info(
             `/services/hive/dates/getAndInsertNewHiveTxDates chunks.length: ${chunks?.length}`
         );
         for (const idChunk of chunks) {
+            logger.info(
+                `idChunk: ${JSON.stringify(idChunk)}, chunks: ${JSON.stringify(
+                    chunks
+                )}`
+            );
             const txsWithDateToInsert = await getCreatedDatesForIds({
                 sell_trx_hive_ids: idChunk,
             });

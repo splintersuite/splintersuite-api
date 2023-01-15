@@ -98,7 +98,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             .whereNotNull('confirmed')
             .whereIn('sell_trx_id', sellTrxIds);
         // TNT TODO: WE NEED TO GET IT SO THAT we have an object where you can search by sell_trx_id, and it has the most recent date that a sell_trx_id has been confirmed on it.
-
+        // In order to do this, we need to get the userRentals with the most recent sell_trx_id, and also get the hive_tx_date and checkout its most recent confirmed, and see which one has the most recent date on it.  It should never be more back than the hive_tx_date, if it is we have an issue
         // if (username === 'xdww' || username === 'tamecards') {
         //     logger.info(
         //         `rentalsToConfirm.length: ${rentalsToConfirm.length}, rentalsConfirmed.length: ${rentalsConfirmed.length}`
