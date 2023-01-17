@@ -76,27 +76,81 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             `/services/rentalConfirmation/patchRentalsBySplintersuite start`
         );
 
-        const rentalsToConfirm = await UserRentals.query().where({
-            users_id,
-            confirmed: null,
-        });
+        // const rentalsToConfirm = await UserRentals.query().where({
+        //     users_id,
+        //     confirmed: null,
+        // });
 
-        if (!Array.isArray(rentalsToConfirm) || rentalsToConfirm?.length < 1) {
-            logger.warn(
-                `user: ${username}, don't have any saved userRentals that arent confirmed`
-            );
-            return;
-        }
+        // if (!Array.isArray(rentalsToConfirm) || rentalsToConfirm?.length < 1) {
+        //     logger.warn(
+        //         `user: ${username}, don't have any saved userRentals that arent confirmed`
+        //     );
+        //     return;
+        // }
         // const sellTrxIds = _.uniq(
         //     rentalsToConfirm.map(({ sell_trx_id }) => sell_trx_id)
         // );
 
-        const rentalsConfirmed = await UserRentals.query()
-            .where({
-                users_id,
-            })
+        const uniqueRentalTxs = await UserRentals.query()
+            .select('sell_trx_hive_id')
+            .distinctOn('sell_trx_hive_id');
+
+        const distinctNotNullRentalTxs = await UserRentals.query()
             .whereNotNull('confirmed')
-            .whereIn('sell_trx_id', sellTrxIds);
+            .distinctOn('sell_trx_hive_id');
+
+        const distinctNullRentalTxs = await UserRentals.query()
+            .whereNull('confirmed')
+            .distinctOn('sell_trx_hive_id');
+
+        const sellTrxIds = distinctNotNullRentalTxs.map(
+            ({ sell_trx_hive_id }) => sell_trx_hive_id
+        );
+        logger.info(`uniqueRentalTxs: ${uniqueRentalTxs?.length}`);
+
+        logger.info(
+            `distinctNotNullRentalTxs: ${distinctNotNullRentalTxs?.length}`
+        );
+        logger.info(`distinctNullRentalTxs: ${distinctNullRentalTxs?.length}`);
+
+        const testSql = `SELECT distinct on (sell_trx_hive_id) ur.* FROM user_rentals ur WHERE NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`; // in (?) or in ()
+        // const rentalsConfirmed = await UserRentals.query()
+        //     .where({
+        //         users_id,
+        //     })
+        //     .whereNotNull('confirmed')
+        //     .whereIn('sell_trx_id', sellTrxIds);
+
+        // TNT QUERY NOTES:
+        // SEE READMe TNT_QUERY_NOTES.md for discussion of this and the issue and potential solution
+        const testSql_ids = await knexInstance.raw(testSql, [sellTrxIds]);
+        logger.info(`testSql_ids: ${testSql_ids?.rows?.length}`);
+        const sql = `select * from (select sell_trx_hive_id, max(last_rental_payment) max_date from user_rentals ur group by sell_trx_hive_id having bool_and(confirmed is null)) as xd ;`;
+
+        const jdSql = `SELECT ur.* FROM user_rentals ur JOIN max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL group by sell_trx_hive_id) max_ur`;
+
+        const tntSql = `SELECT distinct on (sell_trx_hive_id) ur.* FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+
+        const tnt_unique_sell_hive_ids = await knexInstance.raw(tntSql);
+
+        if (
+            !Array.isArray(tnt_unique_sell_hive_ids.rows) ||
+            tnt_unique_sell_hive_ids.rows?.length === 0
+        ) {
+            logger.info(
+                `/services/rentalConfirmationpatchRentalsBySplintersuite no sell_trx_hive_ids for user: ${username}`
+            );
+            return null;
+        }
+
+        logger.info(
+            `tnt_unique_sell_hive_ids: ${tnt_unique_sell_hive_ids?.rows?.length}`
+        );
+
+        const real_unique_ids = _.uniq(tnt_unique_sell_hive_ids.rows);
+
+        logger.info(`real_unique_ids: ${real_unique_ids?.length}`);
+        throw new Error('checking');
         // TNT TODO: WE NEED TO GET IT SO THAT we have an object where you can search by sell_trx_id, and it has the most recent date that a sell_trx_id has been confirmed on it.
         // In order to do this, we need to get the userRentals with the most recent sell_trx_id, and also get the hive_tx_date and checkout its most recent confirmed, and see which one has the most recent date on it.  It should never be more back than the hive_tx_date, if it is we have an issue
         // if (username === 'xdww' || username === 'tamecards') {
@@ -125,7 +179,9 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             rentalsConfirmed,
         });
         logger.info(
-            `recentConfirmedRentals: ${JSON.stringify(recentConfirmedRentals)}`
+            `recentConfirmedRentals: ${JSON.stringify(
+                recentConfirmedRentals
+            )}, length: ${recentConfirmedRentals?.length}`
         );
         // throw new Error('checking for new function output');
         if (recentConfirmedRentals) {
@@ -144,6 +200,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         // TNT NOTE:
         // WE want to be able to only need to look far back enough, we want to essentially be able to
         // only go back to the sell_trx_ids that we DONT have one confirmed for
+        return;
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/patchRentalsBySplintersuite error: ${err.message}`
