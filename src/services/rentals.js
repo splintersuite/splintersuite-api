@@ -403,7 +403,9 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         const timeToStopAt =
             earliestTime < fortyFiveDaysAgo ? earliestTime : fortyFiveDaysAgo;
         // now we can use the map to find out the created_at, and then find the earliest created_at and use it in the lastUncomfirmedRentalTime
-
+        throw new Error(
+            `checking for timeToStopAt in /services/rentals/patchRentalsBySplintersuite username: ${username}`
+        );
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
             timeToStopAt,

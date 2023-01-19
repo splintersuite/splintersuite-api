@@ -10,3 +10,8 @@ select count(\*) from hive_tx_date;
 7612 rows, showing there are 7612 unique rows (confirmed by other queries as well)
 
 TODO: we need to make it so that we get the max date( SELECT FROM where it is distinct in the first result of a sell_trx_hive_id, that is NOT NULL instead of null though)
+
+{"level":30,"time":"2023-01-19T22:01:53.542Z","pid":11954,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/calculateEarliestTime: xdww earliestTime: 1657120002000"}
+{"level":30,"time":"2023-01-19T22:01:53.542Z","pid":11954,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1657120002000"}
+
+{"level":30,"time":"2023-01-19T22:03:31.492Z","pid":12377,"hostname":"Trevors-Mac-mini.local","msg":"txDates: 2211, noTxFound: 0, minDateTime: 1660497828000, minDate: Sun Aug 14 2022 13:23:48 GMT-0400 (Eastern Daylight Time)"}

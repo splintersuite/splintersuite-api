@@ -15,56 +15,56 @@ const calculateEarningsForUsers = async () => {
             `/scripts/earnings/calculateEarningsForUsers start: ${start}, startTime: ${start.getTime()}`
         );
 
-        const timeSummary = await userRentalsService.update();
-        logger.info(
-            `/scripts/earnings/calculateEarningsForUsers userRentalsService timeSummary: ${JSON.stringify(
-                timeSummary
-            )}`
-        );
+        // const timeSummary = await userRentalsService.update();
+        // logger.info(
+        //     `/scripts/earnings/calculateEarningsForUsers userRentalsService timeSummary: ${JSON.stringify(
+        //         timeSummary
+        //     )}`
+        // );
 
         // const cardDetailsObj = {};
         // cardDetails.forEach((card) => {
         //     cardDetailsObj[card.id] = card;
         // });
 
-        //  const users = await Users.query();
+        const users = await Users.query();
         // let count = 0;
         // const fiveMinutesInMS = 1000 * 60 * 5;
-        // for (const user of users) {
-        //     // 100 users in a batch, then wait 5 minutes
-        //     await rentals
-        //         .updateRentalsInDb({
-        //             username: user.username,
-        //             users_id: user.id,
-        //             cardDetailsObj,
-        //         })
-        //         .catch((err) => {
-        //             logger.error(
-        //                 `/scripts/earnings/calculateEarningsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
-        //                     user.id
-        //                 )} error: ${err.message}`
-        //             );
-        //             throw err;
-        //         });
-        //     await rentals
-        //         .patchRentalsBySplintersuite({
-        //             users_id: user.id,
-        //             username: user.username,
-        //         })
-        //         .catch((err) => {
-        //             logger.error(
-        //                 `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
-        //                     user.id
-        //                 )} error: ${err.message}`
-        //             );
-        //             throw err;
-        //         });
-        //     if (count !== 0 && count % 100 === 0) {
-        //         await retryFncs.sleep(fiveMinutesInMS);
-        //     }
-        //     await retryFncs.sleep(1000);
-        //     count++;
-        // }
+        for (const user of users) {
+            // 100 users in a batch, then wait 5 minutes
+            // await rentals
+            //     .updateRentalsInDb({
+            //         username: user.username,
+            //         users_id: user.id,
+            //         cardDetailsObj,
+            //     })
+            //     .catch((err) => {
+            //         logger.error(
+            //             `/scripts/earnings/calculateEarningsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
+            //                 user.id
+            //             )} error: ${err.message}`
+            //         );
+            //         throw err;
+            //     });
+            await rentals
+                .patchRentalsBySplintersuite({
+                    users_id: user.id,
+                    username: user.username,
+                })
+                .catch((err) => {
+                    logger.error(
+                        `/scripts/earnings/calculateEarningsForUsers .patchRentalsBySplintersuite users_id: ${JSON.stringify(
+                            user.id
+                        )} error: ${err.message}`
+                    );
+                    throw err;
+                });
+            if (count !== 0 && count % 100 === 0) {
+                await retryFncs.sleep(fiveMinutesInMS);
+            }
+            await retryFncs.sleep(1000);
+            count++;
+        }
 
         // await rentalConfirmation.confirmRentalsForUsers();
         // for (const user of users) {
