@@ -78,10 +78,36 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         logger.info(
             `/services/rentalConfirmation/patchRentalsBySplintersuite start`
         );
+        const anyRentalsToConfirmArr = await UserRentals.query()
+            .select('sell_trx_hive_id')
+            .where({ users_id })
+            .whereNull('confirmed')
+            .distinctOn('sell_trx_hive_id');
 
+        logger.info(
+            `anyRentalsToConfirmArr: ${JSON.stringify(anyRentalsToConfirmArr)}`
+        );
+        if (
+            !anyRentalsToConfirmArr ||
+            !Array.isArray(anyRentalsToConfirmArr) ||
+            anyRentalsToConfirmArr.length < 1
+        ) {
+            logger.info(
+                `${username} does not have any new User Rentals to confirm`
+            );
+            return;
+        }
+
+        const anyRentalsToConfirm = anyRentalsToConfirmArr.map(
+            ({ sell_trx_hive_id }) => sell_trx_hive_id
+        );
+        logger.info(
+            `anyRentalsToConfirm: ${JSON.stringify(anyRentalsToConfirm)}`
+        );
         const earliestTime = await getEarliestTimeNeeded({
             users_id,
             username,
+            anyRentalsToConfirm,
         });
         throw new Error(
             `checking for earliestTime in /services/rentalConfirmation/patchRentalsBySplintersuite username: ${username}`
@@ -174,10 +200,6 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         //     logger.info(
         //         `/services/rentalConfirmationpatchRentalsBySplintersuite latestConfirmedBySellIdForUser no sell_trx_hive_ids for user: ${username}`
         //     );
-
-        //     const anyRentalsToConfirm = await UserRentals.query()
-        //         .where({ users_id })
-        //         .distinctOn('sell_trx_hive_id');
 
         //     if (anyRentalsToConfirm?.length > 0) {
         //         // TNT TODO: 1) query the hive_tx_date for the created_at, and then take the min of it and use it for everything
@@ -333,16 +355,26 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     }
 };
 
-const getEarliestTimeNeeded = async ({ users_id, username }) => {
+const getEarliestTimeNeeded = async ({
+    users_id,
+    username,
+    anyRentalsToConfirm,
+}) => {
     try {
         logger.debug(`/services/rentalConfirmation/getEarliestDateNeeded`);
 
-        const confirmedTxs = await getConfirmedTxs({ users_id, username });
+        const confirmedTxs = await getConfirmedTxs({
+            users_id,
+            username,
+            anyRentalsToConfirm,
+        });
 
+        // If confirmedTxs is none, then we should still only go and look up anyRentalsToConfirm imo
         const nonConfirmedTxs = await getNeverConfirmedTxs({
             users_id,
             username,
             confirmedTxs,
+            anyRentalsToConfirm,
         });
 
         const earliestTime = await calculateEarliestTime({
@@ -352,7 +384,7 @@ const getEarliestTimeNeeded = async ({ users_id, username }) => {
         });
 
         logger.info(
-            `/services/rentalConfirmation/getEarliestDateNeeded: ${username} earliestTime: ${earliestTime}`
+            `/services/rentalConfirmation/getEarliestDateNeeded: ${username} earliestTime: ${earliestTime}, anyRentalsToConfirm: ${anyRentalsToConfirm?.length}`
         );
         return earliestTime;
     } catch (err) {
@@ -385,7 +417,7 @@ const calculateEarliestTime = async ({
 
         const earliestTime = _.min(allTimes);
         logger.info(
-            `/services/rentalConfirmation/calculateEarliestTime: ${username} earliestTime: ${earliestTime}`
+            `/services/rentalConfirmation/calculateEarliestTime: ${username} earliestTime: ${earliestTime}, confirmedTxs: ${confirmedTxs?.length}, nonConfirmedTxs: ${nonConfirmedTxs?.length}`
         );
         return earliestTime;
     } catch (err) {
@@ -395,8 +427,13 @@ const calculateEarliestTime = async ({
         throw err;
     }
 };
-
-const getNeverConfirmedTxs = async ({ users_id, username, confirmedTxs }) => {
+// TNT TODO: imo we should pass in the Ids that weren't in the confirmedOnes too imo
+const getNeverConfirmedTxs = async ({
+    users_id,
+    username,
+    confirmedTxs,
+    anyRentalsToConfirm,
+}) => {
     try {
         logger.debug(`/services/rentalConfirmation/getNeverConfirmedTxs`);
 
@@ -427,35 +464,20 @@ const getNeverConfirmedTxs = async ({ users_id, username, confirmedTxs }) => {
                     `/services/rentalConfirmation/getNeverConfirmedTxs:`
                 );
                 return neverConfirmedTxs;
-                // const neverConfirmedIds = anyRentalsToConfirm.map(
-                //     ({ sell_trx_hive_id }) => {
-                //         sell_trx_hive_id;
-                //     }
-                // );
-                // const neverConfirmedTxs = await HiveTxDate.query()
-                //     .select('hive_tx_id', 'hive_created_at')
-                //     .whereIn('hive_tx_id', neverConfirmedIds);
-                // if (
-                //     !neverConfirmedTxs ||
-                //     !Array.isArray(neverConfirmedTxs) ||
-                //     neverConfirmedTxs?.length < 1
-                // ) {
-                //     logger.warn(
-                //         `/services/rentalConfirmation/getNeverConfirmedTxs: ${username} has ${neverConfirmedSellTxs?.rows?.length} but HiveTxDate doesnt have these rows, neverConfirmedSellTxs?.rows: ${neverConfirmedSellTxs?.rows}`
-                //     );
-                //     throw new Error(
-                //         `HiveTxDate missing rows for user: ${username}`
-                //     );
-                // } else {
-                //     logger.info(
-                //         `/services/rentalConfirmation/getNeverConfirmedTxs: ${username} neverConfirmedTxs: ${neverConfirmedTxs?.length}`
-                //     );
-                //     return neverConfirmedTxs;
-                // }
             }
         } else {
+            // TNT TNODO: add an is null for confirmed to this imo
+            // TNT TODO: checkout confirmedTxs, I think we need to have it be mapped out for just sell_trx_hive_id first before this query would do anything imo
+
+            logger.info(`confirmedTxs: ${JSON.stringify(confirmedTxs)} `);
             const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
             const neverConfirmedSellTxs = await knexInstance.raw(
+                neverConfirmedSellTxsSql,
+                [users_id, confirmedTxs]
+            );
+
+            const neverConfirmedNullSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
+            const neverConfirmedNullSellTxs = await knexInstance.raw(
                 neverConfirmedSellTxsSql,
                 [users_id, confirmedTxs]
             );
@@ -474,7 +496,7 @@ const getNeverConfirmedTxs = async ({ users_id, username, confirmedTxs }) => {
                     rentalsWithSellIds: neverConfirmedSellTxs.rows,
                 });
                 logger.info(
-                    `/services/rentalConfirmation/getNeverConfirmedTxs:`
+                    `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedSellTxs.rows: ${neverConfirmedSellTxs.rows}, neverConfirmedSellTxs.rows.length: ${neverConfirmedSellTxs.rows?.length}`
                 );
                 return neverConfirmedTxs;
                 // const neverConfirmedTxs = await HiveTxDate.query()
@@ -546,14 +568,29 @@ const getHiveTxDates = async ({ username, rentalsWithSellIds }) => {
     }
 };
 
-const getConfirmedTxs = async ({ users_id, username }) => {
+const getConfirmedTxs = async ({ users_id, username, anyRentalsToConfirm }) => {
     try {
         logger.debug(`/services/rentalConfirmation/getConfirmedTxs`);
+        logger.info(
+            `getConfirmedTxs, anyRentalsToConfirm: ${JSON.stringify(
+                anyRentalsToConfirm
+            )}, users_id: ${users_id}`
+        );
+        // TNT TODO: the anyRentalsToConfirm needs to be mapped in imo by sell_trx_hive_id and we can only query those in this list imo, everything else is irrelevant
         const latestConfirmedByUserSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
         const latestConfirmedByRentalIdForUser = await knexInstance.raw(
             latestConfirmedByUserSql,
             users_id
         );
+        const latestConfirmedByUserSqlANY = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_hive_id = ANY(?) group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+        const latestConfirmedByRentalIdForUserANY = await knexInstance.raw(
+            latestConfirmedByUserSqlANY,
+            [users_id, anyRentalsToConfirm]
+        );
+        logger.info(
+            `username: ${username}, latestConfirmedByRentalIdForUser.rows.length: ${latestConfirmedByRentalIdForUser.rows?.length}, latestConfirmedByRentalIdForUserANY.rows.length: ${latestConfirmedByRentalIdForUserANY?.rows?.length} anyRentalsToConfirm.length: ${anyRentalsToConfirm?.length}`
+        );
+        throw new Error('checking');
         if (
             !Array.isArray(latestConfirmedByRentalIdForUser.rows) ||
             latestConfirmedByRentalIdForUser.rows?.length === 0

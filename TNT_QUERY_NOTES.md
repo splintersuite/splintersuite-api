@@ -15,3 +15,8 @@ TODO: we need to make it so that we get the max date( SELECT FROM where it is di
 {"level":30,"time":"2023-01-19T22:01:53.542Z","pid":11954,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1657120002000"}
 
 {"level":30,"time":"2023-01-19T22:03:31.492Z","pid":12377,"hostname":"Trevors-Mac-mini.local","msg":"txDates: 2211, noTxFound: 0, minDateTime: 1660497828000, minDate: Sun Aug 14 2022 13:23:48 GMT-0400 (Eastern Daylight Time)"}
+
+# NEW
+
+{"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/calculateEarliestTime: xdww earliestTime: 1657120002000"}
+{"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1657120002000"}
