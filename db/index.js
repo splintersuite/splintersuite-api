@@ -13,8 +13,7 @@ const printQueryWithTime = (uid) => {
     const { startTime, endTime, query } = times[uid];
     const elapsedTime = endTime - startTime;
 
-    logger.info(`query.sql: ${query.sql}`);
-    logger.info(`Time: ${elapsedTime.toFixed(3)} ms`);
+    logger.info(`query.sql: ${query.sql}   Time: ${elapsedTime.toFixed(3)} ms`);
     // After we print the query, we have no more use for it so we delete it so this object doesn't grow too big
     delete times[uid];
 };

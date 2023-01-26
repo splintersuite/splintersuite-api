@@ -84,9 +84,6 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             .whereNull('confirmed')
             .distinctOn('sell_trx_hive_id');
 
-        logger.info(
-            `anyRentalsToConfirmArr: ${JSON.stringify(anyRentalsToConfirmArr)}`
-        );
         if (
             !anyRentalsToConfirmArr ||
             !Array.isArray(anyRentalsToConfirmArr) ||
@@ -101,9 +98,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         const anyRentalsToConfirm = anyRentalsToConfirmArr.map(
             ({ sell_trx_hive_id }) => sell_trx_hive_id
         );
-        logger.info(
-            `anyRentalsToConfirm: ${JSON.stringify(anyRentalsToConfirm)}`
-        );
+
         const earliestTime = await getEarliestTimeNeeded({
             users_id,
             username,
@@ -369,7 +364,6 @@ const getEarliestTimeNeeded = async ({
             anyRentalsToConfirm,
         });
 
-        // If confirmedTxs is none, then we should still only go and look up anyRentalsToConfirm imo
         const nonConfirmedTxs = await getNeverConfirmedTxs({
             users_id,
             username,
@@ -442,29 +436,14 @@ const getNeverConfirmedTxs = async ({
             !Array.isArray(confirmedTxs) ||
             confirmedTxs?.length < 1
         ) {
-            const anyRentalsToConfirm = await UserRentals.query()
-                .select('sell_trx_hive_id', 'last_rental_payment')
-                .where({ users_id })
-                .distinctOn('sell_trx_hive_id');
-            if (
-                !anyRentalsToConfirm ||
-                !Array.isArray(anyRentalsToConfirm) ||
-                anyRentalsToConfirm?.length < 1
-            ) {
-                logger.info(
-                    `/services/rentalConfirmation/getNeverConfirmedTxs: user: ${username} has no rentals ever not confirmed`
-                );
-                return [];
-            } else {
-                const neverConfirmedTxs = await getHiveTxDates({
-                    username,
-                    rentalsWithSellIds: anyRentalsToConfirm,
-                });
-                logger.info(
-                    `/services/rentalConfirmation/getNeverConfirmedTxs:`
-                );
-                return neverConfirmedTxs;
-            }
+            const neverConfirmedTxs = await getHiveTxDates({
+                username,
+                rentalsWithSellIds: anyRentalsToConfirm,
+            });
+            logger.info(
+                `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedTxs: ${neverConfirmedTxs?.length}`
+            );
+            return neverConfirmedTxs;
         } else {
             // TNT TNODO: add an is null for confirmed to this imo
             // TNT TODO: checkout confirmedTxs, I think we need to have it be mapped out for just sell_trx_hive_id first before this query would do anything imo
