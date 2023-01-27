@@ -19,8 +19,13 @@ TODO: we need to make it so that we get the max date( SELECT FROM where it is di
 # NEW
 
 {"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/calculateEarliestTime: xdww earliestTime: 1657120002000"}
-{"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1657120002000"}
+{"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1657120002000"} // Wed Jul 06 2022 11:06:42 GMT-0400 (Eastern Daylight Time)
 
 {"level":30,"time":"2023-01-27T09:46:15.052Z","pid":77416,"hostname":"Trevors-Mac-mini.local","msg":"neverConfirmedSellTxs.rows.length: 313, neverConfirmedNullSellTxs.rows.length: 3, confirmedTxs: 101, anyRentalsToConfirm: 104, distinctNotNullRentalTxs: 411, distinctNullRentalTxs: 104, distinctRentalTxsUser: 414"}
 
 looks like we added 3 null ones, and it finally confirmed our new query is working
+
+{"level":30,"time":"2023-01-27T09:49:05.055Z","pid":78207,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/calculateEarliestTime: xdww earliestTime: 1672361166000, confirmedTxs: 101, nonConfirmedTxs: 0"}
+{"level":30,"time":"2023-01-27T09:49:05.055Z","pid":78207,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1672361166000, anyRentalsToConfirm: 104"} // Thu Dec 29 2022 19:46:06 GMT-0500 (Eastern Standard Time)
+
+# TNT NOTE: looks like this confirmation is way less of a big deal than before!

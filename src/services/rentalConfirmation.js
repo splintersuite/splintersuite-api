@@ -452,34 +452,34 @@ const getNeverConfirmedTxs = async ({
             const confirmedIds = confirmedTxs.map(
                 ({ sell_trx_hive_id }) => sell_trx_hive_id
             );
-            const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
+            // const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
+            // const neverConfirmedSellTxs = await knexInstance.raw(
+            //     neverConfirmedSellTxsSql,
+            //     [users_id, confirmedIds]
+            // );
+
+            const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
             const neverConfirmedSellTxs = await knexInstance.raw(
                 neverConfirmedSellTxsSql,
                 [users_id, confirmedIds]
             );
+            // const distinctNotNullRentalTxs = await UserRentals.query()
+            //     .where({ users_id })
+            //     .whereNotNull('confirmed')
+            //     .distinctOn('sell_trx_hive_id');
 
-            const neverConfirmedNullSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
-            const neverConfirmedNullSellTxs = await knexInstance.raw(
-                neverConfirmedNullSellTxsSql,
-                [users_id, confirmedIds]
-            );
-            const distinctNotNullRentalTxs = await UserRentals.query()
-                .where({ users_id })
-                .whereNotNull('confirmed')
-                .distinctOn('sell_trx_hive_id');
+            // const distinctNullRentalTxs = await UserRentals.query()
+            //     .where({ users_id })
+            //     .whereNull('confirmed')
+            //     .distinctOn('sell_trx_hive_id');
 
-            const distinctNullRentalTxs = await UserRentals.query()
-                .where({ users_id })
-                .whereNull('confirmed')
-                .distinctOn('sell_trx_hive_id');
-
-            const distinctRentalTxsUser = await UserRentals.query()
-                .where({ users_id })
-                .distinctOn('sell_trx_hive_id');
-            logger.info(
-                `neverConfirmedSellTxs.rows.length: ${neverConfirmedSellTxs?.rows?.length}, neverConfirmedNullSellTxs.rows.length: ${neverConfirmedNullSellTxs?.rows?.length}, confirmedTxs: ${confirmedTxs.length}, anyRentalsToConfirm: ${anyRentalsToConfirm.length}, distinctNotNullRentalTxs: ${distinctNotNullRentalTxs.length}, distinctNullRentalTxs: ${distinctNullRentalTxs.length}, distinctRentalTxsUser: ${distinctRentalTxsUser.length}`
-            );
-            throw new Error('checking getNeverCOnfirmedTxs');
+            // const distinctRentalTxsUser = await UserRentals.query()
+            //     .where({ users_id })
+            //     .distinctOn('sell_trx_hive_id');
+            // logger.info(
+            //     `neverConfirmedSellTxs.rows.length: ${neverConfirmedSellTxs?.rows?.length}, neverConfirmedNullSellTxs.rows.length: ${neverConfirmedNullSellTxs?.rows?.length}, confirmedTxs: ${confirmedTxs.length}, anyRentalsToConfirm: ${anyRentalsToConfirm.length}, distinctNotNullRentalTxs: ${distinctNotNullRentalTxs.length}, distinctNullRentalTxs: ${distinctNullRentalTxs.length}, distinctRentalTxsUser: ${distinctRentalTxsUser.length}`
+            // );
+            // throw new Error('checking getNeverCOnfirmedTxs');
             if (
                 !neverConfirmedSellTxs ||
                 !Array.isArray(neverConfirmedSellTxs) ||
