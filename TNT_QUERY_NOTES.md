@@ -20,3 +20,7 @@ TODO: we need to make it so that we get the max date( SELECT FROM where it is di
 
 {"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/calculateEarliestTime: xdww earliestTime: 1657120002000"}
 {"level":30,"time":"2023-01-26T01:05:04.875Z","pid":2178,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1657120002000"}
+
+{"level":30,"time":"2023-01-27T09:46:15.052Z","pid":77416,"hostname":"Trevors-Mac-mini.local","msg":"neverConfirmedSellTxs.rows.length: 313, neverConfirmedNullSellTxs.rows.length: 3, confirmedTxs: 101, anyRentalsToConfirm: 104, distinctNotNullRentalTxs: 411, distinctNullRentalTxs: 104, distinctRentalTxsUser: 414"}
+
+looks like we added 3 null ones, and it finally confirmed our new query is working
