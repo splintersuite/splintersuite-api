@@ -1,28 +1,20 @@
 'use strict';
 const logger = require('../util/pinologger');
 const rentalConfirmation = require('../services/rentalConfirmation');
-const utilDates = require(`../util/dates`);
 
 const confirmEarnigsForUsers = async () => {
     try {
-        const start = new Date();
-        const startTime = start.getTime();
         logger.info(
-            `/scripts/services/rentalConfirmation/confirmEarnigsForUsers start: ${start}, startTime: ${start.getTime()}`
+            `/scripts/services/rentalConfirmation/confirmEarnigsForUsers`
         );
 
-        const timeSummary = await rentalConfirmation.confirmRentalsForUsers();
+        // TNT NOTE: we shouldn't run the updateRentalsInDb with this or should we?  I think it doesnt make sense to because we want to keep the logs sperate imo, and don't need to confirm rentals first
+        // with the invoice script though, should make sure confirm rentals are run
+        // NOTE: WE DEFINITELY DO NEED TO RUN THE HIVE TX DATES function before this though!
+        await rentalConfirmation.confirmRentalsForUsers();
 
-        const end = new Date();
-        const endTime = end.getTime();
-        const totalMinsLong = utilDates.computeMinsSinceStart({
-            startTime,
-            endTime,
-        });
         logger.info(
-            `/scripts/services/rentalConfirmation/confirmEarnigsForUsers: totalMinsLong: ${totalMinsLong}, timeSummary: ${JSON.stringify(
-                timeSummary
-            )}`
+            `/scripts/services/rentalConfirmation/confirmEarnigsForUsers:`
         );
         process.exit(0);
     } catch (err) {

@@ -31,3 +31,5 @@ looks like we added 3 null ones, and it finally confirmed our new query is worki
 # TNT NOTE: looks like this confirmation is way less of a big deal than before!
 
 TNT ISSUES: we might want to make the entire updating confirmations a transaction imo, cuz if we fuck up updating it will falsly classify everything imo
+
+{"level":30,"time":"2023-01-28T06:50:10.220Z","pid":72431,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/patchRentalsBySplintersuite: brain71, numPatched: 2, rentalsStillNotConfirmed: 47, rentalsIdsStillNotConfirmed: 3"}

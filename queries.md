@@ -65,3 +65,5 @@ https://dba.stackexchange.com/questions/33196/multicolumn-index-and-performance/
 -   this is really good imo
 
 https://stackoverflow.com/questions/14407719/postgresql-index-not-used-for-query-on-ip-ranges/14407839#14407839
+
+optimize the whole process of searching in a db via indexes (imo) https://dba.stackexchange.com/questions/33196/multicolumn-index-and-performance/33220#33220
