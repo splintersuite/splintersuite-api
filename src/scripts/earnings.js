@@ -7,10 +7,12 @@ const rentals = require('../services/rentals');
 const earningsService = require('../services/earnings');
 const rentalConfirmation = require('../services/rentalConfirmation');
 const userRentalsService = require('../services/userRentals');
+const utilDates = require(`../util/dates`);
 
 const calculateEarningsForUsers = async () => {
     try {
         const start = new Date();
+        const startTime = start.getTime();
         logger.info(
             `/scripts/earnings/calculateEarningsForUsers start: ${start}, startTime: ${start.getTime()}`
         );
@@ -26,11 +28,14 @@ const calculateEarningsForUsers = async () => {
         // cardDetails.forEach((card) => {
         //     cardDetailsObj[card.id] = card;
         // });
+        const timeSummary = {};
 
         const users = await Users.query();
-        // let count = 0;
-        // const fiveMinutesInMS = 1000 * 60 * 5;
+        let count = 0;
+        const fiveMinutesInMS = 1000 * 60 * 5;
         for (const user of users) {
+            const start = new Date();
+            const startTime = start.getTime();
             // 100 users in a batch, then wait 5 minutes
             // await rentals
             //     .updateRentalsInDb({
@@ -46,7 +51,7 @@ const calculateEarningsForUsers = async () => {
             //         );
             //         throw err;
             //     });
-            await rentals
+            const numPatched = await rentals
                 .patchRentalsBySplintersuite({
                     users_id: user.id,
                     username: user.username,
@@ -59,6 +64,16 @@ const calculateEarningsForUsers = async () => {
                     );
                     throw err;
                 });
+            const end = new Date();
+            const endTime = end.getTime();
+            const minsLong = utilDates.computeMinsSinceStart({
+                startTime,
+                endTime,
+            });
+            timeSummary[user.username] = {
+                minsLong,
+                numPatched,
+            };
             if (count !== 0 && count % 100 === 0) {
                 await retryFncs.sleep(fiveMinutesInMS);
             }
@@ -74,8 +89,15 @@ const calculateEarningsForUsers = async () => {
         //     });
         // }
         const end = new Date();
+        const endTime = end.getTime();
+        const totalMinsLong = utilDates.computeMinsSinceStart({
+            startTime,
+            endTime,
+        });
         logger.info(
-            `/scripts/earnings/calculateEarningsForUsers end: ${end}, endTime: ${end.getTime()}`
+            `/scripts/earnings/calculateEarningsForUsers totalMinsLong: ${totalMinsLong}, timeSummary: ${JSON.stringify(
+                timeSummary
+            )}`
         );
         process.exit(0);
     } catch (err) {

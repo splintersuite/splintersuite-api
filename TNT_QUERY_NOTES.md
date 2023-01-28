@@ -29,3 +29,5 @@ looks like we added 3 null ones, and it finally confirmed our new query is worki
 {"level":30,"time":"2023-01-27T09:49:05.055Z","pid":78207,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: 1672361166000, anyRentalsToConfirm: 104"} // Thu Dec 29 2022 19:46:06 GMT-0500 (Eastern Standard Time)
 
 # TNT NOTE: looks like this confirmation is way less of a big deal than before!
+
+TNT ISSUES: we might want to make the entire updating confirmations a transaction imo, cuz if we fuck up updating it will falsly classify everything imo

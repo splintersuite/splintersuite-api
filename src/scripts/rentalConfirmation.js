@@ -1,19 +1,28 @@
 'use strict';
 const logger = require('../util/pinologger');
 const rentalConfirmation = require('../services/rentalConfirmation');
+const utilDates = require(`../util/dates`);
 
 const confirmEarnigsForUsers = async () => {
     try {
         const start = new Date();
+        const startTime = start.getTime();
         logger.info(
             `/scripts/services/rentalConfirmation/confirmEarnigsForUsers start: ${start}, startTime: ${start.getTime()}`
         );
 
-        await rentalConfirmation.confirmRentalsForUsers();
+        const timeSummary = await rentalConfirmation.confirmRentalsForUsers();
 
         const end = new Date();
+        const endTime = end.getTime();
+        const totalMinsLong = utilDates.computeMinsSinceStart({
+            startTime,
+            endTime,
+        });
         logger.info(
-            `/scripts/services/rentalConfirmation/confirmEarnigsForUsers: end: ${end}, endTime: ${end.getTime()}`
+            `/scripts/services/rentalConfirmation/confirmEarnigsForUsers: totalMinsLong: ${totalMinsLong}, timeSummary: ${JSON.stringify(
+                timeSummary
+            )}`
         );
         process.exit(0);
     } catch (err) {

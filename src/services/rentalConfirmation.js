@@ -16,6 +16,8 @@ const hiveService = require('./hive/relistings');
 const confirmRentalsForUsers = async () => {
     try {
         logger.debug(`/services/rentalConfirmation/confirmRentalsForUsers`);
+        const now = new Date();
+        const nowTime = now.getTime();
         const cardDetailsObj = {};
         cardDetails.forEach((card) => {
             cardDetailsObj[card.id] = card;
@@ -23,7 +25,10 @@ const confirmRentalsForUsers = async () => {
         const users = await Users.query();
         let count = 0;
         const fiveMinutesInMS = 1000 * 60 * 5;
+        const timeSummary = {};
         for (const user of users) {
+            const start = new Date();
+            const startTime = start.getTime();
             // await rentals
             //     .updateRentalsInDb({
             //         username: user.username,
@@ -38,10 +43,21 @@ const confirmRentalsForUsers = async () => {
             //         );
             //         throw err;
             //     });
-            await patchRentalsBySplintersuite({
+            const numPatched = await patchRentalsBySplintersuite({
                 users_id: user.id,
                 username: user.username,
             });
+            const end = new Date();
+            const endTime = end.getTime();
+
+            const minsLong = utilDates.computeMinsSinceStart({
+                startTime,
+                endTime,
+            });
+            timeSummary[user.username] = {
+                minsLong,
+                numPatched,
+            };
             // await rentals
             //     .patchRentalsBySplintersuite({
             //         users_id: user.id,
@@ -61,13 +77,60 @@ const confirmRentalsForUsers = async () => {
             await retryFncs.sleep(1000);
             count++;
         }
+        const finalEnd = new Date();
+        const finalEndTime = finalEnd.getTime();
+        const totalMinsLong = utilDates.computeMinsSinceStart({
+            startTime: nowTime,
+            endTime: finalEndTime,
+        });
+        timeSummary['totalMinsLong'] = totalMinsLong;
         logger.info(
             `/services/rentalConfirmation/confirmRentalsForUsers: for ${users?.length} users`
         );
-        return;
+        return timeSummary;
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/confirmRentalsForUsers error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const patchRentalsWithRelistings = async ({
+    users_id,
+    username,
+    recentHiveIDs,
+}) => {
+    try {
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsWithRelistings start`
+        );
+        let numRecords = 0;
+        for (const record of recentHiveIDs) {
+            numRecords = numRecords + 1;
+            if (record?.isPriceUpdate) {
+                await UserRentals.query()
+                    .where({ users_id })
+                    .where('last_rental_payment', '>=', record.time)
+                    .whereIn('sell_trx_id', record.IDs)
+                    .patch({ confirmed: record.isSplintersuite });
+            } else {
+                await UserRentals.query()
+                    .where({ users_id })
+                    .where('last_rental_payment', '>=', record.time)
+                    .whereIn('card_uid', record.IDs)
+                    .patch({ confirmed: record.isSplintersuite });
+            }
+        }
+
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsWithRelistings: user: ${username} numRecords: ${numRecords}`
+        );
+
+        return numRecords;
+    } catch (err) {
+        logger.error(
+            `/services/rentalConfirmation/patchRentalsWithRelistings error: ${err.message}`
         );
         throw err;
     }
@@ -104,18 +167,23 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             username,
             anyRentalsToConfirm,
         });
-        throw new Error(
-            `checking for earliestTime in /services/rentalConfirmation/patchRentalsBySplintersuite username: ${username}`
-        );
+        // throw new Error(
+        //     `checking for earliestTime in /services/rentalConfirmation/patchRentalsBySplintersuite username: ${username}`
+        // );
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
             timeToStopAt: earliestTime,
         });
 
-        await patchRentalsWithRelistings({
+        const numPatched = await patchRentalsWithRelistings({
             users_id,
-            recentHiveIds,
+            username,
+            recentHiveIDs,
         });
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsBySplintersuite: ${username}, numPatched: ${numPatched}`
+        );
+        return numPatched;
         // TNT NOTE: these are tests
         //
         //

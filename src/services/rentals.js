@@ -332,7 +332,9 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
         logger.info(`/services/rentals/patchRentalsWithRelistings start`);
         // patch... dates are ascending... so we may overwrite a few times but it will be accurate...
         // and fortunately fewer db calls
+        let numPatched = 0;
         for (const record of recentHiveIDs) {
+            numPatched = numPatched + 1;
             // logger.info(
             //     `/services/rentals/patchRentalsWithRelistings record: ${JSON.stringify(
             //         record
@@ -357,7 +359,7 @@ const patchRentalsWithRelistings = async ({ users_id, recentHiveIDs }) => {
         logger.info(
             `/services/rentals/patchRentalsWithRelistings: user: ${users_id}`
         );
-        return;
+        return numPatched;
     } catch (err) {
         logger.error(
             `/services/rentals/patchRentalsWithRelistings error: ${err.message}`
@@ -403,16 +405,16 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         const timeToStopAt =
             earliestTime < fortyFiveDaysAgo ? earliestTime : fortyFiveDaysAgo;
         // now we can use the map to find out the created_at, and then find the earliest created_at and use it in the lastUncomfirmedRentalTime
-        throw new Error(
-            `checking for timeToStopAt in /services/rentals/patchRentalsBySplintersuite username: ${username}`
-        );
+        // throw new Error(
+        //     `checking for timeToStopAt in /services/rentals/patchRentalsBySplintersuite username: ${username}`
+        // );
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
             timeToStopAt,
         });
         // logger.info(`recentHiveIDs[0]: ${JSON.stringify(recentHiveIDs[0])}`);
         // throw new Error('checking to see if we are blocking old txs now');
-        await patchRentalsWithRelistings({
+        const numPatched = await patchRentalsWithRelistings({
             users_id,
             recentHiveIDs,
         });
@@ -487,7 +489,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         logger.info(
             `/services/rentals/patchRentalsBySplintersuite: ${users_id}, rentalsToConfirm: ${rentalsToConfirm?.length}, recentHiveIDs: ${recentHiveIDs?.length}`
         );
-        return;
+        return numPatched;
     } catch (err) {
         logger.error(
             `/services/rentals/patchRentalsBySplintersuite error: ${err.message}`
