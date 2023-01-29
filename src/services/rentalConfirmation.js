@@ -10,6 +10,7 @@ const HiveTxDate = require('../models/HiveTxDate');
 const knexInstance = require('../../db/index');
 const { updateHiveTxDates } = require('./hive/dates');
 const hiveService = require('./hive/relistings');
+const nowp = require('performance-now');
 const confirmRentalsForUsers = async () => {
     try {
         logger.debug(`/services/rentalConfirmation/confirmRentalsForUsers`);
@@ -92,59 +93,35 @@ const patchRentalsWithRelistings = async ({
         logger.info(
             `/services/rentalConfirmation/patchRentalsWithRelistings start`
         );
-
-        // let numRecords = 0;
-        const records = [3, 4];
-        await HiveTxDate.transaction(async (trx) => {
-            for (const num of records) {
-                const hive_tx_id = 'xdww' + `${num}`;
-                await HiveTxDate.query(trx).insert({ hive_tx_id });
+        let numRecords = 0;
+        const timeTaken = await UserRentals.transaction(async (trx) => {
+            const nowTime = nowp();
+            for (const record of recentHiveIDs) {
+                numRecords = numRecords + 1;
+                if (record?.isPriceUpdate) {
+                    await UserRentals.query(trx)
+                        .where({ users_id })
+                        .where('last_rental_payment', '>=', record.time)
+                        .whereIn('sell_trx_id', record.IDs)
+                        .patch({ confirmed: record.isSplintersuite });
+                } else {
+                    await UserRentals.query(trx)
+                        .where({ users_id })
+                        .where('last_rental_payment', '>=', record.time)
+                        .whereIn('card_uid', record.IDs)
+                        .patch({ confirmed: record.isSplintersuite });
+                }
             }
-            throw new Error('should prevent this from actually committing');
-            // for (let num = 0, num < 70, num++) {
-            //
-            // }
-            // for (const record of recentHiveIDs) {
-            //     numRecords = numRecords + 1;
-            //     if (record?.isPriceUpdate) {
-            //         await UserRentals.query()
-            //             .where({ users_id })
-            //             .where('last_rental_payment', '>=', record.time)
-            //             .whereIn('sell_trx_id', record.IDs)
-            //             .patch({ confirmed: record.isSplintersuite });
-            //     } else {
-            //         await UserRentals.query()
-            //             .where({ users_id })
-            //             .where('last_rental_payment', '>=', record.time)
-            //             .whereIn('card_uid', record.IDs)
-            //             .patch({ confirmed: record.isSplintersuite });
-            //     }
-            // }
-            return 'xdww';
+            const endTime = nowp();
+            const elapsedTime = endTime - nowTime;
+
+            return elapsedTime.toFixed(3);
         });
-        // for (const record of recentHiveIDs) {
-        //     numRecords = numRecords + 1;
-        //     if (record?.isPriceUpdate) {
-        //         await UserRentals.query()
-        //             .where({ users_id })
-        //             .where('last_rental_payment', '>=', record.time)
-        //             .whereIn('sell_trx_id', record.IDs)
-        //             .patch({ confirmed: record.isSplintersuite });
-        //     } else {
-        //         await UserRentals.query()
-        //             .where({ users_id })
-        //             .where('last_rental_payment', '>=', record.time)
-        //             .whereIn('card_uid', record.IDs)
-        //             .patch({ confirmed: record.isSplintersuite });
-        //     }
-        // }
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsWithRelistings: user: ${username} numRecords: ${numRecords}, timeTaken: ${timeTaken} ms`
+        );
 
-        // logger.info(
-        //     `/services/rentalConfirmation/patchRentalsWithRelistings: user: ${username} numRecords: ${numRecords}`
-        // );
-
-        // return numRecords;
-        return;
+        return numRecords;
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/patchRentalsWithRelistings error: ${err.message}`
@@ -158,12 +135,13 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         logger.info(
             `/services/rentalConfirmation/patchRentalsBySplintersuite start`
         );
-        await patchRentalsWithRelistings({
-            users_id: 'xdww',
-            username: 'xdww',
-            recentHiveIDs: 'xdww',
-        });
-        throw new Error('should not get past this point');
+
+        // const numPatched1 = await patchRentalsWithRelistings({
+        //     users_id: 'xdww',
+        //     username: 'xdww',
+        //     recentHiveIDs: 'xdww',
+        // });
+        // throw new Error('stopping');
         const anyRentalsToConfirmArr = await UserRentals.query()
             .select('sell_trx_hive_id')
             .where({ users_id })
@@ -190,36 +168,69 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             username,
             anyRentalsToConfirm,
         });
-
+        logger.info(
+            `earliestTime: ${earliestTime}, date: ${new Date(earliestTime)}`
+        );
+        // throw new Error(`checking earliestTime for user: ${username}`);
+        // TNT TODO: I think we need to add in the rentalIds in here along with the card_uids so we can ignore the records that don't have any of those (and also not patch them imo)
         const recentHiveIDs = await hiveService.getTransactionHiveIDsByUser({
             username,
             timeToStopAt: earliestTime,
         });
 
-        // const numPatched = await patchRentalsWithRelistings({
-        //     users_id,
-        //     username,
-        //     recentHiveIDs,
-        // });
+        const numPatched = await patchRentalsWithRelistings({
+            users_id,
+            username,
+            recentHiveIDs,
+        });
 
         // TNT NOTE: we need to confirm any rentalIds that haven't been confirmed yet still (due to them not having any updated info in the hive shit), by then looking at the most recent rows of and taking their conifirmed status imo
         // imo, this would only involve the sell_trx_hive_id's
-        const rentalsIdsStillNotConfirmed = await UserRentals.query()
-            .where({ users_id })
-            .whereNull('confirmed')
-            .distinctOn('sell_trx_hive_id');
-        const rentalsStillNotConfirmed = await UserRentals.query()
-            .where({ users_id })
-            .whereNull('confirmed');
 
-        logger.info(
-            `/services/rentalConfirmation/patchRentalsBySplintersuite: ${username}, numPatched: ${numPatched}, rentalsStillNotConfirmed: ${rentalsStillNotConfirmed?.length}, rentalsIdsStillNotConfirmed: ${rentalsIdsStillNotConfirmed?.length}`
-        );
-        throw new Error('checking');
+        // const rentalsStillNotConfirmed = await UserRentals.query()
+        //     .where({ users_id })
+        //     .whereNull('confirmed');
+
+        // logger.info(
+        //     `/services/rentalConfirmation/patchRentalsBySplintersuite: ${username}, numPatched: ${numPatched}, rentalsStillNotConfirmed: ${rentalsStillNotConfirmed?.length}, rentalsIdsStillNotConfirmed: ${rentalsIdsStillNotConfirmed?.length}`
+        // );
+        //throw new Error('checking');
         return numPatched;
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/patchRentalsBySplintersuite error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const getPreviousConfirmationForRentalIds = async ({ users_id }) => {
+    try {
+        logger.debug(
+            `/services/rentalConfirmation/getPreviousConfirmationForRentalIds`
+        );
+        // we can get the time period from the last confirmed transaction and apply it to future ones
+        const rentalsIdsStillNotConfirmed = await UserRentals.query()
+            .select('sell_trx_hive_id')
+            .where({ users_id })
+            .whereNull('confirmed')
+            .distinctOn('sell_trx_hive_id');
+
+        const idsNotConfirmed = rentalsIdsStillNotConfirmed.map(
+            ({ sell_trx_hive_id }) => sell_trx_hive_id
+        );
+        const getLastConfirmedTxsForRentalIdsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment, ur.confirmed FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, confirmed, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_hive_id = ANY(?) group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+        const getLastConfirmedTxsForRentalIds = await knexInstance.raw(
+            getLastConfirmedTxsForRentalIdsSql,
+            [users_id, idsNotConfirmed]
+        );
+
+        logger.info(
+            `getLastConfirmedTxsForRentalIds.rows.length: ${getLastConfirmedTxsForRentalIds?.rows?.length}`
+        );
+    } catch (err) {
+        logger.error(
+            `/services/rentalConfirmation/getPreviousConfirmationForRentalIds error: ${err.message}`
         );
         throw err;
     }
@@ -323,7 +334,7 @@ const getNeverConfirmedTxs = async ({
             // TNT TNODO: add an is null for confirmed to this imo
             // TNT TODO: checkout confirmedTxs, I think we need to have it be mapped out for just sell_trx_hive_id first before this query would do anything imo
 
-            logger.info(`confirmedTxs: ${JSON.stringify(confirmedTxs)} `);
+            // logger.info(`confirmedTxs: ${JSON.stringify(confirmedTxs)} `);
             const confirmedIds = confirmedTxs.map(
                 ({ sell_trx_hive_id }) => sell_trx_hive_id
             );

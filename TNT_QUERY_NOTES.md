@@ -33,3 +33,11 @@ looks like we added 3 null ones, and it finally confirmed our new query is worki
 TNT ISSUES: we might want to make the entire updating confirmations a transaction imo, cuz if we fuck up updating it will falsly classify everything imo
 
 {"level":30,"time":"2023-01-28T06:50:10.220Z","pid":72431,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/patchRentalsBySplintersuite: brain71, numPatched: 2, rentalsStillNotConfirmed: 47, rentalsIdsStillNotConfirmed: 3"}
+
+{"level":30,"time":"2023-01-28T09:29:51.735Z","pid":12958,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/patchRentalsBySplintersuite: xdww, numPatched: 109, rentalsStillNotConfirmed: 947, rentalsIdsStillNotConfirmed: 50"}
+
+# Full order of confirmation
+
+1234 npm run userRentals - await rentalConfirmation.confirmRentalsForUsers(); (services/rentalConfirmation)
+1235 npm run hiveDates - await hiveDates.updateHiveTxDates(); const hiveDates = require('../services/hive/dates');
+1238 npm run rentalConfirmation - await rentalConfirmation.confirmRentalsForUsers(); const rentalConfirmation = require('../services/rentalConfirmation');

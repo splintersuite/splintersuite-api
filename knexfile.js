@@ -36,7 +36,7 @@ module.exports = {
         seeds: {
             directory: './db/seeds',
         },
-        debug: true,
+        debug: false,
         // debug: process.env.DEBUG || true,
     },
     production: {
