@@ -91,7 +91,7 @@ const patchRentalsWithRelistings = async ({
 }) => {
     try {
         logger.info(
-            `/services/rentalConfirmation/patchRentalsWithRelistings start`
+            `/services/rentalConfirmation/patchRentalsWithRelistings ${username}`
         );
         let numRecords = 0;
         const timeTaken = await UserRentals.transaction(async (trx) => {
@@ -135,8 +135,8 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         logger.info(
             `/services/rentalConfirmation/patchRentalsBySplintersuite start`
         );
-        await getPreviousConfirmationForRentalIds({ users_id, username });
-        throw new Error('checking');
+
+        // throw new Error('checking');
         // const numPatched1 = await patchRentalsWithRelistings({
         //     users_id: 'xdww',
         //     username: 'xdww',
@@ -185,6 +185,10 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             recentHiveIDs,
         });
 
+        const morePatched = await handleUnconfirmedRentals({
+            users_id,
+            username,
+        });
         // TNT NOTE: we need to confirm any rentalIds that haven't been confirmed yet still (due to them not having any updated info in the hive shit), by then looking at the most recent rows of and taking their conifirmed status imo
         // imo, this would only involve the sell_trx_hive_id's
 
@@ -196,10 +200,52 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         //     `/services/rentalConfirmation/patchRentalsBySplintersuite: ${username}, numPatched: ${numPatched}, rentalsStillNotConfirmed: ${rentalsStillNotConfirmed?.length}, rentalsIdsStillNotConfirmed: ${rentalsIdsStillNotConfirmed?.length}`
         // );
         //throw new Error('checking');
-        return numPatched;
+        const totalPatched = numPatched + morePatched;
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsBySplintersuite: user ${username}, numPatched: ${numPatched}, morePatched: ${morePatched}, totalPatched: ${totalPatched}`
+        );
+        return totalPatched;
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/patchRentalsBySplintersuite error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const handleUnconfirmedRentals = async ({ users_id, username }) => {
+    try {
+        logger.info(
+            `/services/rentalConfirmation/handleUnconfirmedRentals ${username}`
+        );
+        let numPatched = 0;
+        const lastConfirmedRentals = await getPreviousConfirmationForRentalIds({
+            users_id,
+            username,
+        });
+        if (
+            !lastConfirmedRentals ||
+            !Array.isArray(lastConfirmedRentals) ||
+            lastConfirmedRentals.length < 1
+        ) {
+            logger.info(
+                `services/rentalConfirmation/handleUnconfirmedRentals: user ${username} no unconfirmed to patch`
+            );
+            return numPatched;
+        }
+
+        numPatched = await patchRentalsPrevHistory({
+            users_id,
+            username,
+            lastConfirmedRentals,
+        });
+        logger.info(
+            `services/rentalConfirmation/handleUnconfirmedRentals: user ${username} records: ${numPatched}`
+        );
+        return numPatched;
+    } catch (err) {
+        logger.error(
+            `/services/rentalConfirmation/handleUnconfirmedRentals error: ${err.message}`
         );
         throw err;
     }
@@ -260,6 +306,48 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/getPreviousConfirmationForRentalIds error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
+const patchRentalsPrevHistory = async ({
+    users_id,
+    username,
+    lastConfirmedRentals,
+}) => {
+    try {
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsPrevHistory ${username}`
+        );
+
+        let numRecords = 0;
+        const timeTaken = await UserRentals.transaction(async (trx) => {
+            const nowTime = nowp();
+            for (const record of lastConfirmedRentals) {
+                numRecords = numRecords + 1;
+                const { last_rental_payment, sell_trx_hive_id, confirmed } =
+                    record;
+                await UserRentals.query(trx)
+                    .where({ users_id })
+                    .where('last_rental_payment', '>', last_rental_payment)
+                    .where({ sell_trx_hive_id })
+                    //  .whereNull({ confirmed })
+                    .patch({ confirmed });
+            }
+
+            const endTime = nowp();
+            const elapsedTime = endTime - nowTime;
+
+            return elapsedTime.toFixed(3);
+        });
+        logger.info(
+            `/services/rentalConfirmation/patchRentalsPrevHistory: user: ${username}, numRecords: ${numRecords}, timeTaken: ${timeTaken}`
+        );
+        return numRecords;
+    } catch (err) {
+        logger.error(
+            `/services/rentalConfirmation/patchRentalsPrevHistory error: ${err.message}`
         );
         throw err;
     }
