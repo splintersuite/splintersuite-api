@@ -2,14 +2,16 @@ const cardsDetails = require('../util/cardDetails.json');
 const retryFncs = require('../util/axios_retry/general');
 const logger = require('../util/pinologger');
 const marketService = require('../services/market');
+const utilDates = require(`../util/dates`);
 
 // TNT TODO: actually insert the data into our db
 const getHistoricalData = async () => {
     try {
-        logger.info(`/scripts/rentals/getHistoricalData start`);
+        logger.info(`/scripts/rentals/getHistoricalData`);
         // runs at 05:00 EST
         // runs at 17:00 EST
         const now = new Date();
+        const startTime = now.getTime();
         const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
         const twelveHoursAgoTime = twelveHoursAgo.getTime();
 
@@ -37,7 +39,15 @@ const getHistoricalData = async () => {
                 count++;
             }
         }
-        logger.info('/scripts/rentals/getHistoricalData');
+        const end = new Date();
+        const endTime = end.getTime();
+        const totalMinsLong = utilDates.computeMinsSinceStart({
+            startTime,
+            endTime,
+        });
+        logger.info(
+            `/scripts/rentals/getHistoricalData: totalMinsLong: ${totalMinsLong}`
+        );
         process.exit(0);
     } catch (err) {
         logger.error(`getHistoricalData error: ${err.message}`);

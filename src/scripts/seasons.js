@@ -1,3 +1,4 @@
+'use strict';
 const logger = require('../util/pinologger');
 const seasonService = require('../services/seasons');
 const invoiceService = require('../services/invoices');
@@ -22,20 +23,15 @@ const extractSLSeasonData = (settings) => {
 
 const getSLSeasonData = async () => {
     try {
-        logger.debug(`/scripts/seasons/getSLSeasonData`);
+        logger.info(`/scripts/seasons/getSLSeasonData`);
 
         const data = await splinterlandsService.getSettings();
         const seasonData = extractSLSeasonData(data);
-        const newSeason = await seasonService.create({
+        await seasonService.create({
             seasonData,
         });
 
-        if (newSeason) {
-            // create invoices for LAST season!
-            // await createInvoices();
-        }
-
-        logger.info('/scripts/seasons/getSLSeasonData');
+        logger.info('/scripts/seasons/getSLSeasonData:');
         process.exit(0);
     } catch (err) {
         logger.error(`/scripts/seasons/getSLSeasonData error: ${err.message}`);

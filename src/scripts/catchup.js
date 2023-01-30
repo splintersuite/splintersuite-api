@@ -47,7 +47,7 @@ const calculateAllEarningsForUsers = async () => {
     }
 };
 
-calculateAllEarningsForUsers();
+// calculateAllEarningsForUsers();
 
 /*
 

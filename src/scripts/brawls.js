@@ -24,7 +24,7 @@ const extractSLBrawlData = (settings) => {
 
 const getSLBrawlData = async () => {
     try {
-        logger.debug(`/scripts/brawls/getSLBrawlData`);
+        logger.info(`/scripts/brawls/getSLBrawlData`);
 
         const data = await splinterlandsService.getSettings().catch((err) => {
             logger.error(
@@ -58,7 +58,7 @@ const getSLBrawlData = async () => {
             throw err;
         });
 
-        logger.info(`/scripts/brawls/getSLBrawlData`);
+        logger.info(`/scripts/brawls/getSLBrawlData:`);
         process.exit(0);
     } catch (err) {
         logger.error(`/scripts/brawls/getSLBrawlData error: ${err.message}`);

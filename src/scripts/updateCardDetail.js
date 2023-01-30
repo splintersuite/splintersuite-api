@@ -4,8 +4,9 @@ const splinterlandsService = require('../services/splinterlands');
 
 const updateCardDetails = async () => {
     try {
+        logger.info(`/scripts/updateCardDetail/updateCardDetails`);
         await splinterlandsService.updateCardDetail();
-        logger.info(`updateCardDetails done`);
+        logger.info(`/scripts/updateCardDetail/updateCardDetails:`);
         return;
     } catch (err) {
         logger.error(

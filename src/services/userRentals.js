@@ -65,7 +65,7 @@ const update = async () => {
                 inserted,
             };
             logger.info(
-                `/scripts/userRentals/update username: ${user.username} end: ${end}, endTime: ${endTime}, minsLong: ${minsLong}, inserted: ${inserted}, alreadyInserted: ${alreadyInserted}`
+                `/scripts/userRentals/update username: ${user.username}, minsLong: ${minsLong}, inserted: ${inserted}, alreadyInserted: ${alreadyInserted}`
             );
 
             if (count !== 0 && count % 100 === 0) {
