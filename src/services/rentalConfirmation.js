@@ -258,7 +258,7 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
         );
         // we can get the time period from the last confirmed transaction and apply it to future ones
         const rentalsIdsStillNotConfirmed = await UserRentals.query()
-            .select('sell_trx_hive_id')
+            // .select('sell_trx_hive_id')
             .where({ users_id })
             .whereNull('confirmed')
             .distinctOn('sell_trx_hive_id');
@@ -273,6 +273,7 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
             );
             return [];
         }
+
         const idsNotConfirmed = rentalsIdsStillNotConfirmed.map(
             ({ sell_trx_hive_id }) => sell_trx_hive_id
         );
@@ -282,6 +283,19 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
             [users_id, idsNotConfirmed]
         );
 
+        if (username === 'tamecards' || username === 'xdww') {
+            logger.info(
+                `user: ${username}, rentalIdsStillNotConfirmed: ${JSON.stringify(
+                    rentalsIdsStillNotConfirmed
+                )}`
+            );
+            logger.info(
+                `getLastConfirmedTxsForRentalIds: ${JSON.stringify(
+                    getLastConfirmedTxsForRentalIds.rows
+                )}`
+            );
+            throw new Error('stopping at either tamecards or xdww');
+        }
         // logger.info(
         //     `getLastConfirmedTxsForRentalIds: ${JSON.stringify(
         //         getLastConfirmedTxsForRentalIds
