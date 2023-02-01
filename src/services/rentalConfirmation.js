@@ -27,20 +27,7 @@ const confirmRentalsForUsers = async () => {
         for (const user of users) {
             const start = new Date();
             const startTime = start.getTime();
-            // await rentals
-            //     .updateRentalsInDb({
-            //         username: user.username,
-            //         users_id: user.id,
-            //         cardDetailsObj,
-            //     })
-            //     .catch((err) => {
-            //         logger.error(
-            //             `/services/rentalConfirmation/confirmRentalsForUsers .updateRentalsInDb users_id: ${JSON.stringify(
-            //                 user.id
-            //             )} error: ${err.message}`
-            //         );
-            //         throw err;
-            //     });
+
             const numPatched = await patchRentalsBySplintersuite({
                 users_id: user.id,
                 username: user.username,
@@ -133,7 +120,7 @@ const patchRentalsWithRelistings = async ({
 const patchRentalsBySplintersuite = async ({ users_id, username }) => {
     try {
         logger.info(
-            `/services/rentalConfirmation/patchRentalsBySplintersuite start`
+            `/services/rentalConfirmation/patchRentalsBySplintersuite ${username}`
         );
 
         // throw new Error('checking');
@@ -143,12 +130,17 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         //     recentHiveIDs: 'xdww',
         // });
         // throw new Error('stopping');
+        // const anyRentalsToConfirmArr = await UserRentals.query()
+        //     .select('sell_trx_hive_id')
+        //     .where({ users_id })
+        //     .whereNull('confirmed')
+        //     .distinctOn('sell_trx_hive_id');
+
         const anyRentalsToConfirmArr = await UserRentals.query()
-            .select('sell_trx_hive_id')
+            .select('sell_trx_id')
             .where({ users_id })
             .whereNull('confirmed')
-            .distinctOn('sell_trx_hive_id');
-
+            .distinctOn('sell_trx_id');
         if (
             !anyRentalsToConfirmArr ||
             !Array.isArray(anyRentalsToConfirmArr) ||
@@ -160,8 +152,19 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             return;
         }
 
+        if (username === 'tamecards') {
+            logger.info(
+                `anyRentalsToConfirmArr: ${JSON.stringify(
+                    anyRentalsToConfirmArr
+                )}`
+            );
+        }
+        // const anyRentalsToConfirm = anyRentalsToConfirmArr.map(
+        //     ({ sell_trx_hive_id }) => sell_trx_hive_id
+        // );
+
         const anyRentalsToConfirm = anyRentalsToConfirmArr.map(
-            ({ sell_trx_hive_id }) => sell_trx_hive_id
+            ({ sell_trx_id }) => sell_trx_id
         );
 
         const earliestTime = await getEarliestTimeNeeded({
@@ -184,7 +187,7 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
             username,
             recentHiveIDs,
         });
-
+        // TNT NOTE: this is where we are, prob need to handle this imo
         const morePatched = await handleUnconfirmedRentals({
             users_id,
             username,
@@ -261,7 +264,8 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
             // .select('sell_trx_hive_id')
             .where({ users_id })
             .whereNull('confirmed')
-            .distinctOn('sell_trx_hive_id');
+            .distinctOn('sell_trx_id');
+        // .distinctOn('sell_trx_hive_id');
 
         if (
             !rentalsIdsStillNotConfirmed ||
@@ -274,28 +278,38 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
             return [];
         }
 
+        // const idsNotConfirmed = rentalsIdsStillNotConfirmed.map(
+        //     ({ sell_trx_hive_id }) => sell_trx_hive_id
+        // );
         const idsNotConfirmed = rentalsIdsStillNotConfirmed.map(
-            ({ sell_trx_hive_id }) => sell_trx_hive_id
+            ({ sell_trx_id }) => sell_trx_id
         );
-        const getLastConfirmedTxsForRentalIdsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment, ur.confirmed FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_hive_id = ANY(?) group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+        // const getLastConfirmedTxsForRentalIdsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment, ur.confirmed FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_hive_id = ANY(?) group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+        // const getLastConfirmedTxsForRentalIds = await knexInstance.raw(
+        //     getLastConfirmedTxsForRentalIdsSql,
+        //     [users_id, idsNotConfirmed]
+        // );
+
+        const getLastConfirmedTxsForRentalIdsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.last_rental_payment, ur.confirmed FROM user_rentals ur JOIN (SELECT sell_trx_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_id = ANY(?) group by sell_trx_id) max_ur on ur.sell_trx_id = max_ur.sell_trx_id AND ur.last_rental_payment = max_ur.max_date`;
         const getLastConfirmedTxsForRentalIds = await knexInstance.raw(
             getLastConfirmedTxsForRentalIdsSql,
             [users_id, idsNotConfirmed]
         );
 
-        if (username === 'tamecards' || username === 'xdww') {
-            logger.info(
-                `user: ${username}, rentalIdsStillNotConfirmed: ${JSON.stringify(
-                    rentalsIdsStillNotConfirmed
-                )}`
-            );
-            logger.info(
-                `getLastConfirmedTxsForRentalIds: ${JSON.stringify(
-                    getLastConfirmedTxsForRentalIds.rows
-                )}`
-            );
-            throw new Error('stopping at either tamecards or xdww');
-        }
+        // if (username === 'tamecards' || username === 'xdww') {
+        //     logger.info(
+        //         `user: ${username}, rentalIdsStillNotConfirmed: ${JSON.stringify(
+        //             rentalsIdsStillNotConfirmed
+        //         )}`
+        //     );
+        //     logger.info(
+        //         `getLastConfirmedTxsForRentalIds: ${JSON.stringify(
+        //             getLastConfirmedTxsForRentalIds.rows
+        //         )}`
+        //     );
+        //     throw new Error('stopping at either tamecards or xdww');
+        // }
+
         // logger.info(
         //     `getLastConfirmedTxsForRentalIds: ${JSON.stringify(
         //         getLastConfirmedTxsForRentalIds
@@ -304,8 +318,14 @@ const getPreviousConfirmationForRentalIds = async ({ users_id, username }) => {
         //     }`
         // );
         const lastConfirmedRentals = getLastConfirmedTxsForRentalIds.rows.map(
-            ({ sell_trx_hive_id, last_rental_payment, confirmed }) => ({
-                sell_trx_hive_id,
+            ({
+                // sell_trx_hive_id,
+                sell_trx_id,
+                last_rental_payment,
+                confirmed,
+            }) => ({
+                //sell_trx_hive_id,
+                sell_trx_id,
                 last_rental_payment,
                 confirmed,
             })
@@ -340,12 +360,11 @@ const patchRentalsPrevHistory = async ({
             const nowTime = nowp();
             for (const record of lastConfirmedRentals) {
                 numRecords = numRecords + 1;
-                const { last_rental_payment, sell_trx_hive_id, confirmed } =
-                    record;
+                const { last_rental_payment, sell_trx_id, confirmed } = record;
                 await UserRentals.query(trx)
                     .where({ users_id })
                     .where('last_rental_payment', '>', last_rental_payment)
-                    .where({ sell_trx_hive_id })
+                    .where({ sell_trx_id })
                     //  .whereNull({ confirmed })
                     .patch({ confirmed });
             }
@@ -380,14 +399,14 @@ const getEarliestTimeNeeded = async ({
             username,
             anyRentalsToConfirm,
         });
-
+        // TNT NOTE: I think this is all done, but I might've fucked something up
         const nonConfirmedTxs = await getNeverConfirmedTxs({
             users_id,
             username,
             confirmedTxs,
-            anyRentalsToConfirm,
+            // anyRentalsToConfirm,
         });
-
+        // TNT NOTE: nothing to be done here imo
         const earliestTime = await calculateEarliestTime({
             username,
             confirmedTxs,
@@ -443,16 +462,30 @@ const getNeverConfirmedTxs = async ({
     users_id,
     username,
     confirmedTxs,
-    anyRentalsToConfirm,
+    //  anyRentalsToConfirm,
 }) => {
     try {
-        logger.debug(`/services/rentalConfirmation/getNeverConfirmedTxs`);
+        logger.info(`/services/rentalConfirmation/getNeverConfirmedTxs`);
 
         if (
             !confirmedTxs ||
             !Array.isArray(confirmedTxs) ||
             confirmedTxs?.length < 1
         ) {
+            // we dont need to check cuz this would've already returned earlier
+            const anyRentalsToConfirm = await UserRentals.query()
+                .select('sell_trx_hive_id')
+                .where({ users_id })
+                .whereNull('confirmed')
+                .distinctOn('sell_trx_hive_id');
+
+            if (username === 'tamecards') {
+                logger.info(
+                    `anyRentalsToConfirm: ${JSON.stringify(
+                        anyRentalsToConfirm
+                    )}`
+                );
+            }
             const neverConfirmedTxs = await getHiveTxDates({
                 username,
                 rentalsWithSellIds: anyRentalsToConfirm,
@@ -462,13 +495,15 @@ const getNeverConfirmedTxs = async ({
             );
             return neverConfirmedTxs;
         } else {
-            // TNT TNODO: add an is null for confirmed to this imo
-            // TNT TODO: checkout confirmedTxs, I think we need to have it be mapped out for just sell_trx_hive_id first before this query would do anything imo
+            // we want to just get all the sell_trx_hive_ids that have never been confirmed, so we can get the created_ats, but want to ignore the confirmedTxs
+            // if a sell_trx_hive_id has been confirmed once, than its inherent sell_trx_id has been confirmed AT LEAST ONCE (at inception), therefore we don't need the created_at for it (if its only confirmed there, then the date would already be in the confirmedTxs info)
 
             // logger.info(`confirmedTxs: ${JSON.stringify(confirmedTxs)} `);
             const confirmedIds = confirmedTxs.map(
                 ({ sell_trx_hive_id }) => sell_trx_hive_id
             );
+
+            const uniqConfirmedIds = _.uniq(confirmedIds);
             // const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
             // const neverConfirmedSellTxs = await knexInstance.raw(
             //     neverConfirmedSellTxsSql,
@@ -478,7 +513,7 @@ const getNeverConfirmedTxs = async ({
             const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
             const neverConfirmedSellTxs = await knexInstance.raw(
                 neverConfirmedSellTxsSql,
-                [users_id, confirmedIds]
+                [users_id, uniqConfirmedIds]
             );
             // const distinctNotNullRentalTxs = await UserRentals.query()
             //     .where({ users_id })
@@ -547,12 +582,33 @@ const getNeverConfirmedTxs = async ({
 
 const getHiveTxDates = async ({ username, rentalsWithSellIds }) => {
     try {
-        logger.debug(`/services/rentalConfirmation/getHiveTxDates`);
+        logger.info(`/services/rentalConfirmation/getHiveTxDates`);
 
-        const rentalTxIds = rentalsWithSellIds.map(({ sell_trx_hive_id }) => {
-            sell_trx_hive_id;
-        });
+        const rentalTxIds = rentalsWithSellIds.map(
+            ({ sell_trx_hive_id }) => sell_trx_hive_id
+        );
 
+        if (username === 'tamecards') {
+            const oneEle = ['bob'];
+            const threeEle = ['tnt', 'xdww', 'tnt69'];
+
+            const oneEleMapped = oneEle.map((ele) => ele);
+            const threeEleMapped = threeEle.map((ele) => ele);
+            logger.info(`rentalTxIds: ${JSON.stringify(rentalTxIds)}`);
+            logger.info(
+                `rentalsWithSellIds: ${JSON.stringify(rentalsWithSellIds)}`
+            );
+            logger.info(
+                `Array.isArray(rentalsWithSellIds): ${Array.isArray(
+                    rentalsWithSellIds
+                )}`
+            );
+            logger.info(
+                `oneEleMapped: ${JSON.stringify(
+                    oneEleMapped
+                )}, threeEleMapped: ${JSON.stringify(threeEleMapped)}`
+            );
+        }
         const neverConfirmedTxs = await HiveTxDate.query()
             .select('hive_tx_id', 'hive_created_at')
             .whereIn('hive_tx_id', rentalTxIds);
@@ -587,20 +643,15 @@ const getHiveTxDates = async ({ username, rentalsWithSellIds }) => {
 const getConfirmedTxs = async ({ users_id, username, anyRentalsToConfirm }) => {
     try {
         logger.debug(`/services/rentalConfirmation/getConfirmedTxs`);
-        // logger.info(
-        //     `getConfirmedTxs, anyRentalsToConfirm: ${JSON.stringify(
-        //         anyRentalsToConfirm
-        //     )}, users_id: ${users_id}`
-        // );
-        // TNT TODO: the anyRentalsToConfirm needs to be mapped in imo by sell_trx_hive_id and we can only query those in this list imo, everything else is irrelevant
-        // const latestConfirmedByUserSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
-        // const latestConfirmedByRentalIdForUser = await knexInstance.raw(
-        //     latestConfirmedByUserSql,
-        //     users_id
-        // );
 
         // get all the distinct user_rental.sell_trx_hive_id that have at least one value where confirmed is not null, and is one of the sell_trx_ids of anyRentalsToConfirm
-        const latestConfirmedByUserSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_hive_id = ANY(?) group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+        // const latestConfirmedByUserSql = `SELECT distinct on (sell_trx_hive_id) ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_hive_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_hive_id = ANY(?) group by sell_trx_hive_id) max_ur on ur.sell_trx_hive_id = max_ur.sell_trx_hive_id AND ur.last_rental_payment = max_ur.max_date`;
+        // const latestConfirmedByRentalIdForUser = await knexInstance.raw(
+        //     latestConfirmedByUserSql,
+        //     [users_id, anyRentalsToConfirm]
+        // );
+
+        const latestConfirmedByUserSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_id, max(last_rental_payment) max_date FROM user_rentals WHERE confirmed IS NOT NULL AND users_id = ? AND sell_trx_id = ANY(?) group by sell_trx_id) max_ur on ur.sell_trx_id = max_ur.sell_trx_id AND ur.last_rental_payment = max_ur.max_date`;
         const latestConfirmedByRentalIdForUser = await knexInstance.raw(
             latestConfirmedByUserSql,
             [users_id, anyRentalsToConfirm]
