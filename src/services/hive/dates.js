@@ -126,20 +126,22 @@ const getCreatedDatesForIds = async ({ sell_trx_hive_ids }) => {
                     `/services/hive/dates/getCreatedDatesForIds count: ${count}`
                 );
             }
-            const { hive_created_at_date } = await relistingsService
-                .getHiveTransactionDate({
-                    transactionId: sell_trx_hive_id,
-                })
-                .catch((err) => {
-                    logger.error(
-                        `/services/hive/dates/getCreatedDatesForIds got dates ${createdDatesForIds?.length}, error: ${err.message}`
-                    );
-                    return createdDatesForIds;
-                });
+            const { hive_created_at_date, isSplintersuite } =
+                await relistingsService
+                    .getHiveTransactionDate({
+                        transactionId: sell_trx_hive_id,
+                    })
+                    .catch((err) => {
+                        logger.error(
+                            `/services/hive/dates/getCreatedDatesForIds got dates ${createdDatesForIds?.length}, error: ${err.message}`
+                        );
+                        return createdDatesForIds;
+                    });
 
             const hiveTxDateObj = {
                 hive_tx_id: sell_trx_hive_id,
                 hive_created_at: hive_created_at_date,
+                confirmed: isSplintersuite,
             };
             createdDatesForIds.push(hiveTxDateObj);
             count = count + 1;

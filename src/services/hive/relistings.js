@@ -290,6 +290,28 @@ const getPostedSuiteRelistings = async ({ username, lastCreatedTime }) => {
     }
 };
 
+const hiveIsSplintersuite = ({ hiveTx }) => {
+    try {
+        logger.debug(`/services/hive/relistings/hiveIsSplintersuite`);
+        const json = JSON.parse(hiveTx.operations[0][1]['json']);
+
+        if (json?.agent && json?.agent === 'splintersuite') {
+            logger.debug(`/services/hive/relistings/hiveIsSplintersuite: true`);
+            return true;
+        } else {
+            logger.debug(
+                `/services/hive/relistings/hiveIsSplintersuite: false`
+            );
+            return false;
+        }
+    } catch (err) {
+        logger.error(
+            `/services/hive/relistings/hiveIsSplintersuite error: ${err.message}`
+        );
+        throw err;
+    }
+};
+
 const getRecentHiveRelistings = async ({ username, lastCreatedTime }) => {
     try {
         logger.debug(`/services/hive/relistings/getRecentHiveRelistings start`);
@@ -503,7 +525,13 @@ const getHiveTransactionDate = async ({ transactionId }) => {
             const hive_date = data?.expiration + 'Z';
             const hive_created_at_date = new Date(hive_date);
             const hive_created_at_time = hive_created_at_date.getTime();
-            return { hive_created_at_time, hive_created_at_date };
+            const isSplintersuite = hiveIsSplintersuite({ hiveTx: data });
+
+            return {
+                hive_created_at_time,
+                hive_created_at_date,
+                isSplintersuite,
+            };
         } else {
             logger.warn(
                 `transactionId: ${transactionId} did not pass our tests to see if its a real transaction, data: ${JSON.stringify(
