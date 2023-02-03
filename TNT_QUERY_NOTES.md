@@ -47,3 +47,44 @@ TNT ISSUES: we might want to make the entire updating confirmations a transactio
 WE ARE USING HIVE_TRX_Id rather than the sell_trx_id so thats why a lot of the stuff isn't getting patched properly
 
 FOR NEVER CONFIRMED TRANSACTIONS, WE JUST NEED TO LOOK UP THE CREATED_AT_DATE OF THE HIVE_TX_DATE AND THEN CAN USE THE confirmed of it yes/no to make our determination (TNT NOTE: we need to add in the hiveTxDate adding whether it was made by splintersuite or not at initialization, first write a script to add it to everyone and then alter current script so the future ones can always be adding that initially imo)
+
+TNT TODO:
+
+we need to make it so that when there are unconfirmedTxs that were NEVER CONFIRMED, if after going back and patching we still can't find anything in their hive_tx_dates, we should just take the confirmed status initially
+
+-- sidebar idea, why not just set the date back like 1 day or 12 hours from this time period?
+
+TNT NOTE: it was 5:28 am when I stopped this, which means it was going on for 3.5 hours long, and still wasn't finished patching anything
+
+{"level":30,"time":"2023-02-03T07:13:00.873Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/calculateEarliestTime: tamecards earliestTime: 1658772762000, confirmedTxs: 0, nonConfirmedTxs: 19"}
+{"level":30,"time":"2023-02-03T07:13:00.873Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: tamecards earliestTime: 1658772762000, anyRentalsToConfirm: 27"}
+{"level":30,"time":"2023-02-03T07:13:00.874Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"earliestTime: 1658772762000, date: Mon Jul 25 2022 14:12:42 GMT-0400 (Eastern Daylight Time)"}
+{"level":30,"time":"2023-02-03T07:13:00.874Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: -1, iteration: 0"}
+{"level":30,"time":"2023-02-03T07:13:12.327Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 14120, iteration: 1"}
+{"level":30,"time":"2023-02-03T07:13:24.392Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 13120, iteration: 2"}
+{"level":30,"time":"2023-02-03T07:13:36.473Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 12120, iteration: 3"}
+{"level":30,"time":"2023-02-03T07:13:48.544Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 11120, iteration: 4"}
+{"level":30,"time":"2023-02-03T07:14:01.145Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 10120, iteration: 5"}
+{"level":30,"time":"2023-02-03T07:14:13.318Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 9120, iteration: 6"}
+{"level":30,"time":"2023-02-03T07:14:25.451Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 8120, iteration: 7"}
+{"level":30,"time":"2023-02-03T07:14:38.048Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 7120, iteration: 8"}
+{"level":30,"time":"2023-02-03T07:14:50.664Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 6120, iteration: 9"}
+{"level":30,"time":"2023-02-03T07:15:03.238Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 5120, iteration: 10"}
+{"level":30,"time":"2023-02-03T07:15:15.836Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser for user: tamecards, startingRecord: 4120, iteration: 11"}
+{"level":30,"time":"2023-02-03T07:15:18.413Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/hive/relistings/getTransactionHiveIDsByUser: tamecards"}
+{"level":30,"time":"2023-02-03T07:15:18.413Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"recentHiveIDs: 8642, tooOld: 2, lastRecord[0]: 3410"}
+{"level":30,"time":"2023-02-03T07:15:18.413Z","pid":20035,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/patchRentalsWithRelistings tamecards"}
+strict mode: missing type "number,string" for keyword "format" at "#/properties/rented_at" (strictTypes)
+strict mode: missing type "number,string" for keyword "format" at "#/properties/next_rental_payment" (strictTypes)
+strict mode: missing type "number,string" for keyword "format" at "#/properties/last_rental_payment" (strictTypes)
+^C
+
+# TODOs after confirmation
+
+1. invoices now that confirmations are good to go
+
+2. delete old data from userRentals (which imo happens after invoices are out)
+
+3. delete users that never have any confirmed for us ever (give it a month and if they don't ever use it, then delete them from the database and wipe out all of their user Rental data and everything else)
+
+4. make the rental data available in API format
