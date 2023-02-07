@@ -88,3 +88,7 @@ strict mode: missing type "number,string" for keyword "format" at "#/properties/
 3. delete users that never have any confirmed for us ever (give it a month and if they don't ever use it, then delete them from the database and wipe out all of their user Rental data and everything else)
 
 4. make the rental data available in API format
+
+5. WHEN DELETING, we must make sure in our getNonConfirmedTxs that we ALSO GET TRANSACTIONS THAT HAVE SOME DELETED USER RENTALS TO MAKE SURE WE ARENT COPYING A DUPE.
+
+-   we should make a migration for hiveTxDate and make sure that we record the dateTime it was last confirmed, as well as the value for that recentlyConfirmed imo
