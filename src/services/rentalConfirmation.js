@@ -615,7 +615,11 @@ const getNeverConfirmedTxs = async ({
                 [users_id]
             );
 
-            const neverConfirmedSellTxsSqlMinTime = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_id from user_rentals urF WHERE urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            // minTime is WORKING! as demonstrated here
+            // {"level":30,"time":"2023-02-10T11:02:47.987Z","pid":58749,"hostname":"Trevors-Mac-mini.local","msg":"neverConfirmedSellTxsMinTime.rows: [{\"sell_trx_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6-0\",\"sell_trx_hive_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6\",\"last_rental_payment\":\"2023-02-07T09:42:48.000Z\",\"id\":\"43dd614b-caeb-4508-94bd-cc4de8c7099d\"}
+            // {"level":30,"time":"2023-02-10T11:02:47.987Z","pid":58749,"hostname":"Trevors-Mac-mini.local","msg":"neverConfirmedSellTxs: [{\"sell_trx_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6-0\",\"sell_trx_hive_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6\",\"last_rental_payment\":\"2023-02-10T09:42:48.000Z\",\"id\":\"62dc599a-2bb9-49f9-8f71-9ae79ff1a81f\"}
+
+            const neverConfirmedSellTxsSqlMinTime = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT urr.sell_trx_id, min(last_rental_payment) min_date FROM user_rentals urr WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_id from user_rentals urF WHERE urr.sell_trx_id = urF.sell_trx_id AND urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
             //    ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
             const neverConfirmedSellTxsMinTime = await knexInstance.raw(
                 neverConfirmedSellTxsSqlMinTime,
@@ -634,6 +638,11 @@ const getNeverConfirmedTxs = async ({
 
             logger.info(
                 `user: ${username} neverConfirmedSellTxs.rows: ${neverConfirmedSellTxs.rows.length}, neverConfirmedSellTxsMinTime: ${neverConfirmedSellTxsMinTime.rows.length}, firstRentalsNeverConfirmed: ${firstRentalsNeverConfirmed.rows.length}`
+            );
+            logger.info(
+                `neverConfirmedSellTxsMinTime.rows: ${JSON.stringify(
+                    neverConfirmedSellTxsMinTime.rows
+                )}`
             );
             throw new Error('checking the neverConfirmedSell difference');
             // const distinctNotNullRentalTxs = await UserRentals.query()
