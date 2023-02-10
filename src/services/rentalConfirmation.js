@@ -552,7 +552,7 @@ const getNeverConfirmedTxs = async ({
 
             // object should be the key is the hive_trx_hive_id (the one without the -cardNum69 at end)
             // this query gets the first user_rental for the operation that has ever existed it seems
-            const firstRentalsNeverConfirmedSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.last_rental_payment`;
+            const firstRentalsNeverConfirmedSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
             const firstRentalsNeverConfirmed = await knexInstance.raw(
                 firstRentalsNeverConfirmedSql,
                 [users_id]
@@ -582,27 +582,58 @@ const getNeverConfirmedTxs = async ({
             //     [users_id, confirmedIds]
             // );
 
+            // const seperateSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, min(ur.last_rental_payment) min_last_rental_payment, ur.id FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urC.sell_trx_id FROM user_rentals urC WHERE ur.sell_trx_id = urC.sell_trx_id AND urC.sell_trx_id = ANY(?) group by sell_trx_id)`;
+
             const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_id FROM user_rentals urF WHERE ur.sell_trx_id = urF.sell_trx_id AND urF.sell_trx_id = ANY(?))`;
             const neverConfirmedSellTxs = await knexInstance.raw(
                 neverConfirmedSellTxsSql,
                 [users_id, uniqConfirmedIds]
             );
 
-            const neverConfirmedSellTxsSqlSubQ = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id from user_rentals urF WHERE urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
-            //    ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
-            const neverConfirmedSellTxsSubQ = await knexInstance.raw(
-                neverConfirmedSellTxsSqlSubQ,
-                [users_id, uniqConfirmedIds]
+            // const neverConfirmedSellTxsSqlSubQ69420 = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.id, min(ur.last_rental_payment) min_last_rental_payment FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urC.sell_trx_id FROM user_rentals urC WHERE ur.sell_trx_id = urC.sell_trx_id AND urC.sell_trx_id = ANY(?))`;
+            // //JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id from user_rentals urF WHERE urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            // //    ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
+            // const neverConfirmedSellTxsSubQ69420 = await knexInstance.raw(
+            //     neverConfirmedSellTxsSqlSubQ69420,
+            //     [users_id, uniqConfirmedIds]
+            // );
+
+            // logger.info(
+            //     `neverConfirmedSellTxsSubQ69420.rows: ${neverConfirmedSellTxsSubQ69420.rows.length}`
+            // // );
+            // const neverConfirmedSellTxsSqlSubQ = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.id, min(ur.last_rental_payment) min_last_rental_payment FROM user_rentals ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urC.sell_trx_id FROM user_rentals urC WHERE ur.sell_trx_id = urC.sell_trx_id AND urC.sell_trx_id = ANY(?))`;
+            // //JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id from user_rentals urF WHERE urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            // //    ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
+            // const neverConfirmedSellTxsSubQ = await knexInstance.raw(
+            //     neverConfirmedSellTxsSqlSubQ,
+            //     [users_id, uniqConfirmedIds]
+            // );
+
+            const firstRentalsNeverConfirmedSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            const firstRentalsNeverConfirmed = await knexInstance.raw(
+                firstRentalsNeverConfirmedSql,
+                [users_id]
             );
 
-            const neverConfirmedSellTxsSqlMinTime = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_hive_id from user_rentals urF WHERE urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            const neverConfirmedSellTxsSqlMinTime = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_id from user_rentals urF WHERE urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
             //    ur WHERE users_id = ? AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_hive_id FROM user_rentals urF WHERE ur.sell_trx_hive_id = urF.sell_trx_hive_id and urF.sell_trx_hive_id = ANY(?))`;
             const neverConfirmedSellTxsMinTime = await knexInstance.raw(
                 neverConfirmedSellTxsSqlMinTime,
                 [users_id, uniqConfirmedIds]
             );
             logger.info(
-                `user: ${username} neverConfirmedSellTxs.rows: ${neverConfirmedSellTxs.rows.length}, neverConfirmedSellTxsMinTime: ${neverConfirmedSellTxsMinTime.rows.length}, neverConfirmedSellTxsSubQ: ${neverConfirmedSellTxsSubQ.rows.length}`
+                `neverConfirmedSellTxs: ${JSON.stringify(
+                    neverConfirmedSellTxs.rows
+                )}, neverConfirmedSellTxs.rows: ${
+                    neverConfirmedSellTxs.rows.length
+                }`
+            );
+            // logger.info(
+            //     `user: ${username} neverConfirmedSellTxs.rows: ${neverConfirmedSellTxs.rows.length}, neverConfirmedSellTxsMinTime: ${neverConfirmedSellTxsMinTime.rows.length}, neverConfirmedSellTxsSubQ: ${neverConfirmedSellTxsSubQ.rows.length}`
+            // );
+
+            logger.info(
+                `user: ${username} neverConfirmedSellTxs.rows: ${neverConfirmedSellTxs.rows.length}, neverConfirmedSellTxsMinTime: ${neverConfirmedSellTxsMinTime.rows.length}, firstRentalsNeverConfirmed: ${firstRentalsNeverConfirmed.rows.length}`
             );
             throw new Error('checking the neverConfirmedSell difference');
             // const distinctNotNullRentalTxs = await UserRentals.query()
