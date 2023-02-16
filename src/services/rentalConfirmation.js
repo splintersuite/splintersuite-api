@@ -97,6 +97,10 @@ const patchRentalsWithRelistings = async ({
                         .whereIn('sell_trx_id', record.IDs)
                         .patch({ confirmed: record.isSplintersuite });
                 } else {
+                    // TNT TODO: we get rid of this part, and we just make it so that the first never confirmed user_rental always gets set to what it should be, but then we have to actually finish going through the history of shit before it all ultimately ends up being fine.  Therefore,
+                    // we should have the if statemetn really being the processing of the neverConfirmed for sell_trx_ids first, where we use this except go through and just patch each specific last_sell_trx id of the min(last_rental_payment) date.
+                    // and then after we finish that processing, THEN we go through all of these regular records and IGNORE the card_uid stuff, but keep everything related to record?.isPriceUpdate
+                    // THE REASON FOR THIS IS BECAUSE WE WANT TO ONLY BE PATCHING SPECIFIC SELL_TRX_IDS WHEN WE GO BACK IN TIME, AND THIS WAY WOULD MAKE US ACCOUNT FOR EVERY SINGLE SELL_TRX_ID WHEN WE GO BACK, even if we just need to update 1 of them
                     await UserRentals.query(trx)
                         .where({ users_id })
                         .where('last_rental_payment', '>=', record.time)
@@ -152,12 +156,13 @@ const patchRentalsBySplintersuite = async ({ users_id, username }) => {
         );
 
         // TNT NOTE: we should NEVER get the earliestTime unless we already had a prior confirmed.  If we don't have any prior confirmed, earliestTime should be null, and we should have our sell_trx_ids with the created_date of the hive stuff later
-        const { earliestTime, neverConfirmedRentalTxs } =
-            await getEarliestTimeNeeded({
+        const { earliestTime, uniqSellTrxIdsObj } = await getEarliestTimeNeeded(
+            {
                 users_id,
                 username,
                 anyRentalsToConfirm,
-            });
+            }
+        );
 
         // TNT TODO: check to see if we get back any neverConfirmedTxs, and if we do, we should make sure to just apply to the unique id of the user rental the confirmation status of the created_at.
 
@@ -393,24 +398,56 @@ const getEarliestTimeNeeded = async ({
     anyRentalsToConfirm,
 }) => {
     try {
-        logger.debug(`/services/rentalConfirmation/getEarliestDateNeeded`);
+        logger.info(
+            `/services/rentalConfirmation/getEarliestDateNeeded anyRentalsToConfirm: ${anyRentalsToConfirm?.length}`
+        );
 
         let earliestTime = null; // only if there are confirmedTxs do we care about the last_rental_payment_date
-        let neverConfirmedRentalTxs = null; // if there are neverConfirmedTxs, this an array of objects to patch (has id of earliest sell_trx_id in user_rentals table incase this has gone on more than once, sell_trx_hive_id, created_at date from hiveTxDate, and confirmed from there as well to see status when created)
+        let neverConfirmedRentalTxs = []; // if there are neverConfirmedTxs, this an array of objects to patch (has id of earliest sell_trx_id in user_rentals table incase this has gone on more than once, sell_trx_hive_id, created_at date from hiveTxDate, and confirmed from there as well to see status when created)
 
         // this will patch the first of any neverConfirmed, so the rest can then be dealt with in the getConfirmedTxs and subsequent patching
-        await updateNeverConfirmedTxs({
-            users_id,
-            username,
-            anyRentalsToConfirm,
-        });
+        // await updateNeverConfirmedTxs({
+        //     users_id,
+        //     username,
+        //     anyRentalsToConfirm,
+        // });
 
+        // we can map out the sell_trx_ids from this cuz its already in the rows
         const confirmedTxs = await getConfirmedTxs({
             users_id,
             username,
             anyRentalsToConfirm,
         });
 
+        // logger.info(
+        //     `/services/rentalConfirmation/getEarliestDateNeeded confirmedTxs: ${JSON.stringify(
+        //         confirmedTxs
+        //     )}, confirmedTxs.length: ${confirmedTxs.length}`
+        // );
+        const uniqConfirmedIds = confirmedTxs.map(
+            ({ sell_trx_id }) => sell_trx_id
+        );
+
+        // TNT TODOS: we need to get an array of both the sell_trx_ids that are unique, as well as the card_uids that are unique.  This is so we can look up and see if they're relevant to what we want or not.  If they are not, then we can just fud
+        // TNT MORE: actually, we can just literally get this info from anyRentalsToConfirm (and use that info to make sure as a check that we only have x amount of sell_trx_ids )
+        /*
+        return {
+                neverConfirmedTimes: neverConfirmedTxs,
+                sellTrxIds: individualSellTrxIds,
+            };
+            */
+        const nonConfirmedTxs = await getNeverConfirmedTxs({
+            users_id,
+            username,
+            uniqConfirmedIds,
+            anyRentalsToConfirm,
+            // anyRentalsToConfirm, TNT NOTE: we actually do want to pass this in imo, but because we only want to be able to look up only the shit in here too imo, rather than all of the never confirmed ever, even though technically it should never stray. If we just added new rentals recently, then this could cause issues imo cuz the hive dates wouldn't be updated?
+        });
+
+        // return {
+        //     neverConfirmedTimes: neverConfirmedTxs,
+        //     sellTrxIds: individualSellTrxIds,
+        // };
         if (
             confirmedTxs &&
             Array.isArray(confirmedTxs) &&
@@ -419,15 +456,28 @@ const getEarliestTimeNeeded = async ({
             earliestTime = await calculateEarliestTime({
                 username,
                 confirmedTxs,
+                nonConfirmedTxs: nonConfirmedTxs?.neverConfirmedTimes,
             });
         }
+        /*
+
+           const individualSellTrxIds = [];
+
+                for (const rental of neverConfirmedSellTxs.rows) {
+                    const { sell_trx_id } = rental;
+                    individualSellTrxIds.push(...sell_trx_id);
+                }
+                */
 
         const msInADay = 1000 * 60 * 60 * 24;
 
         logger.info(
-            `/services/rentalConfirmation/getEarliestDateNeeded: ${username} earliestTime: ${earliestTime}, anyRentalsToConfirm: ${anyRentalsToConfirm?.length}, neverConfirmedRentalTxs: ${neverConfirmedRentalTxs?.length}`
+            `/services/rentalConfirmation/getEarliestDateNeeded: ${username} earliestTime: ${earliestTime}, anyRentalsToConfirm: ${anyRentalsToConfirm?.length}, neverConfirmedRentalTxs: ${neverConfirmedRentalTxs?.length}, confirmedTxs: ${confirmedTxs?.length}, neverConfirmedTimes: ${nonConfirmedTxs?.neverConfirmedTimes?.length}, sellTrxIds:${nonConfirmedTxs?.sellTrxIds?.length}`
         );
-        return { earliestTime, neverConfirmedRentalTxs };
+        throw new Error(
+            'checking to see if anyRetnalsToConfirm equals length of confirmed + nonConfirmed'
+        );
+        return { earliestTime, uniqSellTrxIdsObj: neverConfirmedRentalTxs };
     } catch (err) {
         logger.error(
             `/services/rentalConfirmation/getEarliestDateNeeded error: ${err.message}`
@@ -481,15 +531,50 @@ const updateNeverConfirmedTxs = async ({
     }
 };
 
-const calculateEarliestTime = async ({ username, confirmedTxs }) => {
+const calculateEarliestTime = async ({
+    username,
+    confirmedTxs,
+    nonConfirmedTxs,
+}) => {
     try {
         logger.debug(`/services/rentalConfirmation/calculateEarliestTime`);
         const allTimes = [];
-
-        for (const confirmed of confirmedTxs) {
-            const { last_rental_payment } = confirmed;
-            const payment_time = last_rental_payment.getTime();
-            allTimes.push(payment_time);
+        // logger.info(
+        //     `/services/rentalConfirmation/calculateEarliestTime username: ${username} confirmedTxs: ${JSON.stringify(
+        //         confirmedTxs
+        //     )}, nonConfirmedTxs: ${JSON.stringify(nonConfirmedTxs)},
+        //     Array.isArray(confirmedTxs): ${Array.isArray(confirmedTxs)},
+        //     `
+        // );
+        if (
+            confirmedTxs &&
+            Array.isArray(confirmedTxs) &&
+            confirmedTxs.length > 0
+        ) {
+            for (const confirmed of confirmedTxs) {
+                const { last_rental_payment } = confirmed;
+                const payment_time = last_rental_payment.getTime();
+                allTimes.push(payment_time);
+                // logger.info(
+                //     `last_rental_payment: ${last_rental_payment}, payment_time: ${payment_time}, allTimes: ${JSON.stringify(
+                //         allTimes
+                //     )}`
+                // );
+                // throw new Error('checking');
+            }
+        }
+        if (
+            nonConfirmedTxs &&
+            Array.isArray(nonConfirmedTxs) &&
+            nonConfirmedTxs.length > 0
+        ) {
+            logger.info(`nonConfirmedTxs should get looped over`);
+            //  throw new Error('checking loop');
+            for (const nonConfirmed of nonConfirmedTxs) {
+                const { hive_created_at } = nonConfirmed;
+                const created_time = hive_created_at.getTime();
+                allTimes.push(created_time);
+            }
         }
 
         const earliestTime = _.min(allTimes);
@@ -514,6 +599,7 @@ const getNeverConfirmedTxs = async ({
     users_id,
     username,
     uniqConfirmedIds,
+    anyRentalsToConfirm, // array of UNIQUE sell_trx_ids
 }) => {
     try {
         // https://stackoverflow.com/questions/3907354/select-with-multiple-subqueries-to-same-table
@@ -531,51 +617,141 @@ const getNeverConfirmedTxs = async ({
 
             // object should be the key is the hive_trx_hive_id (the one without the -cardNum69 at end)
             // this query gets the first user_rental for the operation that has ever existed it seems
-            const firstRentalsNeverConfirmedSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
-            const firstRentalsNeverConfirmed = await knexInstance.raw(
-                firstRentalsNeverConfirmedSql,
-                [users_id]
+            // const firstRentalsNeverConfirmedSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT sell_trx_id, min(last_rental_payment) min_date FROM user_rentals WHERE confirmed IS NULL AND users_id = ? group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            // const firstRentalsNeverConfirmed = await knexInstance.raw(
+            //     firstRentalsNeverConfirmedSql,
+            //     [users_id]
+            // );
+
+            // const neverConfirmedArr = await buildNeverConfirmedToPatch({
+            //     username,
+            //     firstRentalsNeverConfirmed: firstRentalsNeverConfirmed?.rows,
+            // });
+            // throw new Error(
+            //     `this says there are no confirmedTxs for user: ${username}, seems like a mistake`
+            // );
+            // return neverConfirmedArr;
+            logger.info(
+                `THERE ARE NO CONFIRMED IDS APARENTLY, uniqConfirmedIds: ${
+                    uniqConfirmedIds?.length
+                }, uniqConfirmedIds: ${JSON.stringify(uniqConfirmedIds)}`
+            );
+            const individualSellTrxIds = [];
+
+            const anyRentalsToConfirm = await UserRentals.query()
+                .select(
+                    'sell_trx_hive_id',
+                    'last_rental_payment',
+                    'id',
+                    'sell_trx_id'
+                )
+                .where({ users_id })
+                .whereIn('sell_trx_id', anyRentalsToConfirm)
+                .whereNull('confirmed')
+                .distinctOn('sell_trx_id');
+
+            if (username === 'tamecards') {
+                logger.info(
+                    `anyRentalsToConfirm: ${JSON.stringify(
+                        anyRentalsToConfirm
+                    )}, count: ${anyRentalsToConfirm?.length}`
+                );
+            }
+
+            for (const rental of anyRentalsToConfirm) {
+                const { sell_trx_id } = rental;
+                individualSellTrxIds.push(...sell_trx_id);
+            }
+
+            const neverConfirmedTxs = await getHiveTxDates({
+                username,
+                rentalsWithSellIds: anyRentalsToConfirm,
+            });
+            logger.info(
+                `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedTxs: ${
+                    neverConfirmedTxs?.length
+                }, individualSellTrxIds.length: ${
+                    individualSellTrxIds.length
+                }, individualSellTrxIds: ${JSON.stringify(
+                    individualSellTrxIds
+                )}`
+            );
+            return {
+                neverConfirmedTimes: neverConfirmedTxs,
+                sellTrxIds: individualSellTrxIds,
+            };
+            //   return neverConfirmedTxs;
+        } else {
+            logger.info(
+                `THERE ARE SOME CONFIRMED TXs, uniqConfirmedIds: ${JSON.stringify(
+                    uniqConfirmedIds
+                )}, uniqConfirmedIds.length: ${uniqConfirmedIds.length}`
             );
 
-            const neverConfirmedArr = await buildNeverConfirmedToPatch({
-                username,
-                firstRentalsNeverConfirmed: firstRentalsNeverConfirmed?.rows,
-            });
-            throw new Error(
-                `this says there are no confirmedTxs for user: ${username}, seems like a mistake`
+            const differenceInArrs = anyRentalsToConfirm.filter(
+                (x) => !uniqConfirmedIds.includes(x)
             );
-            return neverConfirmedArr;
-        } else {
+
+            logger.info(
+                `differenceInArrs: ${JSON.stringify(
+                    differenceInArrs
+                )}, differenceInArrs.length: ${differenceInArrs.length}`
+            );
             // we want to just get all the sell_trx_ids that have never been confirmed, so we can get the created_ats, but want to ignore the ones that have been confirmed once
             // if a sell_trx_hive_id has been confirmed once, than its inherent sell_trx_id has been confirmed AT LEAST ONCE (at inception), therefore we don't need the created_at for it (if its only confirmed there, then the date would already be in the confirmedTxs info)
 
-            const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT urr.sell_trx_id, min(last_rental_payment) min_date FROM user_rentals urr WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_id from user_rentals urF WHERE urr.sell_trx_id = urF.sell_trx_id AND urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
+            // const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT urr.sell_trx_id, min(last_rental_payment) min_date FROM user_rentals urr WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_id from user_rentals urF WHERE urr.sell_trx_id = urF.sell_trx_id AND urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
 
+            // const neverConfirmedSellTxs = await knexInstance.raw(
+            //     neverConfirmedSellTxsSql,
+            //     [users_id, uniqConfirmedIds]
+            // );
+
+            const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur WHERE users_id = ? AND sell_trx_id = ANY(?) AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_id FROM user_rentals urF WHERE ur.sell_trx_id = urF.sell_trx_id and urF.sell_trx_id = ANY(?))`;
+            // what about a query where we take the diffInArrs, and then we have the NOT EXISTS subquery be taking it from where we have a row that has confirmed being not null?  Therefore, we only need to look at the ones with differenceInArrs, and then we can subsequently look to see if any were confirmed (that we might've somehow missed b4)
             const neverConfirmedSellTxs = await knexInstance.raw(
                 neverConfirmedSellTxsSql,
-                [users_id, uniqConfirmedIds]
-            );
-
-            // throw new Error('checking the neverConfirmedSell difference');
+                [users_id, differenceInArrs, uniqConfirmedIds] // me: 12965.005 ms"}
+                // [users_id, anyRentalsToConfirm, uniqConfirmedIds] // me: 110828.356 ms"}
+            ); // {"level":30,"time":"2023-02-14T16:57:35.493Z","pid":27745,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: undefined, anyRentalsToConfirm: 639, neverConfirmedRentalTxs: 0, confirmedTxs: 622, nonConfirmedTxs: undefined"}
 
             if (
-                !neverConfirmedSellTxs ||
-                !Array.isArray(neverConfirmedSellTxs) ||
-                neverConfirmedSellTxs?.length < 1
+                !neverConfirmedSellTxs.rows ||
+                !Array.isArray(neverConfirmedSellTxs.rows) ||
+                neverConfirmedSellTxs?.rows?.length < 1
             ) {
                 logger.info(
                     `/services/rentalConfirmation/getNeverConfirmedTxs: user: ${username} has no rentals never confirmed`
                 );
-                return [];
+                return {};
             } else {
+                logger.info(``);
                 const neverConfirmedTxs = await getHiveTxDates({
                     username,
                     rentalsWithSellIds: neverConfirmedSellTxs.rows,
                 });
+
+                const individualSellTrxIds = [];
+
+                for (const rental of neverConfirmedSellTxs.rows) {
+                    const { sell_trx_id } = rental;
+                    individualSellTrxIds.push(sell_trx_id);
+                }
                 logger.info(
-                    `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedSellTxs.rows: ${neverConfirmedSellTxs.rows}, neverConfirmedSellTxs.rows.length: ${neverConfirmedSellTxs.rows?.length}`
+                    `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedSellTxs.rows: ${JSON.stringify(
+                        neverConfirmedSellTxs.rows
+                    )}, neverConfirmedSellTxs.rows.length: ${
+                        neverConfirmedSellTxs.rows?.length
+                    }, individualSellTrxIds.length: ${
+                        individualSellTrxIds.length
+                    }, individualSellTrxIds: ${JSON.stringify(
+                        individualSellTrxIds
+                    )}`
                 );
-                return neverConfirmedTxs;
+                return {
+                    neverConfirmedTimes: neverConfirmedTxs,
+                    sellTrxIds: individualSellTrxIds,
+                };
                 // const neverConfirmedTxs = await HiveTxDate.query()
                 //     .select('hive_tx_id', 'hive_created_at')
                 //     .whereIn('hive_tx_id', neverConfirmedSellTxs.rows);
@@ -718,32 +894,32 @@ const getHiveTxDates = async ({ username, rentalsWithSellIds }) => {
             ({ sell_trx_hive_id }) => sell_trx_hive_id
         );
 
-        if (username === 'tamecards') {
-            const oneEle = ['bob'];
-            const threeEle = ['tnt', 'xdww', 'tnt69'];
+        // if (username === 'tamecards') {
+        //     const oneEle = ['bob'];
+        //     const threeEle = ['tnt', 'xdww', 'tnt69'];
 
-            const oneEleMapped = oneEle.map((ele) => ele);
-            const threeEleMapped = threeEle.map((ele) => ele);
-            logger.info(`rentalTxIds: ${JSON.stringify(rentalTxIds)}`);
-            logger.info(
-                `rentalsWithSellIds: ${JSON.stringify(rentalsWithSellIds)}`
-            );
-            logger.info(
-                `Array.isArray(rentalsWithSellIds): ${Array.isArray(
-                    rentalsWithSellIds
-                )}`
-            );
-            logger.info(
-                `oneEleMapped: ${JSON.stringify(
-                    oneEleMapped
-                )}, threeEleMapped: ${JSON.stringify(threeEleMapped)}`
-            );
-            logger.info(
-                `rentalsWithSellIds: ${JSON.stringify(
-                    rentalsWithSellIds
-                )}, length: ${rentalsWithSellIds?.length}`
-            );
-        }
+        //     const oneEleMapped = oneEle.map((ele) => ele);
+        //     const threeEleMapped = threeEle.map((ele) => ele);
+        //     logger.info(`rentalTxIds: ${JSON.stringify(rentalTxIds)}`);
+        //     logger.info(
+        //         `rentalsWithSellIds: ${JSON.stringify(rentalsWithSellIds)}`
+        //     );
+        //     logger.info(
+        //         `Array.isArray(rentalsWithSellIds): ${Array.isArray(
+        //             rentalsWithSellIds
+        //         )}`
+        //     );
+        //     logger.info(
+        //         `oneEleMapped: ${JSON.stringify(
+        //             oneEleMapped
+        //         )}, threeEleMapped: ${JSON.stringify(threeEleMapped)}`
+        //     );
+        //     logger.info(
+        //         `rentalsWithSellIds: ${JSON.stringify(
+        //             rentalsWithSellIds
+        //         )}, length: ${rentalsWithSellIds?.length}`
+        //     );
+        // }
         const neverConfirmedTxs = await HiveTxDate.query()
             .select('hive_tx_id', 'hive_created_at', 'id')
             .whereIn('hive_tx_id', rentalTxIds);
@@ -756,9 +932,11 @@ const getHiveTxDates = async ({ username, rentalsWithSellIds }) => {
             logger.warn(
                 `/services/rentalConfirmation/getHiveTxDates user ${username} has ${
                     rentalsWithSellIds?.length
-                } but HiveTxDate doesnt have these rows, rentalsWithSellIds: ${JSON.stringify(
+                } sellTrx rentals and a total of ${
+                    rentalTxIds?.length
+                } rentalTxIds, but HiveTxDate doesnt have these rows, rentalsWithSellIds: ${JSON.stringify(
                     rentalsWithSellIds
-                )}`
+                )}, rentalTxIds: ${JSON.stringify(rentalTxIds)}`
             );
             throw new Error(`HiveTxDate missing rows for user: ${username}`);
         } else {
@@ -798,6 +976,9 @@ const getConfirmedTxs = async ({ users_id, username, anyRentalsToConfirm }) => {
             );
             return [];
         } else {
+            logger.info(
+                `/services/rentalConfirmation/getConfirmedTxs: unique confirmed Txs from anyRentalsToConfirm: ${latestConfirmedByRentalIdForUser?.rows}`
+            );
             return latestConfirmedByRentalIdForUser.rows;
         }
     } catch (err) {

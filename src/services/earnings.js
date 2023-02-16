@@ -39,25 +39,25 @@ const get = async ({ users_id }) => {
             date: now,
         });
         // TODO: change getEarningsForRange to get the dailyEarnings table shit
-        const dailyEarnings = await getEarningsForRange({
+        const dailyEarnings = await getDailyEarningsForDateRange({
             users_id,
             start_date: one.daysAgo,
             end_date: now,
         });
 
-        const priorDailyEarnings = await getEarningsForRange({
+        const priorDailyEarnings = await getDailyEarningsForDateRange({
             users_id,
             start_date: two.daysAgo,
             end_date: one.daysAgo,
         });
 
-        const weeklyEarnings = await getEarningsForRange({
+        const weeklyEarnings = await getDailyEarningsForDateRange({
             users_id,
             start_date: seven.daysAgo,
             end_date: now,
         });
 
-        const priorWeeklyEarnings = await getEarningsForRange({
+        const priorWeeklyEarnings = await getDailyEarningsForDateRange({
             users_id,
             start_date: fourteen.daysAgo,
             end_date: seven.daysAgo,
@@ -68,13 +68,13 @@ const get = async ({ users_id }) => {
             )}, end_date: ${JSON.stringify(now)}, users_id: ${users_id}`
         );
 
-        const monthlyEarnings = await getEarningsForRange({
+        const monthlyEarnings = await getDailyEarningsForDateRange({
             users_id,
             start_date: thirty.daysAgo,
             end_date: now,
         });
 
-        const priorMonthlyEarnings = await getEarningsForRange({
+        const priorMonthlyEarnings = await getDailyEarningsForDateRange({
             users_id,
             start_date: sixty.daysAgo,
             end_date: thirty.daysAgo,
