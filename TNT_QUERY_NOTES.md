@@ -92,3 +92,5 @@ strict mode: missing type "number,string" for keyword "format" at "#/properties/
 5. WHEN DELETING, we must make sure in our getNonConfirmedTxs that we ALSO GET TRANSACTIONS THAT HAVE SOME DELETED USER RENTALS TO MAKE SURE WE ARENT COPYING A DUPE.
 
 -   we should make a migration for hiveTxDate and make sure that we record the dateTime it was last confirmed, as well as the value for that recentlyConfirmed imo
+
+curl -s --data '{"jsonrpc":"2.0", "method":"condenser_api.get_transaction", "params":["32a0ecd910907f67a58107973d3b2f9f0a4a0da6"], "id":1}' https://api.hive.blog/
