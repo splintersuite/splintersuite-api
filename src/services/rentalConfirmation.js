@@ -595,7 +595,7 @@ const calculateEarliestTime = async ({
 const getNeverConfirmedTxs = async ({
     users_id,
     username,
-    uniqConfirmedIds,
+    uniqConfirmedIds, // array of UNIQUE sell_trx_ids that have at least 1 confirmed as not null
     anyRentalsToConfirm, // array of UNIQUE sell_trx_ids
 }) => {
     try {
@@ -635,8 +635,9 @@ const getNeverConfirmedTxs = async ({
                 anyRentalsToConfirm.length: ${anyRentalsToConfirm?.length}`
             );
             const individualSellTrxIds = [];
+            const hiveListingIds = [];
 
-            const anyRentalsToConfirm = await UserRentals.query()
+            const neverConfirmedRentalTxs = await UserRentals.query()
                 .select(
                     'sell_trx_hive_id',
                     'last_rental_payment',
@@ -648,43 +649,81 @@ const getNeverConfirmedTxs = async ({
                 .whereNull('confirmed')
                 .distinctOn('sell_trx_id');
 
-            if (username === 'tamecards') {
-                logger.info(
-                    `anyRentalsToConfirm: ${JSON.stringify(
-                        anyRentalsToConfirm
-                    )}, count: ${anyRentalsToConfirm?.length}`
+            for (const rental of neverConfirmedRentalTxs) {
+                const { sell_trx_id, sell_trx_hive_id } = rental;
+                individualSellTrxIds.push(sell_trx_id);
+                hiveListingIds.push(sell_trx_hive_id);
+            }
+            /*
+             const rentalTxIds = rentalsWithSellIds.map(
+            ({ sell_trx_hive_id }) => sell_trx_hive_id
+        );
+        */
+            const hiveTxDateObj = await getHiveTxDateObj({
+                username,
+                hiveListingIds,
+            });
+            const hiveCreatedTimes = [];
+            for (const rentalTx of neverConfirmedRentalTxs) {
+                const { sell_trx_hive_id } = rentalTx;
+                const hiveInfo = hiveTxDateObj[sell_trx_hive_id];
+                // "hiveInfo: {\"hive_tx_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6\",\"hive_created_at\":\"2023-02-06T09:19:54.000Z\",\"confirmed\":false}"}
+                if (hiveInfo && Object.keys(hiveInfo).length === 3) {
+                    const { hive_created_at, confirmed } = hiveInfo;
+                    const patchObj = {
+                        hive_created_at,
+                        confirmed,
+                        sell_trx_id,
+                    };
+                    const hive_created_time = hive_created_at.getTime();
+                    hiveCreatedTimes.push(hive_created_time);
+                } else {
+                    logger.error(
+                        `sell_trx_hive_id: ${sell_trx_hive_id} is not giving anything in our hiveTxDateObj`
+                    );
+                    throw new Error(
+                        'something is wrong with our hiveTx date objects'
+                    );
+                }
+            }
+
+            const minHiveCreatedTime = _.min(hiveCreatedTimes);
+
+            let neverConfirmedTime;
+            if (!isNaN(minHiveCreatedTime)) {
+                neverConfirmedTime = minHiveCreatedTime;
+            } else {
+                neverConfirmedTime = null;
+                throw new Error(
+                    `minHiveCreatedTime should be a number, is : ${JSON.stringify(
+                        minHiveCreatedTime
+                    )}`
                 );
             }
+            // const neverConfirmedTxs = await getHiveTxDates({
+            //     username,
+            //     rentalsWithSellIds: anyRentalsToConfirm,
+            // });
+            // logger.info(
+            //     `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedTxs: ${
+            //         neverConfirmedTxs?.length
+            //     }, individualSellTrxIds.length: ${
+            //         individualSellTrxIds.length
+            //     }, individualSellTrxIds: ${JSON.stringify(
+            //         individualSellTrxIds
+            //     )}`
+            // );
 
-            for (const rental of anyRentalsToConfirm) {
-                const { sell_trx_id } = rental;
-                individualSellTrxIds.push(sell_trx_id);
-            }
-
-            const neverConfirmedTxs = await getHiveTxDates({
-                username,
-                rentalsWithSellIds: anyRentalsToConfirm,
-            });
-            logger.info(
-                `/services/rentalConfirmation/getNeverConfirmedTxs: neverConfirmedTxs: ${
-                    neverConfirmedTxs?.length
-                }, individualSellTrxIds.length: ${
-                    individualSellTrxIds.length
-                }, individualSellTrxIds: ${JSON.stringify(
-                    individualSellTrxIds
-                )}`
-            );
             return {
-                neverConfirmedTimes: neverConfirmedTxs,
+                neverConfirmedTime,
                 sellTrxIds: individualSellTrxIds,
             };
-            //   return neverConfirmedTxs;
+
+            // return {
+            //     neverConfirmedTimes: neverConfirmedTxs,
+            //     sellTrxIds: individualSellTrxIds,
+            // };
         } else {
-            // logger.info(
-            //     `THERE ARE SOME CONFIRMED TXs, uniqConfirmedIds: ${JSON.stringify(
-            //         uniqConfirmedIds
-            //     )}, uniqConfirmedIds.length: ${uniqConfirmedIds.length}`
-            // );
             logger.info(
                 `THERE ARE SOME CONFIRMED TXs uniqConfirmedIds.length: ${uniqConfirmedIds.length}, anyRentalsToConfirm.length: ${anyRentalsToConfirm?.length}`
             );
@@ -693,21 +732,25 @@ const getNeverConfirmedTxs = async ({
             );
 
             logger.info(
-                `differenceInArrs: ${JSON.stringify(
-                    differenceInArrs
-                )}, differenceInArrs.length: ${differenceInArrs.length}`
+                `differenceInArrs.length: ${differenceInArrs.length}, check:${
+                    anyRentalsToConfirm?.length ===
+                    uniqConfirmedIds.length + differenceInArrs.length
+                }`
             );
+            if (
+                !anyRentalsToConfirm?.length ===
+                uniqConfirmedIds?.length + differenceInArrs?.length
+            ) {
+                logger.error(
+                    `anyRentalsToConfirm?.length : ${anyRentalsToConfirm?.length} should === uniqConfirmedIds?.length: ${uniqConfirmedIds?.length} + differenceInArrs?.length: ${differenceInArrs?.length}`
+                );
+                throw new Error('the check failed!');
+            }
+            //  throw new Error('checking the differenceInArrs check');
             // we want to just get all the sell_trx_ids that have never been confirmed, so we can get the created_ats, but want to ignore the ones that have been confirmed once
             // if a sell_trx_hive_id has been confirmed once, than its inherent sell_trx_id has been confirmed AT LEAST ONCE (at inception), therefore we don't need the created_at for it (if its only confirmed there, then the date would already be in the confirmedTxs info)
 
-            // const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id, ur.last_rental_payment, ur.id FROM user_rentals ur JOIN (SELECT urr.sell_trx_id, min(last_rental_payment) min_date FROM user_rentals urr WHERE confirmed IS NULL AND users_id = ? AND NOT EXISTS (SELECT urF.sell_trx_id from user_rentals urF WHERE urr.sell_trx_id = urF.sell_trx_id AND urF.sell_trx_id = ANY(?)) group by sell_trx_id) min_ur on ur.sell_trx_id = min_ur.sell_trx_id AND ur.last_rental_payment = min_ur.min_date`;
-
-            // const neverConfirmedSellTxs = await knexInstance.raw(
-            //     neverConfirmedSellTxsSql,
-            //     [users_id, uniqConfirmedIds]
-            // );
-            // TNT NOTE TO SELF: we dont need to have the min_date selected here, because these are all rentals that NEVER had a confirmation.  So if we do this with patching every sell_trx_id that is equal or greater to the created_at date from the sell_trx_hive_id, and then have our relistings hive info patch any future changes, we should be good to go imo.
-            // WE SHOULD ALSO CUT OUT EVERYTHING AFTER "AND NOT EXISTS", our difference in Arrs already solves this problem imo.
+            // TNT NOTE: we dont need to have the min_date selected here, because these are all rentals that NEVER had a confirmation.  So if we do this with patching every sell_trx_id that is equal or greater to the created_at date from the sell_trx_hive_id, and then have our relistings hive info patch any future changes, we should be good to go imo.
 
             /*
             const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id FROM user_rentals ur WHERE users_id = ? AND sell_trx_id = ANY(?) AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_id FROM user_rentals urF WHERE ur.sell_trx_id = urF.sell_trx_id and urF.sell_trx_id = ANY(?))`;
@@ -719,13 +762,13 @@ const getNeverConfirmedTxs = async ({
             ); // {"level":30,"time":"2023-02-14T16:57:35.493Z","pid":27745,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getEarliestDateNeeded: xdww earliestTime: undefined, anyRentalsToConfirm: 639, neverConfirmedRentalTxs: 0, confirmedTxs: 622, nonConfirmedTxs: undefined"}
             // {"level":30,"time":"2023-02-22T06:54:08.387Z","pid":48048,"hostname":"Trevors-Mac-mini.local","msg":"query.sql: SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id FROM user_rentals ur WHERE users_id = $1 AND sell_trx_id = ANY($2) AND confirmed IS NULL AND NOT EXISTS (SELECT urF.sell_trx_id FROM user_rentals urF WHERE ur.sell_trx_id = urF.sell_trx_id and urF.sell_trx_id = ANY($3))   Time: 21148.840 ms"}
             */
+
             // {"level":30,"time":"2023-02-22T07:07:28.272Z","pid":51235,"hostname":"Trevors-Mac-mini.local","msg":"query.sql: SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id FROM user_rentals ur WHERE users_id = $1 AND sell_trx_id = ANY($2) AND confirmed IS NULL   Time: 181.628 ms"}
             const neverConfirmedSellTxsSql = `SELECT distinct on (sell_trx_id) ur.sell_trx_id, ur.sell_trx_hive_id FROM user_rentals ur WHERE users_id = ? AND sell_trx_id = ANY(?) AND confirmed IS NULL`;
-            // what about a query where we take the diffInArrs, and then we have the NOT EXISTS subquery be taking it from where we have a row that has confirmed being not null?  Therefore, we only need to look at the ones with differenceInArrs, and then we can subsequently look to see if any were confirmed (that we might've somehow missed b4)
+
             const neverConfirmedSellTxs = await knexInstance.raw(
                 neverConfirmedSellTxsSql,
-                [users_id, differenceInArrs] // me: 12965.005 ms"}
-                // [users_id, anyRentalsToConfirm, uniqConfirmedIds] // me: 110828.356 ms"}
+                [users_id, differenceInArrs]
             );
             if (
                 !neverConfirmedSellTxs.rows ||
@@ -739,7 +782,6 @@ const getNeverConfirmedTxs = async ({
             } else {
                 const unconfirmedTxsPatchArr = [];
                 const individualSellTrxIds = [];
-                const hiveCreatedDates = [];
                 const hiveCreatedTimes = [];
                 const hiveListingIds = neverConfirmedSellTxs.rows.map(
                     ({ sell_trx_hive_id }) => sell_trx_hive_id
@@ -762,14 +804,9 @@ const getNeverConfirmedTxs = async ({
                         };
                         unconfirmedTxsPatchArr.push(patchObj);
                         individualSellTrxIds.push(sell_trx_id);
-                        hiveCreatedDates.push(hive_created_at);
+
                         const hive_created_time = hive_created_at.getTime();
                         hiveCreatedTimes.push(hive_created_time);
-                        // throw new Error('checking the hiveInfo');
-                        /*
-                        {"level":30,"time":"2023-02-22T06:54:08.404Z","pid":48048,"hostname":"Trevors-Mac-mini.local","msg":"/services/rentalConfirmation/getHiveTxDateObj: user: xdww, hiveTxDates: 7, hiveTxDateObj: 7"}
-{"level":30,"time":"2023-02-22T06:54:08.404Z","pid":48048,"hostname":"Trevors-Mac-mini.local","msg":"hiveCreatedDates: [\"2023-02-06T09:19:54.000Z\",\"2023-02-03T02:32:24.000Z\",\"2023-02-06T22:52:57.000Z\",\"2023-02-06T22:52:57.000Z\",\"2023-02-06T22:52:57.000Z\",\"2023-02-06T22:52:57.000Z\",\"2023-02-06T22:52:57.000Z\",\"2023-02-03T08:04:24.000Z\",\"2023-02-03T10:44:57.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-01-30T03:57:39.000Z\",\"2023-02-03T19:08:33.000Z\"], individualSellTrxIds: [\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6-0\",\"41f981efad38b99a0f801871b6d479329e125d3d-0\",\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-0\",\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-1\",\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-2\",\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-3\",\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-4\",\"9015e7342f5cccbc37a285b3fda682f7e57e3ede-0\",\"bbd397f27e283c79541931912b6b201e55d3da38-0\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-10\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-14\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-15\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-27\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-36\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-5\",\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-57\",\"f47547fb70d0c76e0596f46a36050970b86d2fde-0\"], unconfirmedTxsPatchArr: [{\"hive_created_at\":\"2023-02-06T09:19:54.000Z\",\"confirmed\":false,\"sell_trx_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6-0\"},{\"hive_created_at\":\"2023-02-03T02:32:24.000Z\",\"confirmed\":false,\"sell_trx_id\":\"41f981efad38b99a0f801871b6d479329e125d3d-0\"},{\"hive_created_at\":\"2023-02-06T22:52:57.000Z\",\"confirmed\":false,\"sell_trx_id\":\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-0\"},{\"hive_created_at\":\"2023-02-06T22:52:57.000Z\",\"confirmed\":false,\"sell_trx_id\":\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-1\"},{\"hive_created_at\":\"2023-02-06T22:52:57.000Z\",\"confirmed\":false,\"sell_trx_id\":\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-2\"},{\"hive_created_at\":\"2023-02-06T22:52:57.000Z\",\"confirmed\":false,\"sell_trx_id\":\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-3\"},{\"hive_created_at\":\"2023-02-06T22:52:57.000Z\",\"confirmed\":false,\"sell_trx_id\":\"7540937b7ef73e0c3a2d1f056db8ac5ae3fde1e8-4\"},{\"hive_created_at\":\"2023-02-03T08:04:24.000Z\",\"confirmed\":false,\"sell_trx_id\":\"9015e7342f5cccbc37a285b3fda682f7e57e3ede-0\"},{\"hive_created_at\":\"2023-02-03T10:44:57.000Z\",\"confirmed\":false,\"sell_trx_id\":\"bbd397f27e283c79541931912b6b201e55d3da38-0\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-10\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-14\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-15\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-27\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-36\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-5\"},{\"hive_created_at\":\"2023-01-30T03:57:39.000Z\",\"confirmed\":true,\"sell_trx_id\":\"e2a390e9fbe40b1a862b10e051a2d7d9d7d9ecb1-57\"},{\"hive_created_at\":\"2023-02-03T19:08:33.000Z\",\"confirmed\":false,\"sell_trx_id\":\"f47547fb70d0c76e0596f46a36050970b86d2fde-0\"}]"}
-*/
                     } else {
                         logger.warn(
                             `for sell_trx_id: ${sell_trx_id} and sell_trx_hive_id: ${sell_trx_hive_id}, we cant find anything in the hiveTxDateObj, hiveInfo: ${JSON.stringify(
@@ -781,11 +818,10 @@ const getNeverConfirmedTxs = async ({
                         );
                     }
                 }
-                const minHiveCreatedTime = _.min(hiveCreatedDates);
-                logger.info(
-                    `hiveCreatedDates: ${JSON.stringify(
-                        hiveCreatedDates
-                    )}, individualSellTrxIds: ${JSON.stringify(
+                const minHiveCreatedTime = _.min(hiveCreatedTimes);
+
+                logger.debug(
+                    ` individualSellTrxIds: ${JSON.stringify(
                         individualSellTrxIds
                     )}, unconfirmedTxsPatchArr: ${JSON.stringify(
                         unconfirmedTxsPatchArr
@@ -793,21 +829,23 @@ const getNeverConfirmedTxs = async ({
                         hiveCreatedTimes
                     )}, hiveCreatedTimes.length: ${
                         hiveCreatedTimes?.length
-                    }, hiveCreatedDates.length: ${hiveCreatedDates?.length}, 
-                    minHiveCreatedTime: ${JSON.stringify(
+                    },  minHiveCreatedTime: ${JSON.stringify(
                         minHiveCreatedTime
                     )}, new Date(minHiveCreatedTime): ${new Date(
                         minHiveCreatedTime
                     )}`
                 );
-                // TNT TODO: we get rid of the hiveCreatedDates and just return the min of them all imo,
-                throw new Error('checking one last time');
-                // {"level":30,"time":"2023-02-16T11:00:54.482Z","pid":98024,"hostname":"Trevors-Mac-mini.local","msg":"neverConfirmedSellTxs.rows.length: 17, unconfirmedTxsPatchArr.length: 17, unconfirmedTxsPatchArr[0]: {\"hive_created_at\":\"2023-02-06T09:19:54.000Z\",\"confirmed\":false,\"sell_trx_id\":\"32a0ecd910907f67a58107973d3b2f9f0a4a0da6-0\"}"}
-
-                // const neverConfirmedTxs = await getHiveTxDates({
-                //     username,
-                //     rentalsWithSellIds: neverConfirmedSellTxs.rows,
-                // });
+                let neverConfirmedTime;
+                if (!isNaN(minHiveCreatedTime)) {
+                    neverConfirmedTime = minHiveCreatedTime;
+                } else {
+                    neverConfirmedTime = null;
+                    throw new Error(
+                        `minHiveCreatedTime should be a number, is : ${JSON.stringify(
+                            minHiveCreatedTime
+                        )}`
+                    );
+                }
 
                 logger.info(
                     `/services/rentalConfirmation/getNeverConfirmedTxs: 
@@ -820,29 +858,9 @@ const getNeverConfirmedTxs = async ({
                     }, hiveListingIds: ${hiveListingIds?.length}`
                 );
                 return {
-                    neverConfirmedTimes: neverConfirmedTxs,
+                    neverConfirmedTime,
                     sellTrxIds: individualSellTrxIds,
                 };
-                // const neverConfirmedTxs = await HiveTxDate.query()
-                //     .select('hive_tx_id', 'hive_created_at')
-                //     .whereIn('hive_tx_id', neverConfirmedSellTxs.rows);
-                // if (
-                //     !neverConfirmedTxs ||
-                //     !Array.isArray(neverConfirmedTxs) ||
-                //     neverConfirmedTxs?.length < 1
-                // ) {
-                //     logger.warn(
-                //         `/services/rentalConfirmation/getNeverConfirmedTxs: ${username} has ${neverConfirmedSellTxs?.rows?.length} but HiveTxDate doesnt have these rows, neverConfirmedSellTxs?.rows: ${neverConfirmedSellTxs?.rows}`
-                //     );
-                //     throw new Error(
-                //         `HiveTxDate missing rows for user: ${username}`
-                //     );
-                // } else {
-                //     logger.info(
-                //         `/services/rentalConfirmation/getNeverConfirmedTxs: ${username} neverConfirmedTxs: ${neverConfirmedTxs?.length}`
-                //     );
-                //     return neverConfirmedTxs;
-                // }
             }
         }
     } catch (err) {
