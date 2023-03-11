@@ -71,7 +71,8 @@ const updateRentalsInDb = async ({ username, users_id, cardDetailsObj }) => {
         logger.error(
             `/services/rentals/allAccountUpdate/updateRentalsInDb error: ${err.message}`
         );
-        throw err;
+        return;
+        // throw err;
     }
 };
 
@@ -390,7 +391,8 @@ const patchRentalsBySplintersuite = async ({ users_id }) => {
         logger.error(
             `/services/rentals/patchRentalsBySplintersuite error: ${err.message}`
         );
-        throw err;
+        // throw err;
+        return;
     }
 };
 

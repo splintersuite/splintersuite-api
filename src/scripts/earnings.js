@@ -35,7 +35,7 @@ const calculateEarningsForUsers = async () => {
                             user.id
                         )} error: ${err.message}`
                     );
-                    throw err;
+                    //   throw err;
                 });
             await rentals
                 .patchRentalsBySplintersuite({ users_id: user.id })
@@ -45,7 +45,7 @@ const calculateEarningsForUsers = async () => {
                             user.id
                         )} error: ${err.message}`
                     );
-                    throw err;
+                    //   throw err;
                 });
             if (count !== 0 && count % 100 === 0) {
                 await retryFncs.sleep(fiveMinutesInMS);

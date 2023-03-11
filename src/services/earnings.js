@@ -250,7 +250,8 @@ const insertAllDailyEarnings = async ({ users_id, created_at }) => {
         logger.error(
             `/services/earnings/insertAllDailyEarnings error: ${err.message}`
         );
-        throw err;
+        //throw err;
+        return;
     }
 };
 
