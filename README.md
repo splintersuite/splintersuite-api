@@ -24,6 +24,8 @@ $ \q
 
 $ node_modules/.bin/knex migrate:latest --esm
 
+node_modules/.bin/knex migrate:make seasonRentals.js
+
 node_modules/.bin/knex migrate:down 20220731054417_v2BotEarning.js
 
 or if you have knex installed

@@ -346,6 +346,7 @@ const collectData = async ({
                 paymentCurrency: trade.payment_currency,
                 rentalDate: trade.rental_date,
                 rentalDays: trade.rental_days,
+                rentalType: trade.rental_type,
             });
         });
         activeTrades = [];
@@ -354,6 +355,69 @@ const collectData = async ({
         for (const levelEditionKey of Object.keys(trades)) {
             for (const cardType of Object.keys(trades[levelEditionKey])) {
                 // average of everything on loan...
+                logger.info(
+                    `about to start going through the trades[levelEditionKey][cardType]: ${JSON.stringify(
+                        trades[levelEditionKey][cardType]
+                    )}`
+                );
+                //throw new Error('checking');
+                // TNT NOTE: we actually dont need to see the season rentals in the past 12 hours?
+                const daily12HoursArr = [];
+                const season12HoursArr = [];
+                const dailyAllArr = [];
+                const seasonAllArr = [];
+                for (const cards of trades[levelEditionKey][cardType]) {
+                    if (
+                        new Date(trade.rentalDate).getTime() >
+                        twelveHoursAgoTime
+                    ) {
+                        // we are in the most recent 12 hour stuff
+                        if (cards?.rental_type === 'season') {
+                            season12HoursArr.push(cards?.price);
+                        } else {
+                            daily12HoursArr.push(cards?.price);
+                        }
+                    } else {
+                        // this is the whole past 48 hours it seems
+                        if (cards?.rental_type === 'season') {
+                            seasonAllArr.push(cards?.price);
+                        } else {
+                            dailyAllArr.push(cards?.price);
+                        }
+                    }
+                }
+
+                const seasonAll = createUploadElement({
+                    cardTradesArr: seasonAllArr,
+                });
+                /*
+                const stdDevSeasonAll =
+                    mathFncs.standardDeviation(seasonAllArr);
+                const medianSeasonAll = mathFncs.median(seasonAllArr);
+                const meanSeasonAll = mathFncs.mean(seasonAllArr);
+                const lowSeasonAll = mathFncs.min(seasonAllArr);
+                const highSeasonAll = mathFncs.max(seasonAllArr);
+
+                const stdDevSeason12 =
+                    mathFncs.standardDeviation(season12HoursArr);
+                const medianAllSeason12 = mathFncs.median(season12HoursArr);
+                const meanAllSeason12 = mathFncs.mean(season12HoursArr);
+                const lowAllSeason12 = mathFncs.min(season12HoursArr);
+                const highAllSeason12 = mathFncs.max(season12HoursArr);
+
+                const stdDevDailyAll = mathFncs.standardDeviation(dailyAllArr);
+                const medianDailyAll = mathFncs.median(dailyAllArr);
+                const meanDailyAll = mathFncs.mean(dailyAllArr);
+                const lowDailyAll = mathFncs.min(dailyAllArr);
+                const highDailyAll = mathFncs.max(dailyAllArr);
+
+                const stdDevDaily12 =
+                    mathFncs.standardDeviation(daily12HoursArr);
+                const medianAllDaily12 = mathFncs.median(daily12HoursArr);
+                const meanAllDaily12 = mathFncs.mean(daily12HoursArr);
+                const lowAllDaily12 = mathFncs.min(daily12HoursArr);
+                const highAllDaily12 = mathFncs.max(daily12HoursArr);
+                */
                 const twelveHoursArr = trades[levelEditionKey][cardType]
                     .filter((trade) => {
                         return (
@@ -395,6 +459,7 @@ const collectData = async ({
                     period_start_time: twelveHoursAgo,
                     period_end_time: now,
                     aggregation_type: ALL_OPEN_TRADES,
+                    rental_type: 'ALL',
                 });
                 uploadArr.push({
                     created_at: now,
@@ -414,6 +479,90 @@ const collectData = async ({
                     period_start_time: twelveHoursAgo,
                     period_end_time: now,
                     aggregation_type: TRADES_DURING_PERIOD,
+                    rental_type: 'ALL',
+                });
+
+                // new stuff
+                // seasonAll
+                uploadArr.push({
+                    created_at: now,
+                    card_detail_id: card.id,
+                    level: Number(levelEditionKey.split('-')[1]),
+                    edition: Number(levelEditionKey.split('-')[2]),
+                    volume: Number.isFinite(seasonAllArr.length)
+                        ? seasonAllArr.length
+                        : NaN,
+                    avg: Number.isFinite(meanSeasonAll) ? meanSeasonAll : NaN,
+                    low: Number.isFinite(lowSeasonAll) ? lowSeasonAll : NaN,
+                    high: Number.isFinite(highSeasonAll) ? highAll : NaN,
+                    std_dev: Number.isFinite(stdDevAll) ? stdDevAll : NaN,
+                    median: Number.isFinite(medianAll) ? medianAll : NaN,
+                    is_gold: cardType === 'gold',
+                    price_currency: 'DEC',
+                    period_start_time: twelveHoursAgo,
+                    period_end_time: now,
+                    aggregation_type: ALL_OPEN_TRADES,
+                    rental_type: 'ALL',
+                });
+                uploadArr.push({
+                    created_at: now,
+                    card_detail_id: card.id,
+                    level: Number(levelEditionKey.split('-')[1]),
+                    edition: Number(levelEditionKey.split('-')[2]),
+                    volume: Number.isFinite(allArr.length)
+                        ? allArr.length
+                        : NaN,
+                    avg: Number.isFinite(meanAll) ? meanAll : NaN,
+                    low: Number.isFinite(lowAll) ? lowAll : NaN,
+                    high: Number.isFinite(highAll) ? highAll : NaN,
+                    std_dev: Number.isFinite(stdDevAll) ? stdDevAll : NaN,
+                    median: Number.isFinite(medianAll) ? medianAll : NaN,
+                    is_gold: cardType === 'gold',
+                    price_currency: 'DEC',
+                    period_start_time: twelveHoursAgo,
+                    period_end_time: now,
+                    aggregation_type: ALL_OPEN_TRADES,
+                    rental_type: 'ALL',
+                });
+                uploadArr.push({
+                    created_at: now,
+                    card_detail_id: card.id,
+                    level: Number(levelEditionKey.split('-')[1]),
+                    edition: Number(levelEditionKey.split('-')[2]),
+                    volume: Number.isFinite(allArr.length)
+                        ? allArr.length
+                        : NaN,
+                    avg: Number.isFinite(meanAll) ? meanAll : NaN,
+                    low: Number.isFinite(lowAll) ? lowAll : NaN,
+                    high: Number.isFinite(highAll) ? highAll : NaN,
+                    std_dev: Number.isFinite(stdDevAll) ? stdDevAll : NaN,
+                    median: Number.isFinite(medianAll) ? medianAll : NaN,
+                    is_gold: cardType === 'gold',
+                    price_currency: 'DEC',
+                    period_start_time: twelveHoursAgo,
+                    period_end_time: now,
+                    aggregation_type: ALL_OPEN_TRADES,
+                    rental_type: 'ALL',
+                });
+                uploadArr.push({
+                    created_at: now,
+                    card_detail_id: card.id,
+                    level: Number(levelEditionKey.split('-')[1]),
+                    edition: Number(levelEditionKey.split('-')[2]),
+                    volume: Number.isFinite(allArr.length)
+                        ? allArr.length
+                        : NaN,
+                    avg: Number.isFinite(meanAll) ? meanAll : NaN,
+                    low: Number.isFinite(lowAll) ? lowAll : NaN,
+                    high: Number.isFinite(highAll) ? highAll : NaN,
+                    std_dev: Number.isFinite(stdDevAll) ? stdDevAll : NaN,
+                    median: Number.isFinite(medianAll) ? medianAll : NaN,
+                    is_gold: cardType === 'gold',
+                    price_currency: 'DEC',
+                    period_start_time: twelveHoursAgo,
+                    period_end_time: now,
+                    aggregation_type: ALL_OPEN_TRADES,
+                    rental_type: 'ALL',
                 });
             }
         }
@@ -435,6 +584,50 @@ const collectData = async ({
     } catch (err) {
         logger.error(`/services/market/collectData error: ${err.message}`);
         throw err;
+    }
+};
+
+const createUploadElement = ({
+    cardTradesArr,
+    created_at,
+    card_detail_id,
+    level,
+    edition,
+    is_gold,
+    price_currency,
+    period_start_time,
+    period_end_time,
+    aggregation_type,
+    rental_type,
+}) => {
+    try {
+        logger.debug(`/services/market/createUploadElement`);
+
+        const stdDevArr = mathFncs.standardDeviation(cardTradesArr);
+        const medianArr = mathFncs.median(cardTradesArr);
+        const meanArr = mathFncs.mean(cardTradesArr);
+        const lowArr = mathFncs.min(cardTradesArr);
+        const highArr = mathFncs.max(cardTradesArr);
+
+        const elementToPush = {
+            created_at,
+            card_detail_id,
+            level,
+            eidition,
+            volume: Number.isFinite(cardTradesArr?.length)
+                ? cardTradesArr?.length
+                : NaN,
+            avg: Number.isFinite(meanArr) ? meanArr : NaN,
+            low: Number.isFinite(lowArr) ? lowArr : NaN,
+        };
+
+        logger.debug(`/services/market/createUploadElement:`);
+        // return { stdDevArr, medianArr, meanArr, lowArr, highArr };
+    } catch (err) {
+        logger.error(
+            `/services/market/createUploadElement error: ${err.message}`
+        );
+        throw error;
     }
 };
 

@@ -20,6 +20,10 @@ const getHistoricalData = async () => {
                 logger.info(
                     `/scripts/rentals/getHistoricalData card: ${card?.name} is Gladius`
                 );
+            } else if (card?.edition === 10) {
+                logger.info(
+                    `/scripts/rentals/getHistoricalData card: ${card?.name} is Soulbound Reward`
+                );
             } else {
                 await marketService.collectData({
                     card,
