@@ -97,6 +97,7 @@ const insertActiveRentals = async ({ rentals }) => {
             chunks = [chunks];
         }
         for (const rentalChunk of chunks) {
+            logger.info(`length of rentalChunk is: ${rentalChunk?.length}`);
             await UserRentals.query()
                 .insert(rentalChunk)
                 .catch((err) => {
