@@ -97,7 +97,7 @@ const getNumDaysFromNow = ({ numberOfDaysFromNow }) => {
     try {
         logger.debug(`/util/dates/getNumDaysFromNow`);
 
-        const nowMs = new Date.getTime();
+        const nowMs = new Date().getTime();
         const msInADay = 1000 * 60 * 60 * 24;
         const numOfDaysMs = msInADay * numberOfDaysFromNow;
         const msDaysFromNow = nowMS + parseInt(numOfDaysMs);
