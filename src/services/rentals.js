@@ -132,9 +132,15 @@ const getActiveRentalsInDB = async ({ users_id }) => {
             date: now,
         });
 
+        const twentySixDaysFromNow = utilDates.getNumDaysFromNow({
+            numberOfDaysFromNow: 26,
+        });
         const dbActiveRentals = await UserRentals.query()
             .where({ users_id })
-            .whereBetween('last_rental_payment', [oneAndAHalf.daysAgo, now])
+            .whereBetween('last_rental_payment', [
+                oneAndAHalf.daysAgo,
+                twentySixDaysFromNow.daysFromNow,
+            ])
             .catch((err) => {
                 logger.error(
                     `/services/rentals/allAccountUpdate/getActiveRentalsInDB UserRentals query with users_id: ${users_id}, now: ${now} and oneDayAgo: ${oneDayAgo} error: ${err.message}`
